@@ -18,12 +18,12 @@ app.use(express.json());
 
 // Routes setup
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Dormitory Management API is running' });
+  res.status(200).json({ message: 'Optics Management API is running' });
 });
 
 app.get('/api/status', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
-  res.status(200).json({ 
+  res.status(200).json({
     message: 'Backend is connected to Frontend successfully!',
     database: `Database Status: ${dbStatus}`
   });
