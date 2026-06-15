@@ -1,41 +1,38 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
-/**
- * @typedef {Object} User
- * @property {string} username
- * @property {string} password
- * @property {string} role - 'CUSTOMER', 'SALE', 'ADMIN'
- * @property {string} email
- * @property {string} phone
- */
-const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
+const userSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, default: null },
+    first_name: { type: String, required: true },
+    last_name: { type: String, required: true },
+    phone: { type: String, default: null },
+    dob: { type: Date, default: null },
+    avatar_url: { type: String, default: null },
+    google_id: { type: String, unique: true, sparse: true },
+    is_email_verified: { type: Boolean, default: false },
+    verify_token: { type: String, default: null },
+    verify_token_expires: { type: Date, default: null },
+    role: { type: String, enum: ['CUSTOMER', 'SALE', 'ADMIN'], default: 'CUSTOMER' },
+    deleted_at: { type: Date, default: null }
   },
-  password: {
-    type: String,
-    required: true
-  },
-  role: {
-    type: String,
-    enum: ['CUSTOMER', 'SALE', 'ADMIN'],
-    default: 'CUSTOMER'
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  phone: {
-    type: String,
-    required: true
-  }
-}, {
-  timestamps: true
+  { timestamps: true }
+);
+
+userSchema.index({ verify_token: 1 });
+
+userSchema.pre('save', async function () {
+  if (!this.isModified('password') || !this.password) return;
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-export default mongoose.model('User', UserSchema);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) return false;
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+export default User;

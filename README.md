@@ -1,0 +1,7 @@
+# 1. Link tạo App Password để cấu hình gửi Email
+https://myaccount.google.com/apppasswords
+
+# 2. Cấu hình gửi Email kích hoạt (Nodemailer)
+SMTP_USER=email_cua_ban@gmail.com
+# Mật khẩu ứng dụng (App Password) - KHÔNG PHẢI mật khẩu đăng nhập Gmail
+SMTP_PASS=xxxxxxxxxxxxxxxx (các kí tự viết liền, không cách)
