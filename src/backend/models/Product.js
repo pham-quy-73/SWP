@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
  * @property {number} stock_quantity
  * @property {string} description
  */
-const ProductSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -38,9 +38,17 @@ const ProductSchema = new mongoose.Schema({
   description: {
     type: String,
     default: ''
+  },
+  // Thêm trường xóa mềm bắt buộc theo luật DATA-01
+  deleted_at: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
 });
 
-export default mongoose.model('Product', ProductSchema);
+// Thêm chỉ mục (Index) bắt buộc theo luật ARCH-04 để tối ưu tìm kiếm
+productSchema.index({ name: 1, brand: 1 });
+
+export default mongoose.model('Product', productSchema);
