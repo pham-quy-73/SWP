@@ -1,10 +1,11 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
+import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ app.get('/api/status', (req, res) => {
     database: `Database Status: ${dbStatus}`
   });
 });
+
+
+app.use('/api/auth', authRoutes);
 
 // Auth & feature routes
 app.use('/api', apiRoutes);

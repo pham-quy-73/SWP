@@ -1,17 +1,39 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import MainLayout from './components/layout/MainLayout';
+import AuthLayout from './components/layout/AuthLayout';
+import HomePage from './pages/HomePage';
+import LoginForm from './feature/auth/components/LoginForm';
+import RegisterForm from './feature/auth/components/RegisterForm';
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold text-blue-600 mb-4">Optics Management</h1>
-      <p className="text-gray-600 text-lg">Hệ thống đang được xây dựng...</p>
-      
-      <Routes>
-        <Route path="/" element={<div className="mt-8 p-4 bg-white rounded shadow">Trang Chủ</div>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </div>
+    <Routes>
+
+      {/* Trang thường */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<HomePage />} />
+      </Route>
+
+      {/* Trang auth */}
+      <Route
+        path="/login"
+        element={
+          <AuthLayout>
+            <LoginForm />
+          </AuthLayout>
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          <AuthLayout>
+            <RegisterForm />
+          </AuthLayout>
+        }
+      />
+
+    </Routes>
   );
 }
-
-export default App;
