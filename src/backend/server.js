@@ -6,6 +6,7 @@ import connectDB from './config/db.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.get('/api/status', (req, res) => {
 
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Auth & feature routes
 app.use('/api', apiRoutes);

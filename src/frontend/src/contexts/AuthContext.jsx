@@ -1,43 +1,56 @@
 import React, { createContext, useState, useEffect } from 'react';
 
-// Khởi tạo Context
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Kiểm tra trạng thái đăng nhập mỗi khi ứng dụng khởi động lại (F5)
+    // EARS [STATE-DRIVEN]: Đồng bộ thông tin user từ Backend mỗi khi F5
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                console.error("Lỗi đọc dữ liệu người dùng:", error);
+        const fetchMe = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                try {
+                    // Gọi API /me đã tạo ở Task T003
+                    const response = await fetch('http://localhost:5000/api/users/me', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+
+                    if (response.ok && data.user) {
+                        setUser(data.user);
+                    } else {
+                        // Token hết hạn hoặc không hợp lệ
+                        logout();
+                    }
+                } catch (error) {
+                    console.error("Lỗi đồng bộ dữ liệu người dùng:", error);
+                    logout();
+                }
             }
-        }
-        setIsLoading(false);
+            setIsLoading(false);
+        };
+
+        fetchMe();
     }, []);
 
-    // Hàm hỗ trợ cập nhật State khi Đăng nhập thành công
     const loginContext = (userData, token) => {
         setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('accessToken', token);
+        // Chỉ lưu Token. Không lưu userData vào localStorage để bảo vệ field 'role'
+        localStorage.setItem('accessToken', token); 
     };
 
-    // Hàm hỗ trợ Đăng xuất
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
-        window.location.href = '/login'; // Ép chuyển hướng về trang đăng nhập
     };
 
     return (
         <AuthContext.Provider value={{ user, isLoading, loginContext, logout }}>
-            {/* Chỉ render các component con khi đã kiểm tra xong trạng thái (tránh nháy giao diện) */}
             {!isLoading && children}
         </AuthContext.Provider>
     );
