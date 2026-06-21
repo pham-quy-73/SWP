@@ -1,43 +1,48 @@
 import mongoose from 'mongoose';
 
-/**
- * @typedef {Object} Product
- * @property {string} name
- * @property {string} brand
- * @property {number} price
- * @property {string} image
- * @property {number} stock_quantity
- * @property {string} description
- */
 const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    index: true
   },
   brand: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    index: true
   },
   price: {
     type: Number,
     required: true,
     min: 0
   },
-  image: {
+  image_url: {
     type: String,
-    default: ''
+    required: true
+  },
+  image_public_id: {
+    type: String,
+    required: true
   },
   stock_quantity: {
     type: Number,
     required: true,
     default: 0,
-    min: 0
+    min: 0,
+    validate: {
+      validator: Number.isInteger,
+      message: 'stock_quantity phải là số nguyên'
+    }
   },
   description: {
     type: String,
     default: ''
+  },
+  deleted_at: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

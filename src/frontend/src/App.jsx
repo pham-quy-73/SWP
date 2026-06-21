@@ -3,6 +3,8 @@ import { AnimatePresence } from 'framer-motion';
 import MainLayout from './components/layout/MainLayout';
 import AuthLayout from './components/layout/AuthLayout';
 import HomePage from './pages/HomePage';
+import ProductsPage from './pages/ProductsPage';
+import AdminProductsPage from './pages/AdminProductsPage';
 import LoginForm from './feature/auth/components/LoginForm';
 import RegisterForm from './feature/auth/components/RegisterForm';
 
@@ -13,6 +15,8 @@ export default function App() {
       {/* Trang thường */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/admin/products" element={<AdminProductsPage />} />
       </Route>
 
       {/* Trang auth */}

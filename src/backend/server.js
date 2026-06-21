@@ -6,6 +6,7 @@ import connectDB from './config/db.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
 import authRoutes from './routes/auth.routes.js';
+import productRoutes from './routes/productRoutes.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.get('/api/status', (req, res) => {
 
 
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 // Auth & feature routes
 app.use('/api', apiRoutes);
@@ -40,7 +42,7 @@ app.use('/api', apiRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
