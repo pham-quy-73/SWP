@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag, PackageX } from 'lucide-react';
 
@@ -8,6 +9,7 @@ export default function ProductCard({ product }) {
   const isOutOfStock = product.stock_quantity === 0;
 
   return (
+    <Link to={`/products/${product._id}`} className="block">
     <motion.div
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
@@ -56,5 +58,6 @@ export default function ProductCard({ product }) {
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 }

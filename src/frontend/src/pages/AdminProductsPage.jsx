@@ -23,8 +23,7 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
   };
 
-  // TODO: bật lại sau khi test xong
-  // if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen bg-zinc-50">

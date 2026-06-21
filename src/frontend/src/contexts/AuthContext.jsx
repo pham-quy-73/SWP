@@ -27,6 +27,13 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('accessToken', token);
     };
 
+    // Cập nhật thông tin user trong context + localStorage (dùng sau khi edit profile)
+    const updateUser = (newUserData) => {
+        const merged = { ...user, ...newUserData };
+        setUser(merged);
+        localStorage.setItem('user', JSON.stringify(merged));
+    };
+
     // Hàm hỗ trợ Đăng xuất
     const logout = () => {
         setUser(null);
@@ -36,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, loginContext, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, loginContext, updateUser, logout }}>
             {/* Chỉ render các component con khi đã kiểm tra xong trạng thái (tránh nháy giao diện) */}
             {!isLoading && children}
         </AuthContext.Provider>

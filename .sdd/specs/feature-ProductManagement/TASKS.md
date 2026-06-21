@@ -13,17 +13,18 @@
 
 ## Bảng tổng quan 🆕
 
-| ID | Task | Est | Deps | Spec refs |
-|---|---|---|---|---|
-| T1 | Core Domain (Model + Validator) | 3h | - | §5 Data, UBI-01/02, INV-02 |
-| T2 | Business Logic (Service + Cloudinary) | 4h | T1 | EVD-02/03/04/05, UBI-03, NOT-01 |
-| T3 | API Orchestration (Controller + Routes) | 3h | T2 | EVD-01/06, ERR-01/02/03/04, SEC-01 |
-| T4 | Unit Testing (Service) | 2h | T2 | AC-02, AC-09 |
-| T5 | Data Integration (useProducts hook) | 2h | T3 | EVD-01, PERF-02 |
-| T6 | Admin Management UI | 3h | T5 | EVD-02/03/04, UI/UX-01, ERR-02 |
-| T7 | Customer Display UI | 3h | T5 | STD-01/02/03, UI/UX-01 |
+| ID | Task | Est | Deps | Spec refs | Status |
+|---|---|---|---|---|---|
+| T1 | Core Domain (Model + Validator) | 3h | - | §5 Data, UBI-01/02, INV-02 | ✅ Done |
+| T2 | Business Logic (Service + Cloudinary) | 4h | T1 | EVD-02/03/04/05, UBI-03, NOT-01 | ✅ Done |
+| T3 | API Orchestration (Controller + Routes) | 3h | T2 | EVD-01/06, ERR-01/02/03/04, SEC-01 | ✅ Done |
+| T4 | Unit Testing (Service) | 2h | T2 | AC-02, AC-09 | ✅ Done |
+| T5 | Data Integration (useProducts hook) | 2h | T3 | EVD-01, PERF-02 | ✅ Done |
+| T6 | Admin Management UI | 3h | T5 | EVD-02/03/04, UI/UX-01, ERR-02 | ✅ Done |
+| T7 | Customer Display UI | 3h | T5 | STD-01/02/03, UI/UX-01 | ✅ Done |
+| T8 | Product Detail Page (Frontend) 🆕 | 2h | T3, T5 | EVD-07, AC-13, STD-02 | ✅ Done |
 
-*Tổng ước lượng ~20h. Critical path: T1 → T2 → T3 → T5 → (T6, T7).*
+*Tổng ước lượng ~22h. Critical path: T1 → T2 → T3 → T5 → (T6, T7, T8).*
 
 ---
 
@@ -111,7 +112,7 @@
 
 ---
 
-## 🛒 TASK 7: Customer Display UI - Frontend
+## 🛒 TASK 7: Customer Display UI - Frontend ✅ Done
 **Est:** 3h · **Deps:** T5 · **Spec refs:** 🆕 EARS-STD-01/02/03, UI/UX-01
 **Mục tiêu:** Giao diện lưới sản phẩm cho khách hàng.
 **File cần tạo/sửa:**
@@ -119,6 +120,31 @@
 2. `src/components/products/ProductGrid.jsx`: Render lưới Grid 4 cột sử dụng Tailwind CSS. Đọc page từ URL Query Params (`useSearchParams`).
 
 **Tiêu chí hoàn thành (DoD):**
-- [ ] Lưới Grid Responsive.
-- [ ] Phân trang hoạt động đồng bộ với URL.
-- [ ] 🆕 Hiển thị nhãn "Hết hàng" + chặn add-to-cart khi `stock_quantity = 0` (EARS-STD-02).
+- [x] Lưới Grid Responsive.
+- [x] Phân trang hoạt động đồng bộ với URL.
+- [x] 🆕 Hiển thị nhãn "Hết hàng" + chặn add-to-cart khi `stock_quantity = 0` (EARS-STD-02).
+
+---
+
+## 🔍 TASK 8: Product Detail Page (Frontend) 🆕 ✅ Done
+**Est:** 2h · **Deps:** T3, T5 · **Spec refs:** EARS-EVD-07, AC-13, EARS-STD-02
+**Mục tiêu:** Trang xem chi tiết sản phẩm cho CUSTOMER — hoàn thiện flow: Danh sách → Chi tiết → Giỏ hàng.
+
+**Lý do bổ sung:** Gap phát hiện 2026-06-21: Actors §2 yêu cầu "xem chi tiết sản phẩm" nhưng T7 chỉ build list/card. Backend endpoint `GET /api/products/:id` đã sẵn sàng (✅).
+
+**File cần tạo/sửa:**
+1. `src/frontend/src/pages/ProductDetailPage.jsx` (tạo mới):
+   - Fetch `GET /api/products/:id` bằng `useParams()` để lấy id.
+   - Hiển thị: ảnh lớn (aspect 4:5), tên, thương hiệu, giá (VNĐ format), mô tả.
+   - Badge "Hết hàng" + disable nút nếu `stock_quantity = 0` (EARS-STD-02).
+   - Nút "Thêm vào giỏ" (placeholder cho Cart module — chưa implement logic).
+   - Loading spinner, 404 message nếu sản phẩm không tồn tại.
+2. `src/frontend/src/App.jsx` (sửa): Thêm route `<Route path="/products/:id" element={<ProductDetailPage />} />` trong `<MainLayout>`.
+3. `src/frontend/src/feature/products/components/ProductCard.jsx` (sửa): Bọc card trong `<Link to={/products/${product._id}}>` để navigate sang trang chi tiết.
+
+**Tiêu chí hoàn thành (DoD):**
+- [x] Click ProductCard → navigate sang `/products/:id`.
+- [x] Trang hiển thị đúng thông tin sản phẩm fetch từ API.
+- [x] Stock = 0 → nút "Thêm vào giỏ" bị disable + nhãn "Hết hàng".
+- [x] Sản phẩm không tồn tại (id sai/đã xóa) → hiển thị message lỗi 404, có nút "Quay lại".
+- [x] Loading state trong khi đang fetch.

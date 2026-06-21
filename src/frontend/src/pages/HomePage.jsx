@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 
@@ -52,11 +53,10 @@ export default function HomePage() {
 
                         <div className="flex flex-wrap gap-4">
 
-                            <button className="group flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:bg-emerald-600 hover:shadow-2xl hover:shadow-emerald-500/30">
+                            <Link to="/products" className="group flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:bg-emerald-600 hover:shadow-2xl hover:shadow-emerald-500/30">
                                 KHÁM PHÁ NGAY
-
                                 <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                            </button>
+                            </Link>
 
                             <button className="px-8 py-4 rounded-2xl border border-zinc-300 text-zinc-700 font-semibold hover:bg-zinc-100 transition-all duration-300">
                                 XEM LOOKBOOK
@@ -115,12 +115,12 @@ export default function HomePage() {
                             <div className="w-16 h-1 bg-emerald-500 rounded-full"></div>
                         </div>
 
-                        <a
-                            href="#"
+                        <Link
+                            to="/products"
                             className="text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
                         >
                             Xem tất cả +
-                        </a>
+                        </Link>
 
                     </div>
 
@@ -128,8 +128,8 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
                         {categories.map((cat, index) => (
+                            <Link key={index} to="/products" className="block">
                             <motion.div
-                                key={index}
                                 whileHover={{ y: -12 }}
                                 transition={{ duration: 0.3 }}
                                 className="group relative overflow-hidden rounded-[32px] bg-white border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.08)] cursor-pointer"
@@ -162,6 +162,7 @@ export default function HomePage() {
                                 </div>
 
                             </motion.div>
+                            </Link>
                         ))}
 
                     </div>

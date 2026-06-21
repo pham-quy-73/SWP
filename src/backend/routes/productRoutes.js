@@ -51,9 +51,9 @@ const handleMulterError = (err, _req, res, next) => {
 router.get('/', getProducts);
 router.get('/:id', getProductById);
 
-// Admin-only routes — TODO: bật lại verifyToken + checkRole sau khi test xong
-router.post('/', /* verifyToken, checkRole('ADMIN'), */ upload.single('image'), handleMulterError, createProduct);
-router.put('/:id', /* verifyToken, checkRole('ADMIN'), */ upload.single('image'), handleMulterError, updateProduct);
-router.delete('/:id', /* verifyToken, checkRole('ADMIN'), */ deleteProduct);
+// Admin-only routes
+router.post('/', verifyToken, checkRole('ADMIN'), upload.single('image'), handleMulterError, createProduct);
+router.put('/:id', verifyToken, checkRole('ADMIN'), upload.single('image'), handleMulterError, updateProduct);
+router.delete('/:id', verifyToken, checkRole('ADMIN'), deleteProduct);
 
 export default router;

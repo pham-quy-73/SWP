@@ -74,7 +74,8 @@
 - **EARS-EVD-03b (làm rõ):** 🆕 WHEN nhận `PUT /api/products/:id` **KHÔNG kèm ảnh mới**, SYSTEM SHALL chỉ cập nhật trường text, **giữ nguyên** `image_url`/`image_public_id` hiện tại và **không** gọi Cloudinary destroy. *(Ch5 Anti-pattern "Implicit Assumption" — verify với code: nhánh update không ảnh.)*
 - **EARS-EVD-04:** WHEN nhận `DELETE /api/products/:id` từ ADMIN, SYSTEM SHALL **không** xóa cứng bản ghi, mà SHALL cập nhật `deleted_at` = timestamp hiện tại và trả HTTP 200.
 - **EARS-EVD-05:** WHEN quy trình lưu DB thất bại ngay sau khi ảnh đã upload lên Cloudinary, SYSTEM SHALL tự động gọi Cloudinary destroy ảnh đó (Rollback) qua `image_public_id` để tránh orphaned image, sau đó trả HTTP 500 theo cấu trúc SEC-01.
-- **EARS-EVD-06 (chi tiết sản phẩm):** 🆕 WHEN nhận `GET /api/products/:id` cho một sản phẩm `deleted_at: null`, SYSTEM SHALL trả HTTP 200 + object đầy đủ. *(Actors §2 nêu "xem trang chi tiết" nhưng spec gốc thiếu requirement này — verify endpoint detail.)*
+- **EARS-EVD-06 (chi tiết sản phẩm — backend):** WHEN nhận `GET /api/products/:id` cho một sản phẩm `deleted_at: null`, SYSTEM SHALL trả HTTP 200 + object đầy đủ. ✅ *Đã implement: `getProductById` trong controller/service, route `GET /:id` public (không cần auth).*
+- **EARS-EVD-07 (chi tiết sản phẩm — frontend):** 🆕 WHEN CUSTOMER click vào ProductCard, SYSTEM SHALL điều hướng sang trang `/products/:id` và render đầy đủ: ảnh lớn, tên, thương hiệu, giá, mô tả, stock status, nút "Thêm vào giỏ" (vô hiệu nếu `stock_quantity = 0`). *(Gap phát hiện 2026-06-21: Actors §2 yêu cầu "xem chi tiết" nhưng T7 chỉ build list/card, không có detail page — xem T8 mới trong TASKS.md.)*
 
 ### 3.3 State-driven (Hành vi liên tục trong trạng thái)
 - **EARS-STD-01:** WHILE `deleted_at` của Sản phẩm khác `null`, SYSTEM SHALL tự động loại sản phẩm đó khỏi kết quả `GET /api/products` (và detail) dành cho CUSTOMER và SALE.
@@ -193,9 +194,10 @@ Collection `products`:
 | AC-07 🆕 | GIVEN file = 5MB (boundary) chấp nhận, 5.01MB từ chối · WHEN upload · THEN tương ứng OK / 415 | ERR-03 | `test_file_size_boundary` | [ ] verify |
 | AC-08 🆕 | GIVEN file `.gif`/`.exe` · WHEN upload · THEN 415 | ERR-03 | `test_file_type_reject` | [ ] verify |
 | AC-09 🆕 | GIVEN DB sập sau upload ảnh · WHEN `POST` · THEN Cloudinary destroy được gọi, 0 orphaned image | EVD-05 | `test_rollback_on_db_fail` | [ ] verify |
-| AC-10 🆕 | GIVEN id không tồn tại · WHEN `GET/PUT/DELETE /:id` · THEN 404 | ERR-04 | `test_not_found_404` | [ ] verify |
-| AC-11 🆕 | GIVEN non-ADMIN (production) · WHEN ghi dữ liệu · THEN 403 | ERR-01, OPT-01 | `test_role_gate_403` | [ ] verify |
-| AC-12 🆕 | GIVEN stock = 0 · WHEN render card · THEN nhãn "Hết hàng" + chặn add-to-cart | STD-02 | `test_out_of_stock_ui` | [ ] verify |
+| AC-10 🆕 | GIVEN id không tồn tại · WHEN `GET/PUT/DELETE /:id` · THEN 404 | ERR-04 | `test_not_found_404` | [x] ✅ backend |
+| AC-11 🆕 | GIVEN non-ADMIN (production) · WHEN ghi dữ liệu · THEN 403 | ERR-01, OPT-01 | `test_role_gate_403` | [x] ✅ backend |
+| AC-12 🆕 | GIVEN stock = 0 · WHEN render card · THEN nhãn "Hết hàng" + chặn add-to-cart | STD-02 | `test_out_of_stock_ui` | [x] ✅ frontend |
+| AC-13 🆕 | GIVEN CUSTOMER click ProductCard · WHEN navigate `/products/:id` · THEN render trang chi tiết: ảnh, tên, giá, mô tả, stock, nút giỏ hàng | EVD-07 | `test_product_detail_page` | [ ] pending T8 |
 
 ---
 
@@ -210,9 +212,10 @@ Collection `products`:
 
 ## 10. Known Deviations & Open Items ⚠️ 🆕
 *(Ghi lại trung thực sai lệch giữa spec-đích và hiện trạng — Ch6 "Validation: code ↔ spec")*
-- **DEV-01 — `verifyAdmin` đang bị comment:** ~~tạm thời comment để test~~ **RESOLVED (2026-06-20):** đã bật lại `verifyToken + verifyAdmin` cho tất cả route POST/PUT/DELETE trong `product.routes.js`.
+- **DEV-01 — `verifyAdmin` đang bị comment:** ~~tạm thời comment để test~~ **RESOLVED (2026-06-20):** đã bật lại `verifyToken + checkRole('ADMIN')` cho tất cả route POST/PUT/DELETE trong `productRoutes.js`.
 - **DEV-02 — Joi vs Zod:** CONTEXT.md (CODE-01) yêu cầu **Zod**, nhưng PLAN/SPEC/TASKS dùng **Joi**. **Action:** thống nhất một thư viện trong CONTEXT để tránh "Moving Target" (Ch5 Anti-pattern 5).
 - **DEV-03 — index single vs compound:** **RESOLVED (2026-06-20):** Giữ **2 single indexes** (`name`, `brand`) — đúng với query `$or: [{ name: regex }, { brand: regex }]`. Compound index `{ name, brand }` không hiệu quả với `$or` trên từng field riêng lẻ; MongoDB dùng index intersection, mỗi branch dùng đúng 1 index.
+- **DEV-04 — Frontend Product Detail Page bị thiếu (gap mới - 2026-06-21):** ⚠️ Actors §2 yêu cầu CUSTOMER "xem chi tiết sản phẩm" nhưng **T7 chỉ build grid/card list, không có trang `/products/:id`**. Backend endpoint `GET /api/products/:id` đã sẵn sàng (✅). **Action:** Bổ sung T8 vào TASKS.md để build `ProductDetailPage.jsx` + route + link từ ProductCard.
 
 ---
 

@@ -7,6 +7,7 @@ import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
 import authRoutes from './routes/auth.routes.js';
 import productRoutes from './routes/productRoutes.js';
+import userRoutes from './routes/user.routes.js';
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.get('/api/status', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
 
 // Auth & feature routes
 app.use('/api', apiRoutes);
