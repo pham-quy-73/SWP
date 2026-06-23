@@ -1,64 +1,91 @@
 # CONSTITUTION.md — Project Law
 
-# Ratified: [DATE] | Team: [TEAM NAME] | Version: 1.1
-
-# RULE: Any change to this document requires unanimous team approval.
-
-## ARTICLE 1 — TECH STACK (immutable)
-
-Runtime: Node.js 20 LTS (JavaScript / TypeScript)
-Backend: Express.js 4.x
-Database: MongoDB 7.x — Mongoose ODM
-Frontend: React 18 + Vite (JavaScript / TypeScript)
-Styling: Tailwind CSS — NO CSS-in-JS, NO custom CSS unless Tailwind insufficient
-Package manager: npm (project-wide)
-
-> MongoDB was chosen for schema flexibility. All queries must use Mongoose to prevent NoSQL injection.
-
-## ARTICLE 2 — CODING STANDARDS
-
-- **TypeScript (if used):** strict mode (`strict: true`) — no implicit any.
-- **JavaScript:** ES6+ with `"type": "module"`; avoid `var`, prefer `const`/`let`.
-- **Formatter:** Prettier — auto-format on save. Config: `singleQuote: true, semi: false, trailingComma: "all"`.
-- **Linter:** ESLint + Airbnb config (adapted). **Zero warnings** before submission.
-- **Max function length:** 40 lines (refactor if longer).
-- **Max file length:** 300 lines (split into modules/components).
-- **Comments:** explain WHY, not WHAT. Remove TODO before final submission.
-- **Naming:** camelCase for variables/functions, PascalCase for classes/components, UPPER_SNAKE for constants.
-
-## ARTICLE 3 — SECURITY POLICIES (non-negotiable)
-
-- **Authentication:** Google OAuth 2.0 for students; Admin credentials use bcrypt with cost ≥ 12. NEVER plain text.
-- **Secrets:** environment variables ONLY (`.env`). Never commit real credentials.
-- **Database:** Use Mongoose query builders — **zero tolerance** for raw string queries with user input.
-- **Input validation:** Validate every request body/query/params with Zod (or Joi).
-- **CORS:** Whitelist frontend origin(s) only — no wildcard `*` in production.
-- **HTTP headers:** Use `helmet` middleware. Set cookies with `httpOnly` and `secure` flags.
-- **Rate limiting:** Apply to login and API routes to prevent brute force.
-
-## ARTICLE 4 — TESTING REQUIREMENTS
-
-- **Coverage:** ≥ 80% for all new service/business logic code.
-- **Unit tests:** Required for all services/business logic (Jest).
-- **Integration tests:** Required for all API endpoints — happy + error paths (Supertest).
-- **E2E tests:** Optional but encouraged for critical flows (e.g., booking, room selection).
-- **No merge/deploy** if any existing test breaks.
-
-## ARTICLE 5 — AI AGENT RULES
-
-- Read `AGENTS.md` before starting any session.
-- Review agent plan BEFORE approving execution.
-- **Human-Led Refactoring** after every 3–5 agent tasks.
-- All agent-generated code must pass the Pre-Commit Checklist (lint, format, tests).
-- Never approve agent output you cannot explain to another team member.
-
-## ARTICLE 6 — REVIEW PROCESS
-
-- **Code review:** Synchronous on scheduled review sessions (e.g., weekly).
-- **Spec review:** Before any implementation — no code before spec approval.
-- **Architecture changes:** Require a Constitution amendment vote (unanimous).
-- **Emergency fix:** Allowed with 1 team member approval + post-mortem within 24 hours.
+**Ratified:** 2026-06-18  
+**Team:** Optics Management Team  
+**Version:** 2.0.0
 
 ---
 
-_This constitution is the single source of truth for the project. All team members must abide by it._
+## ARTICLE 1 — TECH STACK (immutable)
+
+| Layer       | Technology                                                      |
+| ----------- | --------------------------------------------------------------- |
+| Runtime     | Node.js 20 LTS                                                  |
+| Backend     | Express.js 4.x                                                  |
+| Database    | MongoDB — Mongoose ODM                                          |
+| Frontend    | React 18 + Vite (JavaScript, **not TypeScript**)                |
+| Styling     | Tailwind CSS 3.x                                                |
+| Package mgr | npm (project-wide)                                              |
+| Auth        | JWT + bcrypt / Google Login                                     |
+| Payment     | VNPay (sandbox)                                                 |
+| State Client| Zustand + persist (LocalStorage)                                |
+
+---
+
+## ARTICLE 2 — CODING STANDARDS
+
+- **JavaScript:** ES6+ với `"type": "module"`; dùng `const`/`let`, tránh `var`.
+- **Max function length:** 50 lines (refactor if longer).
+- **Max file length:** 350 lines (split into modules/components if possible).
+- **Naming:** `camelCase` cho variables/functions, `PascalCase` cho classes/components, `UPPER_SNAKE` cho constants.
+- **File structure:**
+  - Backend: `src/backend/controllers/`, `src/backend/services/`, `src/backend/models/`, `src/backend/routes/`, `src/backend/middlewares/`
+  - Frontend: `src/frontend/src/components/`, `src/frontend/src/feature/`, `src/frontend/src/pages/`, `src/frontend/src/contexts/`
+
+---
+
+## ARTICLE 3 — SECURITY POLICIES (non-negotiable)
+
+- **Authentication:** JWT (access token) + bcrypt.
+- **Authorization:** Role-based (CUSTOMER, SALE, MANAGER, ADMIN). Check role on API routes level.
+- **Secrets:** Environment variables ONLY (`.env`). Never commit credentials to Git.
+- **Database:** Use Mongoose query builders — **zero tolerance** for raw string queries with user input.
+- **VNPay callback:** **MUST** verify `vnp_SecureHash` checksum before updating payment status.
+- **Background Cleanup Job:** Automatically cancels expired `PENDING` orders after 15 minutes and restores stock to MongoDB.
+
+---
+
+## ARTICLE 4 — DATABASE SCHEMA (MongoDB)
+
+**5 active collections:**
+
+| Collection    | Mô tả |
+| ------------- | ----- |
+| `users`       | Tài khoản người dùng (username, password hash, role, email, phone, deleted_at, is_email_verified) |
+| `products`    | Chi tiết sản phẩm kính mắt gọng chính (name, brand, price, discountPrice, imageUrl, stock_quantity) |
+| `product_variants` | Biến thể sản phẩm (colorName, sizeLabel, bridgeWidthMm, lensWidthMm, templeLengthMm, quantity, price) |
+| `orders`      | Quản lý hóa đơn mua hàng (user_id, status, total_amount, shipping/deliveryAddress, recipientName, paymentInfo) |
+| `order_items` | Chi tiết sản phẩm trong đơn (order_id, product_variant_id, quantity, unitPrice) |
+
+> **Payment được nhúng trực tiếp trong `orders`** – không có collection `payments` riêng.  
+> **Không sử dụng** collection `carts` trong database. Giỏ hàng lưu trữ hoàn toàn ở LocalStorage qua Zustand.
+
+**Order status lifecycle (6 statuses):**
+`PENDING` → `AWAITING_VERIFICATION` → `CONFIRMED` → `COMPLETED` / `CANCELLED` / `REFUNDED`.
+
+---
+
+## ARTICLE 5 — API CONVENTIONS
+
+- **Base URL:** `/api` (không có `/v1` prefix).
+  - Routes Orders và Payment ngoài ra còn được cấu hình tại `/orders` và `/payment` để tương thích tốt với luồng thanh toán ngoài.
+- **Response format:**
+  - Định dạng bọc tiêu chuẩn: `{ code: 0, message: "...", result: { ... } }`.
+  - Một số API Product GET chi tiết và Auth lấy thông tin thì có thể trả trực tiếp đối tượng về CSDL.
+- **Error format:**
+  - Chuẩn mã trạng thái HTTP (400, 401, 403, 404, 500) kèm mã lỗi cụ thể ở JSON:
+    ```json
+    {
+      "error_code": "VALIDATION_ERROR",
+      "message": "Chi tiết lỗi..."
+    }
+    ```
+
+---
+
+## ARTICLE 6 — OUT-OF-SCOPE (explicitly excluded)
+
+Các tính năng sau **KHÔNG** nằm trong phạm vi dự án thực tế:
+- Tự động hoàn tiền tự động qua API VNPay (chỉ hỗ trợ chuyển trạng thái `REFUNDED` và xử lý thủ công bên ngoài).
+- Tích hợp thêm các cổng thanh toán trực tuyến khác ngoài VNPay Sandbox.
+- Luồng giao hàng chi tiết của Shipper và quy trình sản xuất cơ khí kính nâng cao.

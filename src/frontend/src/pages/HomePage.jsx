@@ -1,19 +1,23 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function HomePage() {
     const categories = [
         {
             title: "Kính Nam",
-            img: "/images/men.webp"
+            img: "/images/men.webp",
+            link: "/products?gender=MALE"
         },
         {
             title: "Kính Nữ",
-            img: "/images/women.webp"
+            img: "/images/women.webp",
+            link: "/products?gender=FEMALE"
         },
         {
             title: "Gọng Unisex",
-            img: "/images/unisex.webp"
+            img: "/images/unisex.webp",
+            link: "/products?gender=UNISEX"
         }
     ];
 
@@ -52,11 +56,11 @@ export default function HomePage() {
 
                         <div className="flex flex-wrap gap-4">
 
-                            <button className="group flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:bg-emerald-600 hover:shadow-2xl hover:shadow-emerald-500/30">
+                            <Link to="/products" className="group flex items-center gap-3 bg-zinc-900 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:bg-emerald-600 hover:shadow-2xl hover:shadow-emerald-500/30">
                                 KHÁM PHÁ NGAY
 
                                 <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                            </button>
+                            </Link>
 
                             <button className="px-8 py-4 rounded-2xl border border-zinc-300 text-zinc-700 font-semibold hover:bg-zinc-100 transition-all duration-300">
                                 XEM LOOKBOOK
@@ -115,12 +119,12 @@ export default function HomePage() {
                             <div className="w-16 h-1 bg-emerald-500 rounded-full"></div>
                         </div>
 
-                        <a
-                            href="#"
+                        <Link
+                            to="/products"
                             className="text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
                         >
                             Xem tất cả +
-                        </a>
+                        </Link>
 
                     </div>
 
@@ -128,40 +132,41 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
                         {categories.map((cat, index) => (
-                            <motion.div
-                                key={index}
-                                whileHover={{ y: -12 }}
-                                transition={{ duration: 0.3 }}
-                                className="group relative overflow-hidden rounded-[32px] bg-white border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.08)] cursor-pointer"
-                            >
+                            <Link key={index} to={cat.link} className="block">
+                                <motion.div
+                                    whileHover={{ y: -12 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="group relative overflow-hidden rounded-[32px] bg-white border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.08)] cursor-pointer"
+                                >
 
-                                <div className="aspect-[4/5] overflow-hidden">
+                                    <div className="aspect-[4/5] overflow-hidden">
 
-                                    <img
-                                        src={cat.img}
-                                        alt={cat.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
+                                        <img
+                                            src={cat.img}
+                                            alt={cat.title}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
 
-                                </div>
+                                    </div>
 
-                                {/* Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                                    {/* Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
 
-                                {/* Content */}
-                                <div className="absolute bottom-8 left-8 right-8">
+                                    {/* Content */}
+                                    <div className="absolute bottom-8 left-8 right-8">
 
-                                    <h3 className="text-white text-3xl font-black opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                                        {cat.title}
-                                    </h3>
+                                        <h3 className="text-white text-3xl font-black opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                                            {cat.title}
+                                        </h3>
 
-                                    <p className="text-white/70 mt-2 text-sm opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
-                                        Khám phá bộ sưu tập mới nhất
-                                    </p>
+                                        <p className="text-white/70 mt-2 text-sm opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
+                                            Khám phá bộ sưu tập mới nhất
+                                        </p>
 
-                                </div>
+                                    </div>
 
-                            </motion.div>
+                                </motion.div>
+                            </Link>
                         ))}
 
                     </div>

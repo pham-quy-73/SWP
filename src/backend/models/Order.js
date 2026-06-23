@@ -32,9 +32,27 @@ const OrderSchema = new mongoose.Schema({
   prescription_image: {
     type: String,
     default: ''
+  },
+  recipient_name: {
+    type: String,
+    default: ''
+  },
+  phone_number: {
+    type: String,
+    default: ''
+  },
+  delivery_address: {
+    type: String,
+    default: ''
+  },
+  bank_info: {
+    bank_name: { type: String, default: '' },
+    bank_account_number: { type: String, default: '' },
+    account_holder_name: { type: String, default: '' }
   }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 export default mongoose.model('Order', OrderSchema);
+

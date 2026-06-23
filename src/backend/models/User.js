@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     is_email_verified: { type: Boolean, default: false },
     verify_token: { type: String, default: null },
     verify_token_expires: { type: Date, default: null },
-    role: { type: String, enum: ['CUSTOMER', 'SALE', 'ADMIN'], default: 'CUSTOMER' },
+    role: { type: String, enum: ['CUSTOMER', 'SALE', 'MANAGER', 'SHIPPER', 'ADMIN'], default: 'CUSTOMER' },
     deleted_at: { type: Date, default: null }
   },
   { timestamps: true }

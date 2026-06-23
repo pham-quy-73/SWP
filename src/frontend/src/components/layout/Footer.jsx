@@ -27,9 +27,9 @@ export default function Footer() {
         <div>
           <h4 className="font-bold text-zinc-900 mb-6 uppercase tracking-widest text-xs">Mua sắm</h4>
           <ul className="space-y-4 text-sm text-zinc-500">
-            <li><a href="#" className="hover:text-emerald-600 transition-colors">Tất cả kính</a></li>
-            <li><a href="#" className="hover:text-emerald-600 transition-colors">Sản phẩm mới</a></li>
-            <li><a href="#" className="hover:text-emerald-600 transition-colors">Kính chống ánh sáng xanh</a></li>
+            <li><Link to="/products" className="hover:text-emerald-600 transition-colors">Tất cả kính</Link></li>
+            <li><Link to="/products" className="hover:text-emerald-600 transition-colors">Sản phẩm mới</Link></li>
+            <li><Link to="/products" className="hover:text-emerald-600 transition-colors">Kính chống ánh sáng xanh</Link></li>
           </ul>
         </div>
 
