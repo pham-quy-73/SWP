@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../../contexts/AuthContext'; 
 
 const loginSchema = z.object({
@@ -14,7 +14,10 @@ const loginSchema = z.object({
 export const useLoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { loginContext } = useContext(AuthContext); 
+
+  const from = location.state?.from?.pathname || '/';
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -34,7 +37,7 @@ export const useLoginForm = () => {
       const { token, user } = response.data;
       
       loginContext(user, token);
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (error) {
       const message = error.response?.data?.message || 'Có lỗi xảy ra khi kết nối đến máy chủ';
       form.setError('root', { type: 'manual', message });
@@ -54,7 +57,7 @@ export const useLoginForm = () => {
       const { token, user } = response.data;
       
       loginContext(user, token);
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (error) {
       const message = error.response?.data?.message || 'Xác thực tài khoản Google thất bại';
       form.setError('root', { type: 'manual', message });

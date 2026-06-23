@@ -9,7 +9,7 @@ export default function AuthLayout({ children }) {
       <Header />
 
       {/* Auth Section */}
-      <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4 sm:p-8 font-sans">
+      <div className="min-h-screen bg-zinc-100 flex flex-col justify-center items-center pt-28 pb-12 p-4 sm:px-8 font-sans">
         <div className="flex flex-col md:flex-row w-full max-w-[1200px] min-h-[700px] bg-white rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl shadow-zinc-200/50 border border-zinc-100">
 
           {/* Nửa trái: Branding */}

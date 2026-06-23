@@ -1,0 +1,296 @@
+import Refund from '../models/Refund.js';
+import Order from '../models/Order.js';
+import OrderItem from '../models/OrderItem.js';
+import Payment from '../models/Payment.js';
+import ProductVariant from '../models/ProductVariant.js';
+
+class RefundController {
+  /**
+   * Lấy danh sách các đơn hàng đã CANCELLED nhưng đã thanh toán thành công (status = PAID)
+   */
+  async getCancelledPaidOrders(req, res, next) {
+    try {
+      const page = parseInt(req.query.page) || 0;
+      const size = parseInt(req.query.size) || 10;
+
+      // 1. Tìm tất cả các payment có status = PAID
+      const paidPayments = await Payment.find({ status: 'PAID' });
+      const paidOrderIds = paidPayments.map(p => p.order_id);
+
+      // 2. Tìm các đơn hàng CANCELLED và nằm trong nhóm paidOrderIds
+      const query = {
+        _id: { $in: paidOrderIds },
+        status: 'CANCELLED'
+      };
+
+      const totalElements = await Order.countDocuments(query);
+      const totalPages = Math.ceil(totalElements / size);
+
+      const orders = await Order.find(query)
+        .populate('user_id', 'username email first_name last_name phone')
+        .sort({ created_at: -1 })
+        .skip(page * size)
+        .limit(size);
+
+      // Map dữ liệu đầu ra khớp với interface của frontend
+      const mappedOrders = orders.map(o => {
+        const userObj = o.user_id || {};
+        const customerName = userObj.first_name || userObj.last_name
+          ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
+          : userObj.username || 'Ẩn danh';
+
+        // Lấy số tiền đã thanh toán từ payment
+        const payment = paidPayments.find(p => p.order_id.toString() === o._id.toString());
+        const paidAmount = payment ? payment.amount : o.total_amount;
+
+        return {
+          orderId: o._id,
+          _id: o._id,
+          recipientName: o.recipient_name || customerName,
+          phoneNumber: o.phone_number || userObj.phone || '',
+          totalAmount: o.total_amount,
+          paidAmount: paidAmount,
+          orderStatus: o.status,
+          deliveryAddress: o.delivery_address,
+          user_id: userObj,
+          createdAt: o.created_at
+        };
+      });
+
+      return res.status(200).json({
+        code: 0,
+        result: {
+          items: mappedOrders,
+          page,
+          size,
+          totalElements,
+          totalPages
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Bước 1: Vô hiệu hóa biến thể (ProductVariant)
+   */
+  async inActivateVariant(req, res, next) {
+    try {
+      const { variantId } = req.params;
+      const variant = await ProductVariant.findByIdAndUpdate(
+        variantId,
+        { status: 'INACTIVE' },
+        { new: true }
+      );
+
+      if (!variant) {
+        return res.status(404).json({ error_code: 'VARIANT_NOT_FOUND', message: 'Không tìm thấy biến thể' });
+      }
+
+      return res.status(200).json({
+        code: 0,
+        message: 'Vô hiệu hóa biến thể thành công',
+        result: variant
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Bước 2: Lấy danh sách các đơn hàng bị ảnh hưởng do biến thể bị dừng bán
+   * (Các đơn hàng có trạng thái PENDING, AWAITING_VERIFICATION, CONFIRMED và chứa sản phẩm cha)
+   */
+  async getAffectedOrders(req, res, next) {
+    try {
+      const { variantId } = req.params;
+
+      const variant = await ProductVariant.findById(variantId);
+      if (!variant) {
+        return res.status(404).json({ error_code: 'VARIANT_NOT_FOUND', message: 'Không tìm thấy biến thể' });
+      }
+
+      // Tìm tất cả các items của sản phẩm cha
+      const orderItems = await OrderItem.find({ product_id: variant.productId });
+      const orderIds = orderItems.map(item => item.order_id);
+
+      // Tìm các đơn hàng đang xử lý
+      const orders = await Order.find({
+        _id: { $in: orderIds },
+        status: { $in: ['PENDING', 'AWAITING_VERIFICATION', 'CONFIRMED'] }
+      }).populate('user_id', 'username email first_name last_name phone');
+
+      // Lấy danh sách payments để tìm số tiền đã chi trả thực tế
+      const orderDbIds = orders.map(o => o._id);
+      const payments = await Payment.find({ order_id: { $in: orderDbIds }, status: 'PAID' });
+
+      // Định dạng dữ liệu trả về kiểu RefundItem cho frontend
+      const affectedItems = orders.map(o => {
+        const userObj = o.user_id || {};
+        const customerName = userObj.first_name || userObj.last_name
+          ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
+          : userObj.username || 'Ẩn danh';
+
+        const payment = payments.find(p => p.order_id.toString() === o._id.toString());
+        const paidAmount = payment ? payment.amount : o.total_amount;
+
+        return {
+          order: {
+            orderId: o._id,
+            _id: o._id,
+            recipientName: o.recipient_name || customerName,
+            phoneNumber: o.phone_number || userObj.phone || '',
+            totalAmount: o.total_amount,
+            paidAmount: paidAmount,
+            status: o.status,
+            deliveryAddress: o.delivery_address,
+            user_id: userObj
+          }
+        };
+      });
+
+      return res.status(200).json({
+        code: 0,
+        result: affectedItems
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Bước 3: Tạo lô hoàn tiền (createBatch) cho danh sách orderIds
+   */
+  async createBatch(req, res, next) {
+    try {
+      const { orderIds } = req.body;
+      if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Thiếu danh sách mã đơn hàng' });
+      }
+
+      const createdRefunds = [];
+
+      for (const orderId of orderIds) {
+        // Tìm thông tin order để biết số tiền cần hoàn
+        const order = await Order.findById(orderId);
+        if (!order) continue;
+
+        // Tìm payment thành công để hoàn đúng số tiền
+        const payment = await Payment.findOne({ order_id: orderId, status: 'PAID' });
+        const refundAmount = payment ? payment.amount : order.total_amount;
+
+        // Thay đổi status của đơn hàng thành CANCELLED để tránh trùng lặp
+        order.status = 'CANCELLED';
+        await order.save();
+
+        // Tạo bản ghi Refund PENDING
+        const refund = new Refund({
+          order_id: orderId,
+          amount: refundAmount,
+          reason: 'Manager initiated batch refund due to product removal or customer cancellation request.',
+          status: 'PENDING'
+        });
+        await refund.save();
+        createdRefunds.push(refund);
+      }
+
+      return res.status(200).json({
+        code: 0,
+        result: createdRefunds
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Bước 4: Lấy danh sách hoàn tiền PENDING sẵn sàng xử lý (getReadyRefunds)
+   */
+  async getReadyRefunds(req, res, next) {
+    try {
+      const refunds = await Refund.find({ status: 'PENDING' })
+        .populate({
+          path: 'order_id',
+          populate: { path: 'user_id', select: 'username email first_name last_name phone' }
+        });
+
+      // Map thành định dạng RefundItem cho React:
+      const mappedRefunds = refunds.map(r => {
+        const o = r.order_id;
+        if (!o) return null;
+
+        const userObj = o.user_id || {};
+        const customerName = userObj.first_name || userObj.last_name
+          ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
+          : userObj.username || 'Ẩn danh';
+
+        return {
+          _id: r._id,
+          refundId: r._id,
+          amount: r.amount,
+          reason: r.reason,
+          status: r.status,
+          order: {
+            _id: o._id,
+            orderId: o._id,
+            recipientName: o.recipient_name || customerName,
+            phoneNumber: o.phone_number || userObj.phone || '',
+            totalAmount: o.total_amount,
+            paidAmount: r.amount, // Số tiền refund chính là số tiền đã thanh toán
+            status: o.status,
+            deliveryAddress: o.delivery_address,
+            user_id: userObj,
+            bank_info: o.bank_info,
+            bankInfo: o.bank_info
+          }
+        };
+      }).filter(Boolean);
+
+      return res.status(200).json({
+        code: 0,
+        result: mappedRefunds
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Bước 5: Xác nhận hoàn tiền (checkoutRefund)
+   * Trả về kết quả hoàn tiền thành công (hoặc mock url cổng VNPay nếu cần)
+   */
+  async checkoutRefund(req, res, next) {
+    try {
+      const { refundId } = req.params;
+      const refund = await Refund.findById(refundId);
+
+      if (!refund) {
+        return res.status(404).json({ error_code: 'REFUND_NOT_FOUND', message: 'Không tìm thấy yêu cầu hoàn tiền' });
+      }
+
+      // Đánh dấu hoàn tất
+      refund.status = 'COMPLETED';
+      await refund.save();
+
+      // Cập nhật trạng thái Order thành REFUNDED
+      await Order.findByIdAndUpdate(refund.order_id, { status: 'REFUNDED' });
+
+      // Cập nhật trạng thái Payment thành REFUNDED hoặc ghi nhận thanh toán hoàn
+      await Payment.findOneAndUpdate(
+        { order_id: refund.order_id, status: 'PAID' },
+        { status: 'UNPAID' } // hoặc xoá đi, nhưng ở đây ta chỉ cần update Order thành REFUNDED là đủ phân biệt
+      );
+
+      return res.status(200).json({
+        code: 0,
+        message: 'Hoàn tiền thành công',
+        result: null // Frontend kiểm tra nếu không phải url bắt đầu bằng 'http' thì báo thành công trực tiếp
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+export default new RefundController();
