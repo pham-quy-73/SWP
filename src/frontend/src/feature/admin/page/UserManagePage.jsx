@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { 
+import {
   Trash2, Loader2, ShieldCheck, X, CheckCircle, AlertCircle, Edit, Search,
-  Lock, Unlock, UserMinus
+  Lock, Unlock, UserMinus, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const STAFF_ROLES = [
@@ -427,7 +427,11 @@ export default function UserManagePage() {
       fetchUsers();
     } catch (error) {
       console.error('Failed to demote:', error);
-      toast.error('Thu hồi quyền thất bại, vui lòng thử lại!', { id: toastId });
+      // Hiển thị message từ BE nếu có (ví dụ SELF_ACTION_FORBIDDEN khi thao tác lên chính mình)
+      const message =
+        error?.response?.data?.message ||
+        'Thu hồi quyền thất bại, vui lòng thử lại!';
+      toast.error(message, { id: toastId });
     } finally {
       setIsPendingAssign(false);
     }
@@ -456,7 +460,10 @@ export default function UserManagePage() {
       fetchUsers();
     } catch (error) {
       console.error('Failed to toggle status:', error);
-      toast.error(`${actionText} tài khoản thất bại!`, { id: toastId });
+      const message =
+        error?.response?.data?.message ||
+        `${actionText} tài khoản thất bại!`;
+      toast.error(message, { id: toastId });
     } finally {
       setIsPendingAssign(false);
     }
@@ -483,7 +490,10 @@ export default function UserManagePage() {
       fetchUsers();
     } catch (error) {
       console.error('Failed to delete user:', error);
-      toast.error('Xóa tài khoản thất bại!', { id: toastId });
+      const message =
+        error?.response?.data?.message ||
+        'Xóa tài khoản thất bại!';
+      toast.error(message, { id: toastId });
     } finally {
       setIsPendingAssign(false);
     }
