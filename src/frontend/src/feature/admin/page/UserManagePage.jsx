@@ -368,7 +368,10 @@ export default function UserManagePage() {
   const [search, setSearch] = useState('');
   const [isPendingAssign, setIsPendingAssign] = useState(false);
 
-  const fetchUsers = async () => {
+  // Phân trang (G1-FE): backend trả pagination object
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
+
+  const fetchUsers = async (page = 1) => {
     setIsLoading(true);
     try {
       const apiURL = import.meta.env.VITE_API_URL || '';
@@ -380,13 +383,18 @@ export default function UserManagePage() {
       const response = await axios.get(`${apiURL}/api/users`, {
         params: {
           role: currentRole,
-          search: search || undefined
+          search: search || undefined,
+          page,
+          limit: pagination.limit
         },
         headers
       });
 
       if (response.data && response.data.result) {
         setUsersList(response.data.result);
+      }
+      if (response.data.pagination) {
+        setPagination(response.data.pagination);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -397,12 +405,16 @@ export default function UserManagePage() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(1);
   }, [activeTab, activeRole]);
+
+  const handlePageChange = (newPage) => {
+    fetchUsers(newPage);
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    fetchUsers();
+    fetchUsers(1); // Reset về trang 1 khi tìm kiếm mới
   };
 
   const handleDemoteToCustomer = async (staff) => {
@@ -569,6 +581,37 @@ export default function UserManagePage() {
             onDeleteUser={handleDeleteUser}
             isPendingAssign={isPendingAssign}
           />
+        )}
+
+        {/* Phân trang */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+            <p className="text-sm text-slate-500">
+              Hiển thị <span className="font-semibold text-slate-700">{usersList.length}</span> trong
+              tổng <span className="font-semibold text-slate-700">{pagination.total}</span> tài khoản
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1 || isLoading}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={14} />
+                Trước
+              </button>
+              <span className="px-3 py-1.5 text-sm font-bold text-slate-700 bg-indigo-50 rounded-lg">
+                {pagination.page} / {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages || isLoading}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Sau
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
