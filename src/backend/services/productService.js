@@ -37,7 +37,7 @@ const getAllProducts = async ({ page = 1, limit = DEFAULT_LIMIT, search, minPric
   }
 
   const [products, total] = await Promise.all([
-    Product.find(filter).skip(skip).limit(safeLimit).sort({ createdAt: -1 }),
+    Product.find(filter).skip(skip).limit(safeLimit).sort({ createdAt: -1 }).lean(),
     Product.countDocuments(filter)
   ]);
 
@@ -53,14 +53,14 @@ const getAllProducts = async ({ page = 1, limit = DEFAULT_LIMIT, search, minPric
 };
 
 const getProductById = async (id) => {
-  const product = await Product.findOne({ _id: id, deleted_at: null });
+  const product = await Product.findOne({ _id: id, deleted_at: null }).lean();
   return product;
 };
 
 const createProduct = async (payload, fileBuffer) => {
   let uploadResult = null;
 
-  // Upload ảnh trước; nếu fail → không lưu DB (ERR-06)
+  // Upload ảnh trước; nếu upload fail thì không đụng tới DB
   uploadResult = await uploadToCloudinary(fileBuffer);
 
   let product;
@@ -71,7 +71,7 @@ const createProduct = async (payload, fileBuffer) => {
       image_public_id: uploadResult.public_id
     });
   } catch (dbError) {
-    // Rollback: xóa ảnh đã upload tránh orphaned image (EARS-EVD-05)
+    // Rollback: xóa ảnh vừa upload để tránh ảnh treo (orphaned) trên Cloudinary khi lưu DB lỗi
     await cloudinary.uploader.destroy(uploadResult.public_id);
     throw dbError;
   }
@@ -86,7 +86,7 @@ const updateProduct = async (id, payload, fileBuffer) => {
   const updateData = { ...payload };
 
   if (fileBuffer) {
-    // Upload ảnh mới trước (EARS-EVD-03)
+    // Upload ảnh mới trước
     const uploadResult = await uploadToCloudinary(fileBuffer);
     const oldPublicId = existing.image_public_id;
 
@@ -95,7 +95,7 @@ const updateProduct = async (id, payload, fileBuffer) => {
 
     const updated = await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 
-    // Xóa ảnh cũ sau khi update DB thành công (PLAN R5)
+    // Xóa ảnh cũ sau khi update DB thành công; lỗi destroy chỉ log, không làm hỏng request
     if (oldPublicId) {
       cloudinary.uploader.destroy(oldPublicId).catch((err) => {
         console.error('Không thể xóa ảnh cũ Cloudinary:', oldPublicId, err.message);
@@ -105,12 +105,12 @@ const updateProduct = async (id, payload, fileBuffer) => {
     return updated;
   }
 
-  // Không có ảnh mới → chỉ update text, giữ nguyên image (EARS-EVD-03b)
+  // Không có ảnh mới → chỉ update text, giữ nguyên ảnh hiện tại
   return Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 };
 
 const softDeleteProduct = async (id) => {
-  // Chỉ set deleted_at, KHÔNG hard-delete (EARS-EVD-04, EARS-NOT-01)
+  // Xóa mềm: chỉ set deleted_at, không xóa cứng bản ghi (giữ lịch sử đơn hàng)
   const product = await Product.findOneAndUpdate(
     { _id: id, deleted_at: null },
     { deleted_at: new Date() },

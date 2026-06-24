@@ -14,8 +14,7 @@
 
 ---
 
-## 0. Glossary — Thuật ngữ domain 🆕
-*(Ch5 — Context Gap: tránh để AI/người đọc tự diễn giải thuật ngữ)*
+## 0. Glossary — Thuật ngữ domain
 
 | Thuật ngữ | Định nghĩa trong dự án này |
 |---|---|
@@ -49,8 +48,8 @@
 
 | Actor | Mô tả | Permissions |
 |---|---|---|
-| **CUSTOMER** | Người có/không có account, mua hàng | Xem danh sách, tìm kiếm, lọc, xem chi tiết sản phẩm đang hoạt động (`deleted_at: null`); thêm vào giỏ |
-| **SALE** | Nhân viên tư vấn | **Read-only**: xem danh sách + chi tiết, **bao gồm `stock_quantity` thực tế**; không thay đổi dữ liệu |
+| **CUSTOMER** | Người có/không có account, mua hàng | Xem danh sách, tìm kiếm, lọc, xem chi tiết sản phẩm đang hoạt động (`deleted_at: null`); thêm vào giỏ. **Chỉ thấy cờ `in_stock` (còn/hết hàng), KHÔNG thấy `stock_quantity` chính xác** (EARS-NOT-05). |
+| **SALE** | Nhân viên tư vấn | **Read-only**: xem danh sách + chi tiết, **bao gồm `stock_quantity` thực tế** (cần JWT hợp lệ — EARS-EVD-08); không thay đổi dữ liệu |
 | **ADMIN** | Quản trị viên | Toàn quyền CRUD (Thêm/Xem/Sửa/Xóa mềm) + upload ảnh |
 | **SYSTEM** | Tiến trình tự động | Multer file pipeline, gọi Cloudinary API, truy vấn MongoDB phân trang, kiểm duyệt Joi, tập trung hóa response lỗi |
 
@@ -71,27 +70,27 @@
 - **EARS-EVD-01:** WHEN nhận `GET /api/products`, SYSTEM SHALL trích xuất query params (`page`, `limit`, `search`, `minPrice`, `maxPrice`), thực thi phân trang và trả JSON kèm pagination metadata.
 - **EARS-EVD-02:** WHEN nhận `POST /api/products` (Multipart Form-data) từ ADMIN, SYSTEM SHALL upload ảnh lên Cloudinary; nếu thành công SHALL lấy URL + Public ID, ghép cùng dữ liệu text đã validate Joi, lưu MongoDB và trả HTTP 201.
 - **EARS-EVD-03:** WHEN nhận `PUT /api/products/:id` (Multipart Form-data) từ ADMIN **kèm ảnh mới**, SYSTEM SHALL upload ảnh mới lên Cloudinary, xóa ảnh cũ qua `image_public_id`, cập nhật thông tin và trả HTTP 200.
-- **EARS-EVD-03b (làm rõ):** 🆕 WHEN nhận `PUT /api/products/:id` **KHÔNG kèm ảnh mới**, SYSTEM SHALL chỉ cập nhật trường text, **giữ nguyên** `image_url`/`image_public_id` hiện tại và **không** gọi Cloudinary destroy. *(Ch5 Anti-pattern "Implicit Assumption" — verify với code: nhánh update không ảnh.)*
+- **EARS-EVD-03b (làm rõ):** WHEN nhận `PUT /api/products/:id` **KHÔNG kèm ảnh mới**, SYSTEM SHALL chỉ cập nhật trường text, **giữ nguyên** `image_url`/`image_public_id` hiện tại và **không** gọi Cloudinary destroy.
 - **EARS-EVD-04:** WHEN nhận `DELETE /api/products/:id` từ ADMIN, SYSTEM SHALL **không** xóa cứng bản ghi, mà SHALL cập nhật `deleted_at` = timestamp hiện tại và trả HTTP 200.
 - **EARS-EVD-05:** WHEN quy trình lưu DB thất bại ngay sau khi ảnh đã upload lên Cloudinary, SYSTEM SHALL tự động gọi Cloudinary destroy ảnh đó (Rollback) qua `image_public_id` để tránh orphaned image, sau đó trả HTTP 500 theo cấu trúc SEC-01.
 - **EARS-EVD-06 (chi tiết sản phẩm — backend):** WHEN nhận `GET /api/products/:id` cho một sản phẩm `deleted_at: null`, SYSTEM SHALL trả HTTP 200 + object đầy đủ. ✅ *Đã implement: `getProductById` trong controller/service, route `GET /:id` public (không cần auth).*
-- **EARS-EVD-07 (chi tiết sản phẩm — frontend):** 🆕 WHEN CUSTOMER click vào ProductCard, SYSTEM SHALL điều hướng sang trang `/products/:id` và render đầy đủ: ảnh lớn, tên, thương hiệu, giá, mô tả, stock status, nút "Thêm vào giỏ" (vô hiệu nếu `stock_quantity = 0`). *(Gap phát hiện 2026-06-21: Actors §2 yêu cầu "xem chi tiết" nhưng T7 chỉ build list/card, không có detail page — xem T8 mới trong TASKS.md.)*
+- **EARS-EVD-07 (chi tiết sản phẩm — frontend):** 🆕 WHEN CUSTOMER click vào ProductCard, SYSTEM SHALL điều hướng sang trang `/products/:id` và render đầy đủ: ảnh lớn, tên, thương hiệu, giá, mô tả, stock status, nút "Thêm vào giỏ" (vô hiệu nếu hết hàng). *(Gap phát hiện 2026-06-21: Actors §2 yêu cầu "xem chi tiết" nhưng T7 chỉ build list/card, không có detail page — xem T8 mới trong TASKS.md.)*
+- **EARS-EVD-08 (xem tồn kho theo quyền — backend):** 🆕 WHEN nhận `GET /api/products` hoặc `GET /api/products/:id` **kèm JWT hợp lệ của SALE/ADMIN** (qua middleware `optionalAuth`), SYSTEM SHALL trả kèm `stock_quantity` thực tế. Ngược lại (CUSTOMER/khách ẩn danh), SYSTEM SHALL loại bỏ `stock_quantity` và chỉ trả cờ dẫn xuất `in_stock: boolean` (EARS-NOT-05). *(Đóng gap DEV-05 — §2 phân biệt SALE vs CUSTOMER nhưng bản gốc không enforce.)*
 
 ### 3.3 State-driven (Hành vi liên tục trong trạng thái)
 - **EARS-STD-01:** WHILE `deleted_at` của Sản phẩm khác `null`, SYSTEM SHALL tự động loại sản phẩm đó khỏi kết quả `GET /api/products` (và detail) dành cho CUSTOMER và SALE.
 - **EARS-STD-02:** WHILE `stock_quantity` = 0, SYSTEM SHALL hiển thị nhãn "Hết hàng" (Out of Stock) trên Frontend và chặn hành vi thêm sản phẩm vào giỏ.
 - **EARS-STD-03 (sản phẩm ngừng KD trong giỏ):** 🆕 WHILE một sản phẩm trong giỏ có `deleted_at !== null`, Frontend SHALL hiển thị cảnh báo "Sản phẩm đã ngừng kinh doanh" và vô hiệu hóa nút thanh toán. *(Nguồn: CONTEXT.md Q1. Logic thực thi nằm ở Cart module nhưng là hệ quả trực tiếp của soft-delete sản phẩm — ghi vào đây để truy vết.)*
 
-### 3.4 Optional Feature (Khi tính năng/điều kiện được bật) 🆕
-*(Ch5 — mẫu Optional bị thiếu hoàn toàn ở bản gốc)*
+### 3.4 Optional Feature (Khi tính năng/điều kiện được bật)
 - **EARS-OPT-01:** WHERE middleware `verifyAdmin` được kích hoạt (môi trường production), THE SYSTEM SHALL chặn mọi thao tác ghi (`POST/PUT/DELETE`) nếu role trong JWT không phải `ADMIN`. ⚠️ Hiện `verifyAdmin` đang được comment để test (xem §10 Known Deviation) — đây là requirement *đích*, phải bật lại trước production.
 
-### 3.5 Prohibitions (SHALL NOT — ràng buộc bắt buộc) 🆕
-*(Ch5 §5.3.3 — diễn đạt tường minh các cấm đoán thay vì để ngầm trong prose)*
+### 3.5 Prohibitions (SHALL NOT — ràng buộc bắt buộc)
 - **EARS-NOT-01:** SYSTEM SHALL NOT thực hiện hard-delete (xóa cứng) bất kỳ bản ghi sản phẩm nào, ở mọi trạng thái (ràng buộc DATA-01).
 - **EARS-NOT-02:** SYSTEM SHALL NOT lưu file ảnh trên local storage của backend.
 - **EARS-NOT-03:** SYSTEM SHALL NOT lộ stack trace / chi tiết kỹ thuật nội bộ trong response lỗi ở môi trường production (xem SEC-01).
 - **EARS-NOT-04:** SYSTEM SHALL NOT trừ trực tiếp `stock_quantity` thực tế ở giai đoạn giỏ hàng/checkout — việc trừ kho do module Checkout xử lý khi nhận Webhook IPN `SUCCESS` (STOCK-01, §9).
+- **EARS-NOT-05:** 🆕 SYSTEM SHALL NOT lộ giá trị `stock_quantity` chính xác cho CUSTOMER/khách ẩn danh ở response `GET` list/detail — chỉ được trả cờ `in_stock: boolean`. Số tồn kho thực chỉ dành cho SALE/ADMIN (EARS-EVD-08).
 
 ---
 
@@ -120,14 +119,15 @@ Collection `products`:
 | `created_at` | Date | Tự động (Mongoose timestamps) |
 | `updated_at` | Date | Tự động (Mongoose timestamps) |
 
-**Ghi chú index:** 🆕 PLAN.md/PERF-01 mô tả index trên `name` và `brand`; TASKS.md ghi "**compound index** cho name và brand". Hai mô tả khác nhau (2 single index vs 1 compound index) → **verify với code** và thống nhất một cách (ảnh hưởng tới hiệu năng filter). *(Đây là một contradiction nhỏ giữa các artifact — Ch5 Anti-pattern "Contradiction".)*
+**Ghi chú index:** Dùng **2 single index** riêng trên `name` và `brand` (mỗi trường `index: true`). Lý do: query tìm kiếm là `$or: [{ name }, { brand }]`, MongoDB dùng index intersection nên mỗi nhánh cần index riêng — compound `{ name, brand }` không hiệu quả với `$or` trên từng field.
+
+**Trường dẫn xuất `in_stock` (không lưu DB):** 🆕 Response `GET` list/detail bổ sung cờ `in_stock: boolean` (= `stock_quantity > 0`) do controller tính khi present. Với CUSTOMER/khách ẩn danh, `stock_quantity` bị loại bỏ khỏi response, chỉ còn `in_stock` (EARS-NOT-05); SALE/ADMIN nhận cả hai (EARS-EVD-08).
 
 **Naming Convention (SKU):** 🆕 Do không có bảng Variants (ASSUME-01), ADMIN bắt buộc đặt tên theo `[Tên sản phẩm] - [Màu sắc] - [Kích thước]` để phân biệt biến thể.
 
 ---
 
-## 6. State Model — Formal (State Diagram + Transitions + Invariants) 🆕
-*(Ch5 §5.4.4 — Level **Formal** BẮT BUỘC có State Diagram. Bản gốc ghi "Level: Formal" nhưng thiếu phần này — đây là gap lớn nhất thầy nhắc.)*
+## 6. State Model — Formal (State Diagram + Transitions + Invariants)
 
 ### 6.1 STATE DIAGRAM — Vòng đời Sản phẩm
 ```
@@ -175,13 +175,11 @@ Collection `products`:
 - **ERR-04 (không tồn tại):** 🆕 WHERE `GET /:id` / `PUT /:id` / `DELETE /:id` với `id` không tồn tại hoặc đã `deleted_at !== null` (với endpoint dành cho CUSTOMER/SALE), SYSTEM SHALL trả HTTP **404 Not Found** theo cấu trúc SEC-01. *(Bản gốc không có 404 — gap chuẩn REST, verify với code.)*
 - **ERR-05 (id sai định dạng):** 🆕 WHERE `:id` không phải ObjectId hợp lệ, SYSTEM SHALL trả HTTP **400** (không để Mongoose ném lỗi 500 lộ stack). *(Verify với code.)*
 - **ERR-06 (Cloudinary lỗi khi upload):** 🆕 WHERE upload Cloudinary thất bại (timeout/lỗi mạng) trong `POST`/`PUT`, SYSTEM SHALL dừng quy trình, không lưu DB, trả HTTP 500 theo SEC-01. *(Phân biệt với EARS-EVD-05 là lỗi DB *sau* khi ảnh đã lên.)*
-
-> **Tỷ lệ Unwanted:** 6 ERR + EARS-EVD-05 + 4 SHALL NOT ≈ chiếm > 30% tổng requirement → đạt ngưỡng "đủ nghĩ về error handling" của Ch5 §5.3.2. *(Bản gốc chỉ 3 ERR + 1 rollback → dưới ngưỡng, đúng như review của thầy.)*
+- **ERR-07 (query lọc sai):** 🆕 WHERE query của `GET /api/products` có `page`/`limit` không phải số nguyên dương, `minPrice`/`maxPrice` không phải số ≥ 0, hoặc `minPrice > maxPrice`, SYSTEM SHALL trả HTTP **400 VALIDATION_ERROR** theo SEC-01 (validate qua `listQuerySchema` của Joi), **không** để `Number('abc') = NaN` lọt vào query MongoDB và trả danh sách rỗng âm thầm. `limit` bị chặn tối đa 100 chống truy vấn nặng (đồng bộ PLAN §7 Q3).
 
 ---
 
-## 8. Acceptance Criteria (Given-When-Then + Traceability) 🆕
-*(Ch5 §5.2 — AC phải testable, có boundary values, map về EARS requirement & test case)*
+## 8. Acceptance Criteria (Given-When-Then + Traceability)
 
 | # | Given / When / Then | EARS ref | Test gợi ý | Status |
 |---|---|---|---|---|
@@ -197,7 +195,9 @@ Collection `products`:
 | AC-10 🆕 | GIVEN id không tồn tại · WHEN `GET/PUT/DELETE /:id` · THEN 404 | ERR-04 | `test_not_found_404` | [x] ✅ backend |
 | AC-11 🆕 | GIVEN non-ADMIN (production) · WHEN ghi dữ liệu · THEN 403 | ERR-01, OPT-01 | `test_role_gate_403` | [x] ✅ backend |
 | AC-12 🆕 | GIVEN stock = 0 · WHEN render card · THEN nhãn "Hết hàng" + chặn add-to-cart | STD-02 | `test_out_of_stock_ui` | [x] ✅ frontend |
-| AC-13 🆕 | GIVEN CUSTOMER click ProductCard · WHEN navigate `/products/:id` · THEN render trang chi tiết: ảnh, tên, giá, mô tả, stock, nút giỏ hàng | EVD-07 | `test_product_detail_page` | [ ] pending T8 |
+| AC-13 🆕 | GIVEN CUSTOMER click ProductCard · WHEN navigate `/products/:id` · THEN render trang chi tiết: ảnh, tên, giá, mô tả, stock, nút giỏ hàng | EVD-07 | `test_product_detail_page` | [x] ✅ T8 |
+| AC-14 🆕 | GIVEN khách ẩn danh/CUSTOMER vs SALE/ADMIN · WHEN `GET` list/detail · THEN ẩn danh nhận `in_stock` (không có `stock_quantity`), SALE/ADMIN nhận `stock_quantity` thật | EVD-08, NOT-05 | `test_stock_visibility_by_role` | [x] ✅ BE+FE |
+| AC-15 🆕 | GIVEN `?minPrice=abc` / `minPrice>maxPrice` / `limit=999` · WHEN `GET /api/products` · THEN 400 VALIDATION_ERROR (không trả list rỗng âm thầm) | ERR-07 | `test_list_query_validation` | [x] ✅ backend |
 
 ---
 
@@ -210,12 +210,14 @@ Collection `products`:
 
 ---
 
-## 10. Known Deviations & Open Items ⚠️ 🆕
-*(Ghi lại trung thực sai lệch giữa spec-đích và hiện trạng — Ch6 "Validation: code ↔ spec")*
+## 10. Known Deviations & Open Items ⚠️
+*(Ghi lại sai lệch giữa spec và hiện trạng triển khai.)*
 - **DEV-01 — `verifyAdmin` đang bị comment:** ~~tạm thời comment để test~~ **RESOLVED (2026-06-20):** đã bật lại `verifyToken + checkRole('ADMIN')` cho tất cả route POST/PUT/DELETE trong `productRoutes.js`.
-- **DEV-02 — Joi vs Zod:** CONTEXT.md (CODE-01) yêu cầu **Zod**, nhưng PLAN/SPEC/TASKS dùng **Joi**. **Action:** thống nhất một thư viện trong CONTEXT để tránh "Moving Target" (Ch5 Anti-pattern 5).
+- **DEV-02 — Joi vs Zod:** **RESOLVED (2026-06-20):** CONTEXT.md (CODE-01) trước ghi **Zod** nhưng PLAN/SPEC/TASKS và code dùng **Joi** → đã chuẩn hóa toàn dự án về **Joi**.
 - **DEV-03 — index single vs compound:** **RESOLVED (2026-06-20):** Giữ **2 single indexes** (`name`, `brand`) — đúng với query `$or: [{ name: regex }, { brand: regex }]`. Compound index `{ name, brand }` không hiệu quả với `$or` trên từng field riêng lẻ; MongoDB dùng index intersection, mỗi branch dùng đúng 1 index.
-- **DEV-04 — Frontend Product Detail Page bị thiếu (gap mới - 2026-06-21):** ⚠️ Actors §2 yêu cầu CUSTOMER "xem chi tiết sản phẩm" nhưng **T7 chỉ build grid/card list, không có trang `/products/:id`**. Backend endpoint `GET /api/products/:id` đã sẵn sàng (✅). **Action:** Bổ sung T8 vào TASKS.md để build `ProductDetailPage.jsx` + route + link từ ProductCard.
+- **DEV-04 — Frontend Product Detail Page bị thiếu (gap mới - 2026-06-21):** **RESOLVED (2026-06-23):** đã build `ProductDetailPage.jsx` + route `/products/:id` + link từ ProductCard (T8 Done).
+- **DEV-05 — Phân biệt SALE vs CUSTOMER về tồn kho (gap - 2026-06-23):** **RESOLVED (2026-06-23):** §2 ngụ ý SALE thấy `stock_quantity` thật còn CUSTOMER thì không, nhưng bản gốc không enforce (GET public trả full object cho mọi người). Đã thêm `optionalAuth` + presenter ở controller: khách/CUSTOMER chỉ nhận cờ `in_stock`, SALE/ADMIN nhận `stock_quantity` thật (EARS-EVD-08, EARS-NOT-05). FE `useProducts` gửi kèm token khi GET; ProductCard/DetailPage dùng `in_stock`.
+- **DEV-06 — Query lọc giá không được validate (gap - 2026-06-23):** **RESOLVED (2026-06-23):** trước đây `?minPrice=abc` → `NaN` lọt vào filter → trả list rỗng âm thầm. Đã thêm `listQuerySchema` (Joi) validate `page/limit/minPrice/maxPrice`, sai → 400 (ERR-07); `limit` chặn tối đa 100.
 
 ---
 

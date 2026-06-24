@@ -8,6 +8,13 @@ const getAuthHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
 });
 
+// Auth không bắt buộc cho GET: nếu đã đăng nhập thì gửi token để SALE/ADMIN nhận stock_quantity thật,
+// nếu chưa đăng nhập thì không gửi (backend xử lý như khách ẩn danh).
+const getOptionalAuthHeader = () => {
+  const token = localStorage.getItem('accessToken');
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
 export const useProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,6 +30,7 @@ export const useProducts = () => {
     try {
       const response = await axios.get(API_URL, {
         params: { page, limit: 12, ...extraParams },
+        ...getOptionalAuthHeader(),
       });
       setProducts(response.data.products || []);
       setPagination(response.data.pagination || { total: 0, page: 1, limit: 12, totalPages: 1 });

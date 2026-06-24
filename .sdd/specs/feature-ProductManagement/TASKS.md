@@ -32,7 +32,7 @@
 **Est:** 3h · **Deps:** - · **Spec refs:** 🆕 §5 Data Model, EARS-UBI-01, EARS-UBI-02, INV-02
 **Mục tiêu:** Xây dựng móng dữ liệu và hàng rào bảo vệ (Validation).
 **File cần tạo/sửa:**
-1. `src/models/Product.js`: Tạo Mongoose schema với các trường đã định nghĩa. Đánh compound index cho `name` và `brand`. 🆕 *(Xác nhận compound vs single với PLAN — xem Q2 Questions for Human.)*
+1. `src/models/Product.js`: Tạo Mongoose schema với các trường đã định nghĩa. Đánh **2 single index** cho `name` và `brand` (mỗi trường `index: true` riêng). 🆕 *(Đã chốt DEV-03 (SPEC §10): dùng 2 single index, KHÔNG dùng compound — vì query là `$or: [{name}, {brand}]`, MongoDB dùng index intersection nên mỗi nhánh cần index riêng. Code hiện tại đã làm đúng.)*
 2. `src/validators/productValidator.js`: Tạo Joi Schema chặn đứng giá trị âm, rỗng.
 
 **Tiêu chí hoàn thành (DoD):**
@@ -60,16 +60,18 @@
 ---
 
 ## 🚦 TASK 3: API Orchestration (Controllers & Routes) - Backend
-**Est:** 3h · **Deps:** T2 · **Spec refs:** 🆕 EARS-EVD-01/06, ERR-01/02/03/04, SEC-01
+**Est:** 3h · **Deps:** T2 · **Spec refs:** 🆕 EARS-EVD-01/06/08, ERR-01/02/03/04/07, EARS-NOT-05, SEC-01
 **Mục tiêu:** Mở cổng giao tiếp HTTP (Endpoints phẳng).
 **File cần tạo/sửa:**
-1. `src/controllers/productController.js`: Nhận request, gọi Joi Validator (trả 400 nếu lỗi). Gọi Service. Trả lỗi tập trung `{ success: false, error_code, message, request_id }`.
-2. `src/routes/productRoutes.js`: Khai báo base path phẳng (`/api/products`), gắn middleware.
+1. `src/controllers/productController.js`: Nhận request, gọi Joi Validator (trả 400 nếu lỗi). Gọi Service. Trả lỗi qua middleware lỗi **tập trung** `{ success: false, error_code, message, request_id }` (forward `next(httpError(...))`).
+2. `src/routes/productRoutes.js`: Khai báo base path phẳng (`/api/products`), gắn middleware (`optionalAuth` cho GET, `verifyToken + checkRole('ADMIN')` cho ghi).
 
 **Tiêu chí hoàn thành (DoD):**
 - [ ] 🆕 Khớp 100% với RESTful endpoint phẳng `/api/products` (GET list, GET :id, POST, PUT :id, DELETE :id), **không** có nested route. *(Sửa câu DoD gốc bị cụt.)*
 - [ ] Xử lý formData đúng chuẩn với Multer.
-- [ ] 🆕 Trả 404 khi `:id` không tồn tại / đã soft-delete (ERR-04); response lỗi đúng cấu trúc SEC-01.
+- [ ] 🆕 Trả 404 khi `:id` không tồn tại / đã soft-delete (ERR-04); response lỗi đúng cấu trúc SEC-01 qua middleware tập trung (có `request_id` propagate vào log).
+- [ ] 🆕 Validate query GET bằng `listQuerySchema`, sai → 400 (ERR-07); `limit` ≤ 100.
+- [ ] 🆕 Phân quyền xem tồn kho: CUSTOMER/ẩn danh chỉ nhận `in_stock`, SALE/ADMIN nhận `stock_quantity` thật (EARS-EVD-08, EARS-NOT-05).
 
 ---
 
@@ -96,6 +98,7 @@
 - [ ] Hook trả ra đầy đủ state và các hàm thao tác (fetch, create, remove).
 - [ ] Quản lý trạng thái loading và bắt lỗi catch block sạch sẽ.
 - [ ] 🆕 Đọc/ghi `page` qua URL Query Params (đồng bộ quyết định PLAN Q1).
+- [ ] 🆕 GET gửi kèm token nếu đã đăng nhập (optional auth) để SALE/ADMIN nhận `stock_quantity` thật (EARS-EVD-08).
 
 ---
 

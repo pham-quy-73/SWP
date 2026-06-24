@@ -6,7 +6,8 @@ const formatPrice = (price) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 export default function ProductCard({ product }) {
-  const isOutOfStock = product.stock_quantity === 0;
+  // Khách/ẩn danh chỉ nhận cờ in_stock (không có stock_quantity); SALE/ADMIN có cả hai.
+  const isOutOfStock = product.in_stock != null ? !product.in_stock : product.stock_quantity === 0;
 
   return (
     <Link to={`/products/${product._id}`} className="block">
@@ -26,7 +27,7 @@ export default function ProductCard({ product }) {
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
-        {/* Hết hàng badge (EARS-STD-02) */}
+        {/* Badge hết hàng */}
         {isOutOfStock && (
           <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-full">
             <PackageX className="w-3 h-3 text-white" />
@@ -43,7 +44,7 @@ export default function ProductCard({ product }) {
         <div className="flex items-center justify-between gap-3">
           <span className="text-base font-black text-zinc-900">{formatPrice(product.price)}</span>
 
-          {/* Add to cart — disabled khi hết hàng (EARS-STD-02) */}
+          {/* Nút thêm giỏ — vô hiệu khi hết hàng */}
           <button
             disabled={isOutOfStock}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${

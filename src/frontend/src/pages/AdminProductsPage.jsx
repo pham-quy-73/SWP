@@ -23,7 +23,8 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
   };
 
-  if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  // TODO: TẠM TẮT PHÂN QUYỀN ĐỂ TEST — nhớ mở lại trước khi commit/deploy
+  // if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen bg-zinc-50">

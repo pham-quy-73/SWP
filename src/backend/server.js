@@ -4,7 +4,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import apiRoutes from './routes/index.js';
-import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
+import { errorHandler, notFound, attachRequestId } from './middlewares/errorMiddleware.js';
 import authRoutes from './routes/auth.routes.js';
 import productRoutes from './routes/productRoutes.js';
 import userRoutes from './routes/user.routes.js';
@@ -18,6 +18,7 @@ const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(express.json());
+app.use(attachRequestId);
 
 // Routes setup
 app.get('/', (req, res) => {

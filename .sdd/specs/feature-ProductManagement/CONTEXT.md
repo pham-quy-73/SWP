@@ -39,10 +39,10 @@ Hệ thống Optics Management yêu cầu một phân hệ quản lý danh mục
 - Database bắt buộc phải lưu cấu trúc gồm song song: `image_url` (chuỗi hiển thị) và `image_public_id` (định danh để xóa tài nguyên cũ trên Cloudinary khi cập nhật hoặc xóa sản phẩm).
 
 ## 3. STAKEHOLDERS & ROLE MATRIX
-- **CUSTOMER:** Xem danh sách, xem chi tiết các sản phẩm đang hoạt động (`deleted_at: null`).
-- **SALE:** Có quyền xem danh sách và chi tiết sản phẩm (bao gồm số lượng tồn kho) để tư vấn, không có quyền can thiệp thay đổi dữ liệu (Read-only).
+- **CUSTOMER:** Xem danh sách, xem chi tiết các sản phẩm đang hoạt động (`deleted_at: null`). Chỉ thấy cờ `in_stock` (còn/hết hàng), **không** thấy số lượng tồn kho chính xác.
+- **SALE:** Có quyền xem danh sách và chi tiết sản phẩm (**bao gồm số lượng tồn kho chính xác** — yêu cầu đăng nhập JWT) để tư vấn, không có quyền can thiệp thay đổi dữ liệu (Read-only).
 - **ADMIN:** Nắm toàn quyền kiểm soát danh mục (CRUD), cấu hình trạng thái ẩn/xóa mềm sản phẩm.
-- **Decision Maker (chốt khi có conflict):** 🆕 @le-van-bao (backend lead) — người ra quyết định cuối về spec/architecture của module này. *(Ch6 cảnh báo: Context Discovery chưa xong nếu không ai biết ai chốt.)*
+- **Decision Maker (chốt khi có conflict):** @le-van-bao (backend lead) — người ra quyết định cuối về spec/architecture của module này.
 
 ## 4. ASSUMPTIONS (Giả định hệ thống)
 - **ASSUME-01:** Hệ thống không thiết kế bảng Biến thể (Variants). Mỗi thực thể sản phẩm trong DB là một SKU độc lập. Để phân biệt màu sắc/kích cỡ, Admin bắt buộc tuân thủ quy tắc đặt tên (Naming Convention): `[Tên sản phẩm] - [Màu sắc] - [Kích thước]`.

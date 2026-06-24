@@ -53,7 +53,8 @@ export default function ProductDetailPage() {
     );
   }
 
-  const isOutOfStock = product.stock_quantity === 0;
+  // Trang chi tiết là public → thường chỉ có cờ in_stock; SALE/ADMIN mới có stock_quantity.
+  const isOutOfStock = product.in_stock != null ? !product.in_stock : product.stock_quantity === 0;
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-16">
@@ -111,7 +112,11 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${isOutOfStock ? 'bg-red-400' : 'bg-emerald-500'}`} />
               <span className={`text-sm font-semibold ${isOutOfStock ? 'text-red-500' : 'text-emerald-600'}`}>
-                {isOutOfStock ? 'Hết hàng' : `Còn hàng (${product.stock_quantity} sản phẩm)`}
+                {isOutOfStock
+                  ? 'Hết hàng'
+                  : product.stock_quantity != null
+                    ? `Còn hàng (${product.stock_quantity} sản phẩm)`
+                    : 'Còn hàng'}
               </span>
             </div>
 

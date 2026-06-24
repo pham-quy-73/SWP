@@ -47,7 +47,6 @@ const setupUploadMock = (result = FAKE_UPLOAD_RESULT, error = null) => {
 describe('productService.createProduct', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  // AC-02: EARS-EVD-02, UBI-03
   test('test_create_product_with_image — happy path', async () => {
     const fakeProduct = {
       _id: 'abc123',
@@ -73,7 +72,6 @@ describe('productService.createProduct', () => {
     expect(mockDestroy).not.toHaveBeenCalled();
   });
 
-  // AC-09: EARS-EVD-05
   test('test_rollback_on_db_fail — DB sập sau upload ảnh phải gọi cloudinary destroy', async () => {
     setupUploadMock();
     mockProductCreate.mockRejectedValue(new Error('MongoNetworkError: connection refused'));

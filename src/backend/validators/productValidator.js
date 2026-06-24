@@ -40,6 +40,30 @@ export const updateProductSchema = Joi.object({
     'number.min': 'Số lượng tồn kho không được nhỏ hơn 0'
   }),
   description: Joi.string().allow('', null).optional()
-}).min(1).messages({
-  'object.min': 'Cần ít nhất một trường để cập nhật'
 });
+// Không dùng `.min(1)`: PUT có thể chỉ kèm ảnh mới (không sửa field text nào) nên body rỗng vẫn
+// hợp lệ. Trường hợp rỗng hoàn toàn (không field lẫn ảnh) được kiểm ở controller vì Joi không
+// thấy được req.file.
+
+// Validate query của GET /api/products: page/limit là số nguyên dương, minPrice/maxPrice là số ≥ 0,
+// và minPrice ≤ maxPrice. Joi tự ép chuỗi query sang số (convert: true).
+export const listQuerySchema = Joi.object({
+  page: Joi.number().integer().min(1).optional(),
+  limit: Joi.number().integer().min(1).max(100).optional(),
+  search: Joi.string().trim().allow('').optional(),
+  minPrice: Joi.number().min(0).optional(),
+  maxPrice: Joi.number().min(0).optional()
+})
+  .custom((value, helpers) => {
+    if (value.minPrice !== undefined && value.maxPrice !== undefined && value.minPrice > value.maxPrice) {
+      return helpers.error('any.invalid');
+    }
+    return value;
+  })
+  .messages({
+    'any.invalid': 'minPrice không được lớn hơn maxPrice',
+    'number.base': 'Tham số lọc phải là số',
+    'number.min': 'Tham số lọc không hợp lệ (phải ≥ 0)',
+    'number.integer': 'page/limit phải là số nguyên',
+    'number.max': 'limit tối đa là 100'
+  });
