@@ -252,6 +252,136 @@ export default function UserManagePage() {
             </table>
           )}
         </div>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+};
+
+export default function UserManagePage() {
+  const [activeTab, setActiveTab] = useState('staff');
+  const [activeRole, setActiveRole] = useState('MANAGER');
+  const [usersList, setUsersList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [isPendingAssign, setIsPendingAssign] = useState(false);
+
+  // Phân trang (G1-FE): backend trả pagination object
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
+
+  const fetchUsers = async (page = 1) => {
+    setIsLoading(true);
+    try {
+      const apiURL = import.meta.env.VITE_API_URL || '';
+      const token = localStorage.getItem('accessToken');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const currentRole = activeTab === 'customer' ? 'CUSTOMER' : activeRole;
+
+      const response = await axios.get(`${apiURL}/api/users`, {
+        params: {
+          role: currentRole,
+          search: search || undefined,
+          page,
+          limit: pagination.limit
+        },
+        headers
+      });
+
+      if (response.data && response.data.result) {
+        setUsersList(response.data.result);
+      }
+      if (response.data.pagination) {
+        setPagination(response.data.pagination);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      toast.error('Không thể tải danh sách tài khoản');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(1);
+  }, [activeTab, activeRole]);
+
+  const handlePageChange = (newPage) => {
+    fetchUsers(newPage);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    fetchUsers(1); // Reset về trang 1 khi tìm kiếm mới
+  };
+
+  const handleDemoteToCustomer = async (staff) => {
+    if (!window.confirm(`Bạn có chắc muốn bãi nhiệm nhân viên "${staff.username}"?\nHọ sẽ bị thu hồi quyền và chuyển thành Customer.`)) {
+      return;
+    }
+
+    setIsPendingAssign(true);
+    const toastId = toast.loading('Đang thu hồi quyền...');
+    try {
+      const apiURL = import.meta.env.VITE_API_URL || '';
+      const token = localStorage.getItem('accessToken');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      await axios.put(
+        `${apiURL}/api/users/${staff._id || staff.id}/role`,
+        { role: 'CUSTOMER' },
+        { headers }
+      );
+
+      toast.success(`Đã thu hồi quyền của "${staff.username}" thành công!`, { id: toastId });
+      fetchUsers();
+    } catch (error) {
+      console.error('Failed to demote:', error);
+      // Hiển thị message từ BE nếu có (ví dụ SELF_ACTION_FORBIDDEN khi thao tác lên chính mình)
+      const message =
+        error?.response?.data?.message ||
+        'Thu hồi quyền thất bại, vui lòng thử lại!';
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsPendingAssign(false);
+    }
+  };
+
+  const handleToggleStatus = async (user, newStatus) => {
+    const actionText = newStatus === 'INACTIVE' ? 'Khóa' : 'Mở khóa';
+    if (!window.confirm(`Bạn có chắc muốn ${actionText.toLowerCase()} tài khoản "${user.username}"?`)) {
+      return;
+    }
+
+    setIsPendingAssign(true);
+    const toastId = toast.loading(`Đang ${actionText.toLowerCase()} tài khoản...`);
+    try {
+      const apiURL = import.meta.env.VITE_API_URL || '';
+      const token = localStorage.getItem('accessToken');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      await axios.put(
+        `${apiURL}/api/users/${user._id || user.id}/status`,
+        { status: newStatus },
+        { headers }
+      );
+
+      toast.success(`${actionText} tài khoản thành công!`, { id: toastId });
+      fetchUsers();
+    } catch (error) {
+      console.error('Failed to toggle status:', error);
+      const message =
+        error?.response?.data?.message ||
+        `${actionText} tài khoản thất bại!`;
+      toast.error(message, { id: toastId });
+    } finally {
+      setIsPendingAssign(false);
+    }
+  };
 
         {/* PAGINATION */}
         {!isLoading && pagination && pagination.totalPages > 1 && (
@@ -313,6 +443,61 @@ export default function UserManagePage() {
         </div>
       )}
 
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {activeTab === 'staff' ? (
+          <StaffView
+            activeRole={activeRole}
+            setActiveRole={setActiveRole}
+            usersList={usersList}
+            isLoading={isLoading}
+            assignRole={fetchUsers}
+            deleteStaff={handleDemoteToCustomer}
+            isPendingAssign={isPendingAssign}
+            onToggleStatus={handleToggleStatus}
+            onDeleteUser={handleDeleteUser}
+          />
+        ) : (
+          <CustomerView
+            usersList={usersList}
+            isLoading={isLoading}
+            assignRole={fetchUsers}
+            onToggleStatus={handleToggleStatus}
+            onDeleteUser={handleDeleteUser}
+            isPendingAssign={isPendingAssign}
+          />
+        )}
+
+        {/* Phân trang */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+            <p className="text-sm text-slate-500">
+              Hiển thị <span className="font-semibold text-slate-700">{usersList.length}</span> trong
+              tổng <span className="font-semibold text-slate-700">{pagination.total}</span> tài khoản
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1 || isLoading}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={14} />
+                Trước
+              </button>
+              <span className="px-3 py-1.5 text-sm font-bold text-slate-700 bg-indigo-50 rounded-lg">
+                {pagination.page} / {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages || isLoading}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Sau
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
