@@ -13,6 +13,7 @@ export const useCheckoutFlow = () => {
   const { items, clearCart } = useCartStore();
 
   const submitOrder = async () => {
+    if (isSubmitting) return;
     const toastId = toast.loading('Đang khởi tạo đơn hàng...');
 
     try {
@@ -100,25 +101,49 @@ export const useCheckoutFlow = () => {
       }
 
       // --- BƯỚC 2: TẠO ĐƠN HÀNG (SỬ DỤNG API ĐÃ TÁCH) ---
-      const orderResponseData = await paymentApi.createOrder(formData, paymentMethod);
+      // Nếu là thanh toán giả lập, chuyển đổi phương thức thành 'VNPAY' lên server để khớp CSDL.
+      const apiPaymentMethod = (paymentMethod === 'MOCK_SUCCESS' || paymentMethod === 'MOCK_FAILURE')
+        ? 'VNPAY'
+        : paymentMethod;
+
+      const orderResponseData = await paymentApi.createOrder(formData, apiPaymentMethod);
       const actualOrderId = orderResponseData?.result?.orderId || orderResponseData?.orderId;
 
       if (!actualOrderId) throw new Error('Không lấy được mã đơn hàng.');
 
       // --- BƯỚC 3: XỬ LÝ THANH TOÁN (SỬ DỤNG API ĐÃ TÁCH) ---
-      toast.loading('Đang kết nối cổng thanh toán VNPay...', { id: toastId });
+      if (paymentMethod === 'MOCK_SUCCESS' || paymentMethod === 'MOCK_FAILURE') {
+        toast.loading('Đang xử lý mô phỏng thanh toán...', { id: toastId });
 
-      const paymentResponseData = await paymentApi.checkoutVnpay(actualOrderId);
-      const paymentUrl = paymentResponseData?.result || paymentResponseData;
+        const mockResult = await paymentApi.mockCheckout(
+          actualOrderId,
+          paymentMethod === 'MOCK_SUCCESS' ? 'SUCCESS' : 'FAILURE'
+        );
+        const redirectUrl = mockResult?.result?.redirectUrl;
 
-      if (paymentUrl && typeof paymentUrl === 'string') {
-        clearCart();
-        setTimeout(() => {
-          window.location.href = paymentUrl;
-        }, 1000);
+        if (redirectUrl) {
+          clearCart();
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 1000);
+        } else {
+          throw new Error('Không nhận được URL chuyển hướng từ API mô phỏng.');
+        }
       } else {
-        toast.error('Lỗi cổng thanh toán VNPay', { id: toastId });
-        setIsSubmitting(false);
+        toast.loading('Đang kết nối cổng thanh toán VNPay...', { id: toastId });
+
+        const paymentResponseData = await paymentApi.checkoutVnpay(actualOrderId);
+        const paymentUrl = paymentResponseData?.result || paymentResponseData;
+
+        if (paymentUrl && typeof paymentUrl === 'string') {
+          clearCart();
+          setTimeout(() => {
+            window.location.href = paymentUrl;
+          }, 1000);
+        } else {
+          toast.error('Lỗi cổng thanh toán VNPay', { id: toastId });
+          setIsSubmitting(false);
+        }
       }
     } catch (error) {
       console.error('Checkout Error:', error);
@@ -140,7 +165,26 @@ export const useCheckoutFlow = () => {
   };
 
   const handleContinue = () => {
-    if (step < 3) {
+    if (isSubmitting) return;
+    if (step === 1) {
+      if (!shippingData.name?.trim() || !shippingData.phone?.trim() || !shippingData.address?.trim()) {
+        toast.error('Thiếu thông tin giao hàng', {
+          description: 'Vui lòng cung cấp đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng để tiếp tục.'
+        });
+        return;
+      }
+
+      const phoneClean = shippingData.phone.replace(/\s/g, '');
+      const phoneRegex = /^[0-9+]{9,15}$/;
+      if (!phoneRegex.test(phoneClean)) {
+        toast.error('Số điện thoại không hợp lệ', {
+          description: 'Số điện thoại phải từ 9 đến 15 chữ số.'
+        });
+        return;
+      }
+
+      nextStep();
+    } else if (step === 2) {
       nextStep();
     } else {
       submitOrder();

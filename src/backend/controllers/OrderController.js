@@ -169,8 +169,8 @@ class OrderController {
         return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Bạn không có quyền thực hiện hành động này' });
       }
 
-      if (order.status !== 'PENDING') {
-        return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Chỉ có thể hủy đơn hàng ở trạng thái Chờ xử lý' });
+      if (!['PENDING', 'AWAITING_VERIFICATION', 'CONFIRMED'].includes(order.status)) {
+        return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Không thể hủy đơn hàng ở trạng thái hiện tại' });
       }
 
       // Hoàn lại số lượng tồn kho sản phẩm

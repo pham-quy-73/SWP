@@ -210,11 +210,14 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                       disabled={updating}
                       className="w-full bg-slate-55 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all select-none"
                     >
-                      {Object.keys(STATUS_CONFIG).map((statusKey) => (
-                        <option key={statusKey} value={statusKey}>
-                          {STATUS_CONFIG[statusKey].label}
-                        </option>
-                      ))}
+                      {Object.keys(STATUS_CONFIG).map((statusKey) => {
+                        if (statusKey === 'AWAITING_VERIFICATION') return null;
+                        return (
+                          <option key={statusKey} value={statusKey}>
+                            {STATUS_CONFIG[statusKey].label}
+                          </option>
+                        );
+                      })}
                     </select>
                     {updating && (
                       <Loader2 className="absolute right-3 top-2.5 w-4 h-4 animate-spin text-slate-500" />
@@ -237,7 +240,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
           </div>
 
           {/* Đơn thuốc mắt kính nếu có */}
-          {(order.prescription_text || order.prescription_image) && (
+          {false && (order.prescription_text || order.prescription_image) && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-[11px]">
                 <FileText size={16} className="text-indigo-650" /> Thông tin đơn thuốc mắt kính
@@ -473,11 +476,14 @@ export default function ManagerOrderPage() {
                 <option value="ALL" className="font-bold text-slate-800 py-2">
                   Tất cả trạng thái
                 </option>
-                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                  <option key={key} value={key} className="font-medium text-slate-650 py-2">
-                    {config.label}
-                  </option>
-                ))}
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => {
+                  if (key === 'AWAITING_VERIFICATION') return null;
+                  return (
+                    <option key={key} value={key} className="font-medium text-slate-650 py-2">
+                      {config.label}
+                    </option>
+                  );
+                })}
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-extrabold text-[10px]">
                 ▼

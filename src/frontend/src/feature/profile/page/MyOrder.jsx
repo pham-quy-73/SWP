@@ -198,7 +198,7 @@ function OrderItemCard({ item, orderName }) {
         </div>
       </div>
 
-      {item.prescription && (
+      {false && item.prescription && (
         <div className="pt-3 border-t border-dashed border-gray-100 space-y-2">
           <p className="text-xs font-bold text-gray-500">📋 Thông số đơn kính</p>
           <div className="grid grid-cols-2 gap-2 text-xs">
@@ -258,10 +258,7 @@ function OrderCard({ order, allFeedbacks, onRefresh }) {
     dot: 'bg-gray-400',
   };
 
-  const hasPreOrder = order.items.some((i) => i.orderItemType === 'PRE_ORDER');
-  const canCancel =
-    (hasPreOrder || order.orderStatus === 'PENDING') &&
-    !['CANCELLED', 'COMPLETED', 'REFUNDED', 'DELIVERED'].includes(order.orderStatus);
+  const canCancel = ['PENDING', 'AWAITING_VERIFICATION', 'CONFIRMED'].includes(order.orderStatus);
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -314,7 +311,8 @@ function OrderCard({ order, allFeedbacks, onRefresh }) {
               </div>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed font-semibold">
-              Đơn hàng {hasPreOrder ? <span className="font-bold text-violet-700">PRE_ORDER </span> : ''}sẽ chuyển sang <span className="font-bold text-rose-600">Đã hủy</span>.
+              Đơn hàng {hasPreOrder ? <span className="font-bold text-violet-700">PRE_ORDER </span> : ''}sẽ chuyển sang <span className="font-bold text-rose-600">Đã hủy</span>
+              {['CONFIRMED', 'AWAITING_VERIFICATION'].includes(order.orderStatus) ? ' và chuyển sang hàng đợi hoàn tiền' : ''}.
             </p>
             <div className="flex gap-3 pt-1">
               <button
@@ -453,7 +451,11 @@ function OrderCard({ order, allFeedbacks, onRefresh }) {
               }}
               className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-xl transition-colors cursor-pointer"
             >
-              {hasPreOrder ? 'Hủy đơn PRE_ORDER (Trả hàng / Không muốn mua nữa)' : 'Hủy đơn hàng (Chưa thanh toán)'}
+              {['CONFIRMED', 'AWAITING_VERIFICATION'].includes(order.orderStatus)
+                ? 'Yêu cầu hoàn tiền (Hủy đơn hàng)'
+                : hasPreOrder
+                ? 'Hủy đơn PRE_ORDER (Trả hàng / Không muốn mua nữa)'
+                : 'Hủy đơn hàng (Chưa thanh toán)'}
             </button>
           )}
         </div>

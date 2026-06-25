@@ -18,19 +18,55 @@ export const PaymentForm = () => {
           Phương thức thanh toán
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* LỰA CHỌN VNPAY */}
           <div
             onClick={() => setPaymentMethod('VNPAY')}
-            className="relative flex flex-col items-center justify-between rounded-2xl border-2 p-6 cursor-pointer transition-all h-full bg-[#4A8795]/5 border-[#4A8795]"
+            className={`relative flex flex-col items-center justify-between rounded-2xl border-2 p-6 cursor-pointer transition-all h-full ${
+              paymentMethod === 'VNPAY' ? 'bg-[#4A8795]/5 border-[#4A8795]' : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
           >
-            <CheckCircle2 className="absolute top-3 right-3 w-5 h-5 text-[#4A8795]" />
-            <div className="p-3 bg-blue-105 bg-[#4A8795]/10 rounded-full mb-3">
+            {paymentMethod === 'VNPAY' && <CheckCircle2 className="absolute top-3 right-3 w-5 h-5 text-[#4A8795]" />}
+            <div className="p-3 bg-[#4A8795]/10 rounded-full mb-3">
               <CreditCard className="h-6 w-6 text-[#4A8795]" />
             </div>
             <span className="font-bold text-gray-900">VNPay</span>
             <span className="text-[10px] text-gray-500 mt-1 text-center font-medium">
               Thanh toán qua QR, Thẻ ATM/Nội địa
+            </span>
+          </div>
+
+          {/* MÔ PHỎNG THÀNH CÔNG */}
+          <div
+            onClick={() => setPaymentMethod('MOCK_SUCCESS')}
+            className={`relative flex flex-col items-center justify-between rounded-2xl border-2 p-6 cursor-pointer transition-all h-full ${
+              paymentMethod === 'MOCK_SUCCESS' ? 'bg-green-50/50 border-green-600' : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+          >
+            {paymentMethod === 'MOCK_SUCCESS' && <CheckCircle2 className="absolute top-3 right-3 w-5 h-5 text-green-600" />}
+            <div className="p-3 bg-green-100/50 rounded-full mb-3">
+              <CheckCircle2 className="h-6 w-6 text-green-600" />
+            </div>
+            <span className="font-bold text-gray-900">Giả lập Success</span>
+            <span className="text-[10px] text-gray-500 mt-1 text-center font-medium">
+              Xác nhận đơn hàng thành công lập tức
+            </span>
+          </div>
+
+          {/* MÔ PHỎNG THẤT BẠI */}
+          <div
+            onClick={() => setPaymentMethod('MOCK_FAILURE')}
+            className={`relative flex flex-col items-center justify-between rounded-2xl border-2 p-6 cursor-pointer transition-all h-full ${
+              paymentMethod === 'MOCK_FAILURE' ? 'bg-red-50/50 border-red-500' : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+          >
+            {paymentMethod === 'MOCK_FAILURE' && <CheckCircle2 className="absolute top-3 right-3 w-5 h-5 text-red-500" />}
+            <div className="p-3 bg-red-100/50 rounded-full mb-3">
+              <CreditCard className="h-6 w-6 text-red-500" />
+            </div>
+            <span className="font-bold text-gray-900">Giả lập Failure</span>
+            <span className="text-[10px] text-gray-500 mt-1 text-center font-medium">
+              Hủy đơn, hoàn trả số lượng hàng tồn kho
             </span>
           </div>
         </div>
@@ -39,10 +75,17 @@ export const PaymentForm = () => {
       {/* HIỂN THỊ THÔNG TIN CHI TIẾT */}
       <div className="p-6 rounded-2xl bg-gray-50 border border-dashed border-gray-200 animate-in fade-in duration-300">
         <div className="space-y-2">
-          <h3 className="text-sm font-bold text-gray-800">Cổng thanh toán VNPay</h3>
+          <h3 className="text-sm font-bold text-gray-805">
+            {paymentMethod === 'VNPAY' ? 'Cổng thanh toán VNPay' : 'Chế độ mô phỏng thanh toán'}
+          </h3>
           <p className="text-xs text-gray-500 leading-relaxed font-medium">
-            Bạn sẽ được chuyển hướng đến cổng thanh toán VNPay sau khi bấm "Đặt hàng". Vui lòng
-            không đóng trình duyệt cho đến khi nhận được thông báo thành công.
+            {paymentMethod === 'VNPAY' ? (
+              'Bạn sẽ được chuyển hướng đến cổng thanh toán VNPay sau khi bấm "Đặt hàng". Vui lòng không đóng trình duyệt cho đến khi nhận được thông báo thành công.'
+            ) : paymentMethod === 'MOCK_SUCCESS' ? (
+              'Giả lập giao dịch thành công. Khi bấm "Đặt hàng", hệ thống sẽ gửi yêu cầu thanh toán thành công trực tiếp lên server để xác nhận đơn hàng lập tức.'
+            ) : (
+              'Giả lập giao dịch thất bại. Khi bấm "Đặt hàng", hệ thống sẽ kích hoạt hủy đơn hàng và hoàn trả lại số hàng tồn kho tương ứng.'
+            )}
           </p>
         </div>
       </div>

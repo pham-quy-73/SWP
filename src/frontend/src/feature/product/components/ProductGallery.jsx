@@ -1,37 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tag, Box, Glasses, Layout, User, Target, Wrench, Scale } from 'lucide-react';
 
-export default function ProductGallery({ product, isLoading }) {
+// HÀM XỬ LÝ LINK ẢNH
+const getDisplayImageUrl = (imgObj) => {
+  if (!imgObj) return null;
+  const url = typeof imgObj === 'string' ? imgObj : imgObj.imageUrl;
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url}`;
+};
+
+export default function ProductGallery({ product, isLoading, selectedVariant }) {
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // LOGIC ƯU TIÊN ẢNH: Lấy ảnh của biến thể đang chọn, nếu không có mới lấy ảnh gốc của SP
+  useEffect(() => {
+    setSelectedImage(null); // Reset lại ảnh chính mỗi khi đổi màu
+  }, [selectedVariant]);
 
   if (isLoading || !product) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="aspect-square bg-gray-200 rounded-2xl animate-pulse" />
+        <div className="aspect-square bg-zinc-100 rounded-[2rem]" />
         <div className="grid grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-square bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="aspect-square bg-zinc-50 border border-zinc-100 rounded-2xl" />
           ))}
         </div>
       </div>
     );
   }
 
-  // 1. Khai báo mảng ảnh an toàn
-  let images = [];
-  if (Array.isArray(product.imageUrl)) {
-    // Trường hợp mảng đối tượng [{ imageUrl: "..." }]
-    images = product.imageUrl.map((imgObj) => imgObj.imageUrl).filter(Boolean);
-  } else if (typeof product.image === 'string') {
-    // Trường hợp thuộc tính image là string đơn lẻ
-    images = [product.image];
-  } else if (typeof product.imageUrl === 'string') {
-    images = [product.imageUrl];
+  let rawImages = [];
+  if (selectedVariant && selectedVariant.imageUrl && selectedVariant.imageUrl.length > 0) {
+    rawImages = selectedVariant.imageUrl;
+  } else if (product.imageUrl && product.imageUrl.length > 0) {
+    rawImages = product.imageUrl;
+  } else if (product.image) {
+    rawImages = [product.image];
   }
 
-  const fallbackImg =
-    'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
-
+  // Phân giải toàn bộ link ảnh trong mảng
+  const images = rawImages.map(getDisplayImageUrl).filter(Boolean);
+  const fallbackImg = 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
   const activeImage = selectedImage || (images.length > 0 ? images[0] : fallbackImg);
 
   return (
@@ -47,12 +58,12 @@ export default function ProductGallery({ product, isLoading }) {
       `}</style>
 
       {/* --- VÙNG HIỂN THỊ ẢNH CHÍNH --- */}
-      <div className="relative bg-gradient-to-b from-[#F8FAFB] to-[#F1F4F6] rounded-3xl overflow-hidden aspect-square flex items-center justify-center group border border-white shadow-inner">
+      <div className="relative bg-zinc-50/50 rounded-[2rem] overflow-hidden aspect-square flex items-center justify-center group border border-zinc-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
         <img
           key={activeImage}
           src={activeImage}
           alt={product.name}
-          className="w-4/5 object-contain mix-blend-multiply transition-all duration-700 group-hover:scale-110 animate-product-in"
+          className="w-4/5 object-contain mix-blend-multiply transition-all duration-700 group-hover:scale-110 animate-product-in drop-shadow-xl"
           onError={(e) => {
             e.currentTarget.src = fallbackImg;
             e.currentTarget.onerror = null;
@@ -62,7 +73,7 @@ export default function ProductGallery({ product, isLoading }) {
 
       {/* --- DANH SÁCH ẢNH THUMBNAILS --- */}
       {images.length > 1 && (
-        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
           {images.map((imgStr, index) => {
             const isActive = activeImage === imgStr;
             return (
@@ -70,10 +81,9 @@ export default function ProductGallery({ product, isLoading }) {
                 key={`${product._id || product.id}-${index}`}
                 onClick={() => setSelectedImage(imgStr)}
                 className={`flex-shrink-0 w-20 h-20 rounded-2xl bg-white border-2 cursor-pointer flex items-center justify-center transition-all duration-300 overflow-hidden
-                  ${
-                    isActive
-                      ? 'border-[#4A8795] shadow-lg scale-105'
-                      : 'border-transparent opacity-60 hover:opacity-100 hover:border-gray-200'
+                  ${isActive
+                    ? 'border-zinc-900 shadow-md scale-105'
+                    : 'border-zinc-100 opacity-60 hover:opacity-100 hover:border-zinc-300 hover:bg-zinc-50'
                   }`}
               >
                 <img
@@ -92,17 +102,17 @@ export default function ProductGallery({ product, isLoading }) {
       )}
 
       {/* --- THÔNG SỐ KỸ THUẬT --- */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white rounded-[2rem] border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] p-6 sm:p-8">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-black text-gray-900 tracking-tight">Thông số chi tiết</h3>
-            <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold tracking-widest rounded-full">
+            <h3 className="text-lg font-black text-zinc-900 tracking-tight">Thông số chi tiết</h3>
+            <span className="px-3 py-1 bg-zinc-100 text-zinc-600 text-[10px] uppercase font-bold tracking-widest rounded-lg">
               Specs
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             { label: 'Thương hiệu', value: product.brand, icon: Tag },
             { label: 'Chất liệu', value: product.frameMaterial, icon: Box },
@@ -123,16 +133,16 @@ export default function ProductGallery({ product, isLoading }) {
               return (
                 <div
                   key={item.label}
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-[#F8FAFB] border border-transparent hover:border-[#4A8795]/20 hover:bg-white hover:shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300"
+                  className="group flex items-center gap-4 p-4 rounded-2xl bg-zinc-50/50 border border-transparent hover:border-zinc-200 hover:bg-white hover:shadow-lg hover:shadow-zinc-900/5 transition-all duration-300"
                 >
-                  <div className="w-10 h-10 flex shrink-0 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm group-hover:text-[#4A8795] group-hover:scale-110 transition-all duration-300">
+                  <div className="w-10 h-10 flex shrink-0 items-center justify-center rounded-xl bg-white text-zinc-400 border border-zinc-100 group-hover:text-emerald-600 group-hover:scale-110 group-hover:border-emerald-200 transition-all duration-300">
                     <Icon className="w-4 h-4" strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[11px] uppercase tracking-wider font-semibold text-gray-400 mb-0.5">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-1">
                       {item.label}
                     </span>
-                    <span className="text-sm font-bold text-gray-900 capitalize truncate">
+                    <span className="text-sm font-black text-zinc-900 capitalize truncate tracking-tight">
                       {item.value?.toString().replace(/_/g, ' ').toLowerCase()}
                     </span>
                   </div>

@@ -28,14 +28,13 @@ class AuthService {
       verify_token_expires: tokenExpires
     });
 
-    // Lưu thông tin người dùng vào Database
     await newUser.save();
 
-    // Xử lý gửi email độc lập, không làm sập tiến trình đăng ký DB nếu gửi mail bị lỗi
+    // Xử lý gửi email độc lập
     try {
       await mailService.sendActivationEmail(newUser.email, token);
     } catch (mailError) {
-      console.log('🚨 LỖI GỬI EMAIL KÍCH HOẠT:', mailError.message);
+      console.log('LỖI GỬI EMAIL KÍCH HOẠT:', mailError.message);
     }
 
     const userObject = newUser.toObject();
@@ -45,6 +44,39 @@ class AuthService {
     delete userObject.google_id;
 
     return userObject;
+  }
+
+  // Chức năng gửi lại Email kích hoạt
+  async resendVerificationEmail(email) {
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      const error = new Error('Không tìm thấy tài khoản với email này');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (user.is_email_verified) {
+      const error = new Error('Tài khoản này đã được kích hoạt từ trước');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (user.deleted_at !== null) {
+      const error = new Error('Tài khoản của bạn đang bị khóa');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    user.verify_token = token;
+    user.verify_token_expires = tokenExpires;
+    await user.save();
+
+    await mailService.sendActivationEmail(user.email, token);
+    return true;
   }
 
   async verifyEmail(token) {
@@ -110,7 +142,6 @@ class AuthService {
           throw error;
         }
 
-        // Cập nhật google_id nếu user đăng ký bằng phương thức truyền thống trước đó
         if (!user.google_id) {
           user.google_id = googleId;
           user.is_email_verified = true;

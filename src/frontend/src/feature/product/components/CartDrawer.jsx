@@ -80,7 +80,10 @@ export const CartDrawer = () => {
                   <p className="text-sm text-zinc-500 mb-6">Có vẻ như bạn chưa thêm sản phẩm nào.</p>
                   <button
                     type="button"
-                    onClick={closeCart}
+                    onClick={() => {
+                      closeCart();
+                      navigate('/products');
+                    }}
                     className="bg-zinc-900 text-white hover:bg-zinc-800 rounded-xl px-8 py-3 font-bold transition-all active:scale-95 text-sm"
                   >
                     Mua sắm ngay
