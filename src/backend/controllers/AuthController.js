@@ -21,9 +21,12 @@ const googleLoginSchema = Joi.object({
   idToken: Joi.string().required()
 });
 
+const resendEmailSchema = Joi.object({
+  email: Joi.string().email().required()
+});
+
 class AuthController {
-  async register(req, res) {
-    // Tôi đã bỏ chữ 'next' đi để không phụ thuộc vào hệ thống bắt lỗi chung nữa
+  async register(req, res, next) {
     try {
       const { error, value } = registerSchema.validate(req.body);
       if (error) {
@@ -36,16 +39,24 @@ class AuthController {
         user
       });
     } catch (error) {
-      // 1. Ép hệ thống IN LỖI RA TERMINAL bằng mọi giá
-      console.log("\n======================================");
-      console.log("🚨 LỖI TẠI AUTH CONTROLLER (REGISTER):");
-      console.log(error);
-      console.log("======================================\n");
+      next(error);
+    }
+  }
 
-      // 2. Trả thẳng câu thông báo thật sự về cho giao diện (Frontend)
-      return res.status(500).json({
-        message: error.message || 'Lỗi hệ thống máy chủ, không thể đăng ký!'
+  async resendVerificationEmail(req, res, next) {
+    try {
+      const { error, value } = resendEmailSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: error.details[0].message });
+      }
+
+      await authService.resendVerificationEmail(value.email);
+      return res.status(200).json({
+        code: 0,
+        message: 'Mã kích hoạt mới đã được gửi vào hòm thư điện tử của bạn.'
       });
+    } catch (error) {
+      next(error);
     }
   }
 

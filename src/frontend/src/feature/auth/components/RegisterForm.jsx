@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, ArrowRight, CheckCircle2, MailWarning } from 'lucide-react';
 import { useRegisterForm } from '../hooks/useRegisterForm';
 
 export default function RegisterForm() {
-  // Lấy apiError ra thay vì dùng của form
-  const { form, onSubmit, isLoading, isSuccess, apiError } = useRegisterForm();
+  const { form, onSubmit, isLoading, isSuccess, apiError, isResending, resendMessage, handleResendEmail } = useRegisterForm();
   const { register, handleSubmit, formState: { errors } } = form;
 
   const inputClass = (error) => `w-full h-14 px-6 rounded-2xl bg-zinc-50/80 border-2 text-sm font-medium transition-all duration-300 placeholder:text-zinc-400 placeholder:text-xs placeholder:tracking-widest focus:bg-white focus:outline-none focus:ring-4 focus:ring-zinc-900/5 ${
@@ -19,7 +18,6 @@ export default function RegisterForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        
         <div className="space-y-6">
           <div className="relative">
             <input {...register('username')} type="text" placeholder="TÊN ĐĂNG NHẬP" disabled={isLoading || isSuccess} className={inputClass(errors.username)} />
@@ -48,7 +46,6 @@ export default function RegisterForm() {
           {errors.password && <p className="absolute -bottom-5 left-2 text-[11px] text-red-500 font-medium">{errors.password.message}</p>}
         </div>
 
-        {/* SỬA ĐỔI: Dùng apiError độc lập. Đã bỏ hiệu ứng animate để chữ không bị chớp */}
         {!isSuccess && apiError && (
           <div className="mt-4 p-4 rounded-xl bg-red-50 border border-red-100 text-center transition-colors duration-300">
             <p className="text-sm text-red-600 font-medium">{apiError}</p>
@@ -56,10 +53,31 @@ export default function RegisterForm() {
         )}
 
         {isSuccess && (
-          <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-2 animate-[fadeIn_0.3s_ease-out]">
-            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-            <p className="text-sm text-emerald-700 font-semibold text-center">Đăng ký thành công!</p>
-            <p className="text-xs text-emerald-600/80 text-center">Vui lòng kiểm tra hộp thư email của bạn để kích hoạt tài khoản.</p>
+          <div className="mt-4 p-5 rounded-2xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-3 animate-[fadeIn_0.3s_ease-out]">
+            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+            <div>
+              <p className="text-sm text-emerald-800 font-bold text-center">Đăng ký thành công!</p>
+              <p className="text-xs text-emerald-600/90 text-center mt-1 leading-relaxed">
+                Chúng tôi đã gửi một liên kết kích hoạt đến email của bạn.<br/>
+                Vui lòng kiểm tra (cả hộp thư rác).
+              </p>
+            </div>
+            
+            <div className="w-full border-t border-emerald-200/60 my-1"></div>
+            
+            {resendMessage ? (
+               <p className="text-xs font-semibold text-emerald-700 animate-pulse">{resendMessage}</p>
+            ) : (
+               <button
+                 type="button"
+                 onClick={handleResendEmail}
+                 disabled={isResending}
+                 className="flex items-center gap-2 text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors disabled:opacity-50"
+               >
+                 {isResending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MailWarning className="w-4 h-4" />}
+                 Chưa nhận được email? Gửi lại
+               </button>
+            )}
           </div>
         )}
 
@@ -83,7 +101,7 @@ export default function RegisterForm() {
 
       <div className="mt-8 text-center text-sm text-zinc-500">
         Đã có tài khoản?{' '}
-        <Link to="/login" className="font-bold text-zinc-900 hover:text-emerald-600 transition-colors">
+        <Link to="/login" onClick={() => form.reset()} className="font-bold text-zinc-900 hover:text-emerald-600 transition-colors">
           Đăng nhập
         </Link>
       </div>

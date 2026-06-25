@@ -2,21 +2,28 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 
 class DashboardController {
-  /**
-   * Lấy số liệu thống kê doanh thu và hoạt động cho Dashboard
-   */
   async getDashboardStats(req, res, next) {
     try {
       // 1. Tính tổng doanh thu từ các đơn hàng COMPLETED
       const completedOrders = await Order.find({ status: 'COMPLETED' });
       const revenue = completedOrders.reduce((sum, order) => sum + order.total_amount, 0);
 
-      // 2. Tính doanh thu tháng này và tháng trước để tính tăng trưởng
+      // --- CHUẨN HÓA MÚI GIỜ VIỆT NAM (GMT+7) ---
       const now = new Date();
-      const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      const VN_OFFSET = 7 * 60 * 60 * 1000;
+      
+      const vnNow = new Date(now.getTime() + VN_OFFSET);
+      const currentYear = vnNow.getUTCFullYear();
+      const currentMonth = vnNow.getUTCMonth(); 
+      const currentDate = vnNow.getUTCDate();
 
+      const startOfThisMonth = new Date(Date.UTC(currentYear, currentMonth, 1) - VN_OFFSET);
+      const startOfLastMonth = new Date(Date.UTC(currentYear, currentMonth - 1, 1) - VN_OFFSET);
+      const endOfLastMonth = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59, 999) - VN_OFFSET);
+      const startOfToday = new Date(Date.UTC(currentYear, currentMonth, currentDate) - VN_OFFSET);
+      // ------------------------------------------
+
+      // 2. Tính doanh thu tháng này và tháng trước
       const thisMonthOrders = await Order.find({
         status: 'COMPLETED',
         created_at: { $gte: startOfThisMonth }
@@ -36,14 +43,12 @@ class DashboardController {
         revenueGrowth = 100;
       }
 
-      // 3. Đơn hàng đang xử lý (không phải COMPLETED, CANCELLED, REFUNDED)
+      // 3. Đơn hàng đang xử lý
       const activeOrders = await Order.countDocuments({
         status: { $in: ['PENDING', 'AWAITING_VERIFICATION', 'CONFIRMED'] }
       });
 
       // 4. Đơn hàng phát sinh hôm nay
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
       const ordersToday = await Order.countDocuments({
         created_at: { $gte: startOfToday }
       });

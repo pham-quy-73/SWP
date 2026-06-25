@@ -120,76 +120,77 @@ class UserController {
    * Cập nhật trạng thái người dùng (Khóa/Mở khóa thông qua deleted_at)
    * - Chặn Admin tự khóa/mở chính mình (G2) để tránh tự khóa bản thân.
    */
+  // --- 1. TÌM VÀ SỬA HÀM updateUserStatus ---
   async updateUserStatus(req, res, next) {
     try {
       const { id } = req.params;
-      const { status } = req.body; // status = 'ACTIVE' hoặc 'INACTIVE'
+      const { status } = req.body;
 
       if (!status || !['ACTIVE', 'INACTIVE'].includes(status)) {
-        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Trạng thái không hợp lệ (giá trị hợp lệ: ACTIVE | INACTIVE)' });
-      }
-
-      // G2: Chặn Admin thao tác lên chính mình
-      if (req.user._id.toString() === id) {
-        return res.status(403).json({
-          error_code: 'SELF_ACTION_FORBIDDEN',
-          message: 'Bạn không thể thay đổi trạng thái của chính mình'
-        });
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Trạng thái không hợp lệ' });
       }
 
       const user = await User.findById(id);
-      if (!user) {
-        return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy người dùng' });
+      if (!user) return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy' });
+
+      // [BẢO MẬT] Chặn can thiệp vào tài khoản ADMIN khác và chính mình
+      if (user.role === 'ADMIN') {
+        return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Không thể khóa tài khoản của Quản trị viên!' });
       }
 
-      // Khóa tài khoản bằng cách xét deleted_at = Date.now()
-      if (status === 'INACTIVE') {
-        user.deleted_at = new Date();
-      } else {
-        user.deleted_at = null;
-      }
+      if (status === 'INACTIVE') user.deleted_at = new Date();
+      else user.deleted_at = null;
 
       await user.save();
-
-      // G4 + G5: Spec §4.3 — message đúng chữ, không trả result
-      return res.status(200).json({
-        code: 0,
-        message: 'Cập nhật trạng thái thành công'
-      });
-    } catch (error) {
-      next(error);
-    }
+      return res.status(200).json({ code: 0, message: 'Cập nhật trạng thái thành công' });
+    } catch (error) { next(error); }
   }
 
-  /**
-   * Xóa tài khoản vĩnh viễn (cho Admin)
-   * - Chặn Admin tự xóa chính mình (G2) để tránh xóa admin cuối cùng.
-   */
+  // --- 2. TÌM VÀ SỬA HÀM deleteUser ---
   async deleteUser(req, res, next) {
     try {
       const { id } = req.params;
+      const user = await User.findById(id);
 
-      // G2: Chặn Admin tự xóa chính mình
-      if (req.user._id.toString() === id) {
-        return res.status(403).json({
-          error_code: 'SELF_ACTION_FORBIDDEN',
-          message: 'Bạn không thể xóa tài khoản của chính mình'
-        });
+      if (!user) return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy' });
+
+      // [BẢO MẬT] Chặn xóa ADMIN
+      if (user.role === 'ADMIN') {
+        return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Không thể xóa tài khoản Quản trị viên hệ thống!' });
       }
 
-      const user = await User.findByIdAndDelete(id);
-      if (!user) {
-        return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy người dùng' });
-      }
-      return res.status(200).json({
-        code: 0,
-        message: 'Tài khoản người dùng đã được xóa vĩnh viễn khỏi hệ thống'
-      });
-    } catch (error) {
-      next(error);
-    }
+      await User.findByIdAndDelete(id);
+      return res.status(200).json({ code: 0, message: 'Đã xóa vĩnh viễn' });
+    } catch (error) { next(error); }
   }
 
+  // --- 3. THÊM HÀM MỚI NÀY VÀO CUỐI FILE (Trước dấu ngoặc nhọn đóng class) ---
+  async resetPassword(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { newPassword } = req.body;
+
+      if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Mật khẩu mới phải từ 6 ký tự trở lên' });
+      }
+
+      const user = await User.findById(id);
+      if (!user) return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy' });
+
+      // [BẢO MẬT] Chặn đổi pass ADMIN khác
+      if (user.role === 'ADMIN') {
+        return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Không được phép cấp lại mật khẩu của Quản trị viên khác!' });
+      }
+
+      // Mã hóa mật khẩu mới
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+      await user.save();
+
+      return res.status(200).json({ code: 0, message: 'Cấp lại mật khẩu thành công' });
+    } catch (error) { next(error); }
+  }
+  
   /**
    * Lấy thông tin cá nhân của người dùng đang đăng nhập
    */

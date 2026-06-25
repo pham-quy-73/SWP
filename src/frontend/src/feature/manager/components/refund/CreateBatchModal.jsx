@@ -8,6 +8,19 @@ const fmt = (num) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
 };
 
+const getDisplayImageUrl = (imgObj) => {
+  const fallbackImg = 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
+  if (!imgObj) return fallbackImg;
+
+  const url = typeof imgObj === 'string' ? imgObj : imgObj.imageUrl;
+  if (!url) return fallbackImg;
+
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return `${apiURL}${url}`;
+};
+
 export function CreateBatchModal({ onClose }) {
   const [step, setStep] = useState(1);
 
@@ -166,17 +179,11 @@ export function CreateBatchModal({ onClose }) {
                         </div>
 
                         <div className="shrink-0 w-12 h-12 rounded-lg overflow-hidden border border-gray-100 bg-white">
-                          {p.imageUrl && p.imageUrl.length > 0 ? (
-                            <img
-                              src={Array.isArray(p.imageUrl) ? p.imageUrl[0] : p.imageUrl}
-                              alt={p.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[10px] text-gray-400">
-                              No Img
-                            </div>
-                          )}
+                          <img
+                            src={getDisplayImageUrl(p.imageUrl && p.imageUrl.length > 0 ? p.imageUrl[0] : null)}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       </button>
                     ))

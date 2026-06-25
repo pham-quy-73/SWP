@@ -17,7 +17,7 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
     item.prescription?.os?.add
   );
 
-  const hasPrescription = hasImage || hasManualInput || !!item.prescription?.notes;
+  const hasPrescription = false; // hasImage || hasManualInput || !!item.prescription?.notes;
 
   return (
     <div

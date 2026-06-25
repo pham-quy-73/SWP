@@ -15,6 +15,7 @@ router.get('/:id', UserController.getUserById);
 router.put('/:id/role', UserController.updateUserRole);
 router.put('/:id/status', UserController.updateUserStatus);
 router.delete('/:id', UserController.deleteUser);
+router.put('/:id/reset-password', UserController.resetPassword);
 
 
 export default router;

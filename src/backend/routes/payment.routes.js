@@ -13,4 +13,7 @@ router.post('/checkout', authenticate, PaymentController.checkout);
 // 3. Callback công cộng từ VNPay (Sau khi thanh toán xong)
 router.get('/vnpay-callback', PaymentController.vnpayCallback);
 
+// 4. Mô phỏng thanh toán VNPay (Cho môi trường local/test)
+router.post('/mock-checkout', authenticate, PaymentController.mockCheckout);
+
 export default router;

@@ -2,133 +2,114 @@ import ProductVariant from '../models/ProductVariant.js';
 import Product from '../models/Product.js';
 
 class ProductVariantController {
-  // GET /api/products/:productId/variants
   async getVariants(req, res) {
     try {
       const { productId } = req.params;
       const variants = await ProductVariant.find({ productId });
-      
-      return res.status(200).json({
-        success: true,
-        result: variants
-      });
+      return res.status(200).json({ success: true, result: variants });
     } catch (error) {
       console.error('Error fetching variants:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ khi lấy dữ liệu biến thể'
-      });
+      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi lấy dữ liệu biến thể' });
     }
   }
 
-  // POST /api/products/:productId/variants
   async createVariant(req, res) {
     try {
       const { productId } = req.params;
-
-      // Kiểm tra sản phẩm có tồn tại không
       const product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: 'Không tìm thấy sản phẩm'
-        });
+      if (!product) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
+
+      let variantData = req.body;
+      if (req.body.variant && typeof req.body.variant === 'string') {
+        variantData = JSON.parse(req.body.variant);
+      }
+
+      let imageUrls = [];
+      if (req.files && req.files.length > 0) {
+        imageUrls = req.files.map(file => ({
+          imageUrl: `/${(file.path || file.filename).replace(/\\/g, '/')}`
+        }));
       }
 
       const variant = new ProductVariant({
         productId,
-        colorName: req.body.colorName || '',
-        frameFinish: req.body.frameFinish || '',
-        lensWidthMm: Number(req.body.lensWidthMm) || 0,
-        bridgeWidthMm: Number(req.body.bridgeWidthMm) || 0,
-        templeLengthMm: Number(req.body.templeLengthMm) || 0,
-        sizeLabel: req.body.sizeLabel || '',
-        price: Number(req.body.price) || 0,
-        quantity: Number(req.body.quantity) || 0,
-        status: req.body.status || 'ACTIVE',
-        orderItemType: req.body.orderItemType || 'IN_STOCK'
+        colorName: variantData.colorName || '',
+        frameFinish: variantData.frameFinish || '',
+        lensWidthMm: Number(variantData.lensWidthMm) || 0,
+        bridgeWidthMm: Number(variantData.bridgeWidthMm) || 0,
+        templeLengthMm: Number(variantData.templeLengthMm) || 0,
+        sizeLabel: variantData.sizeLabel || '',
+        price: Number(variantData.price) || 0,
+        quantity: Number(variantData.quantity) || 0,
+        status: variantData.status || 'ACTIVE',
+        orderItemType: variantData.orderItemType || 'IN_STOCK',
+        imageUrl: imageUrls
       });
 
       await variant.save();
-
-      return res.status(201).json({
-        success: true,
-        result: variant
-      });
+      return res.status(201).json({ success: true, result: variant });
     } catch (error) {
       console.error('Error creating variant:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ khi thêm biến thể'
-      });
+      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi thêm biến thể' });
     }
   }
 
-  // PUT /api/products/:productId/variants/:variantId
   async updateVariant(req, res) {
     try {
       const { variantId } = req.params;
+      let updateData = req.body;
+
+      if (req.body.variant && typeof req.body.variant === 'string') {
+        updateData = JSON.parse(req.body.variant);
+      }
+
+      let imageUrls = [];
+      if (updateData.imageUrl && Array.isArray(updateData.imageUrl)) {
+        imageUrls = updateData.imageUrl.map(img => (typeof img === 'string' ? { imageUrl: img } : img));
+      }
+
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map(file => ({
+          imageUrl: `/${(file.path || file.filename).replace(/\\/g, '/')}`
+        }));
+        imageUrls = [...imageUrls, ...newImages];
+      }
 
       const variant = await ProductVariant.findByIdAndUpdate(
         variantId,
         {
-          colorName: req.body.colorName,
-          frameFinish: req.body.frameFinish,
-          lensWidthMm: req.body.lensWidthMm !== undefined ? Number(req.body.lensWidthMm) : undefined,
-          bridgeWidthMm: req.body.bridgeWidthMm !== undefined ? Number(req.body.bridgeWidthMm) : undefined,
-          templeLengthMm: req.body.templeLengthMm !== undefined ? Number(req.body.templeLengthMm) : undefined,
-          sizeLabel: req.body.sizeLabel,
-          price: req.body.price !== undefined ? Number(req.body.price) : undefined,
-          quantity: req.body.quantity !== undefined ? Number(req.body.quantity) : undefined,
-          status: req.body.status,
-          orderItemType: req.body.orderItemType
+          colorName: updateData.colorName,
+          frameFinish: updateData.frameFinish,
+          lensWidthMm: updateData.lensWidthMm !== undefined ? Number(updateData.lensWidthMm) : undefined,
+          bridgeWidthMm: updateData.bridgeWidthMm !== undefined ? Number(updateData.bridgeWidthMm) : undefined,
+          templeLengthMm: updateData.templeLengthMm !== undefined ? Number(updateData.templeLengthMm) : undefined,
+          sizeLabel: updateData.sizeLabel,
+          price: updateData.price !== undefined ? Number(updateData.price) : undefined,
+          quantity: updateData.quantity !== undefined ? Number(updateData.quantity) : undefined,
+          status: updateData.status,
+          orderItemType: updateData.orderItemType,
+          imageUrl: imageUrls
         },
         { new: true, runValidators: true }
       );
 
-      if (!variant) {
-        return res.status(404).json({
-          success: false,
-          message: 'Không tìm thấy biến thể để cập nhật'
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        result: variant
-      });
+      if (!variant) return res.status(404).json({ success: false, message: 'Không tìm thấy biến thể' });
+      return res.status(200).json({ success: true, result: variant });
     } catch (error) {
       console.error('Error updating variant:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ khi cập nhật biến thể'
-      });
+      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi cập nhật biến thể' });
     }
   }
 
-  // DELETE /api/products/:productId/variants/:variantId
   async deleteVariant(req, res) {
     try {
       const { variantId } = req.params;
-
       const variant = await ProductVariant.findByIdAndDelete(variantId);
-      if (!variant) {
-        return res.status(404).json({
-          success: false,
-          message: 'Không tìm thấy biến thể để xóa'
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: 'Mã biến thể đã xóa thành công'
-      });
+      if (!variant) return res.status(404).json({ success: false, message: 'Không tìm thấy biến thể' });
+      return res.status(200).json({ success: true, message: 'Xóa thành công' });
     } catch (error) {
       console.error('Error deleting variant:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ khi xóa biến thể'
-      });
+      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi xóa biến thể' });
     }
   }
 }

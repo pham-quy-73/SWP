@@ -14,6 +14,15 @@ import mongoose from 'mongoose';
  * @property {string} status - ACTIVE, INACTIVE
  * @property {string} orderItemType - IN_STOCK, PRE_ORDER
  */
+
+const VariantImageSchema = new mongoose.Schema({
+  imageUrl: {
+    type: String,
+    required: true,
+    trim: true
+  }
+});
+
 const ProductVariantSchema = new mongoose.Schema({
   productId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -64,7 +73,8 @@ const ProductVariantSchema = new mongoose.Schema({
     type: String,
     enum: ['IN_STOCK', 'PRE_ORDER'],
     default: 'IN_STOCK'
-  }
+  },
+  imageUrl: { type: [VariantImageSchema], default: [] }
 }, {
   timestamps: true
 });

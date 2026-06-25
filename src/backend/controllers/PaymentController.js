@@ -1,5 +1,6 @@
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
+import OrderItem from '../models/OrderItem.js';
 import crypto from 'crypto';
 
 class PaymentController {
@@ -175,6 +176,61 @@ class PaymentController {
         order.status = 'CANCELLED';
         await order.save();
         return res.redirect(`${clientUrl}/checkout/failure`);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Mô phỏng thanh toán VNPay (Cho môi trường local/test)
+   */
+  async mockCheckout(req, res, next) {
+    try {
+      const { orderId, simulateStatus } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Thiếu mã đơn hàng' });
+      }
+
+      const order = await Order.findById(orderId).populate('user_id');
+      if (!order) {
+        return res.status(404).json({ error_code: 'ORDER_NOT_FOUND', message: 'Không tìm thấy đơn hàng' });
+      }
+
+      if (order.status === 'COMPLETED' || order.status === 'CONFIRMED') {
+        return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Đơn hàng này đã được thanh toán hoặc hoàn thành.' });
+      }
+
+      const userEmail = order.user_id?.email || '';
+
+      if (simulateStatus === 'SUCCESS') {
+        order.status = 'CONFIRMED';
+        await order.save();
+        return res.status(200).json({
+          code: 0,
+          result: {
+            success: true,
+            redirectUrl: `/checkout/success?orderId=${orderId}&email=${userEmail}`
+          }
+        });
+      } else {
+        // Giao dịch không thành công -> Hủy đơn và trả lại tồn kho
+        const items = await OrderItem.find({ order_id: order._id });
+        for (const item of items) {
+          await Product.findByIdAndUpdate(item.product_id, {
+            $inc: { stock_quantity: item.quantity }
+          });
+        }
+        
+        order.status = 'CANCELLED';
+        await order.save();
+        return res.status(200).json({
+          code: 0,
+          result: {
+            success: false,
+            redirectUrl: `/checkout/failure`
+          }
+        });
       }
     } catch (error) {
       next(error);
