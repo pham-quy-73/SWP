@@ -8,10 +8,15 @@ import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
 import authRoutes from './routes/auth.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import Order from './models/Order.js';
 import OrderItem from './models/OrderItem.js';
 import Product from './models/Product.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -59,6 +64,9 @@ const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || true }));
 app.use(express.json());
+
+// Mở khóa thư mục 'uploads' để Frontend lấy được ảnh
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes setup
 app.get('/', (req, res) => {

@@ -2,52 +2,61 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  SlidersHorizontal, 
-  ChevronLeft, 
-  ChevronRight, 
-  ShoppingCart, 
-  Eye, 
-  X, 
+import {
+  Search,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  Eye,
+  X,
   Info,
   Filter
 } from 'lucide-react';
-import { useCartStore } from '../feature/product/store/useCartStore';
+import { useCartStore } from '../feature/product/store/useCartStore'; // Hãy kiểm tra lại đường dẫn import này nếu báo lỗi
 import { toast } from 'sonner';
 import Breadcrumb from '../feature/product/components/Breadcrumb';
+
+// HÀM XỬ LÝ LINK ẢNH CHO TRANG KHÁCH HÀNG (Chuẩn hóa URL)
+const getDisplayImageUrl = (imgObj) => {
+  const fallbackImg = 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
+  if (!imgObj) return fallbackImg;
+
+  const url = typeof imgObj === 'string' ? imgObj : imgObj.imageUrl;
+  if (!url) return fallbackImg;
+
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return `${apiURL}${url}`;
+};
 
 export default function ProductsPage() {
   const { addToCart } = useCartStore();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  
-  // URL Params initialization
+
   const [searchParams] = useSearchParams();
   const initCategory = searchParams.get('category') || '';
   const initGender = searchParams.get('gender') || '';
   const initSearch = searchParams.get('search') || '';
 
-  // Page state
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const limit = 9;
 
-  // Filter states
   const [search, setSearch] = useState(initSearch);
   const [category, setCategory] = useState(initCategory);
   const [gender, setGender] = useState(initGender);
   const [frameType, setFrameType] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [sortBy, setSortBy] = useState('newest'); // client-opt choice: newest, price-asc, price-desc
+  const [sortBy, setSortBy] = useState('newest');
 
-  // Sidebar show/hide on mobile
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Buffer filter values (applied on clicking "Lọc" button to prevent typing stuttering)
   const [filterQuery, setFilterQuery] = useState({
     search: initSearch,
     category: initCategory,
@@ -61,11 +70,7 @@ export default function ProductsPage() {
     setLoading(true);
     setError(false);
     try {
-      const params = {
-        page,
-        limit,
-        status: 'ACTIVE'
-      };
+      const params = { page, limit, status: 'ACTIVE' };
 
       if (filterQuery.search) params.search = filterQuery.search;
       if (filterQuery.category) params.category = filterQuery.category;
@@ -75,10 +80,9 @@ export default function ProductsPage() {
       if (filterQuery.maxPrice) params.maxPrice = filterQuery.maxPrice;
 
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`, { params });
-      
+
       if (response.data && response.data.result) {
         setProducts(response.data.result.items || []);
-        // Note: totalPages from API is result.totalPages
         setTotalPages(response.data.result.totalPages || 1);
         setTotalElements(response.data.result.totalElements || 0);
       } else {
@@ -92,7 +96,6 @@ export default function ProductsPage() {
     }
   };
 
-  // Sync state if URL query dynamically changes
   useEffect(() => {
     const freshCategory = searchParams.get('category') || '';
     const freshGender = searchParams.get('gender') || '';
@@ -101,24 +104,14 @@ export default function ProductsPage() {
     setCategory(freshCategory);
     setGender(freshGender);
     setSearch(freshSearch);
-    
     setPage(1);
-    setFilterQuery({
-      search: freshSearch,
-      category: freshCategory,
-      gender: freshGender,
-      frameType: '',
-      minPrice: '',
-      maxPrice: ''
-    });
+    setFilterQuery({ search: freshSearch, category: freshCategory, gender: freshGender, frameType: '', minPrice: '', maxPrice: '' });
   }, [searchParams]);
 
-  // Trigger loading when filters or page change
   useEffect(() => {
     fetchProducts();
   }, [page, filterQuery]);
 
-  // Handle instant search / category click
   const handleApplyQuickFilters = (newFilters) => {
     setPage(1);
     setFilterQuery(prev => ({ ...prev, ...newFilters }));
@@ -127,72 +120,38 @@ export default function ProductsPage() {
   const handleApplyAllFilters = (e) => {
     if (e) e.preventDefault();
     setPage(1);
-    setFilterQuery({
-      search,
-      category,
-      gender,
-      frameType,
-      minPrice,
-      maxPrice
-    });
+    setFilterQuery({ search, category, gender, frameType, minPrice, maxPrice });
     setShowMobileFilters(false);
   };
 
   const handleClearFilters = () => {
-    setSearch('');
-    setCategory('');
-    setGender('');
-    setFrameType('');
-    setMinPrice('');
-    setMaxPrice('');
-    setPage(1);
-    setFilterQuery({
-      search: '',
-      category: '',
-      gender: '',
-      frameType: '',
-      minPrice: '',
-      maxPrice: ''
-    });
+    setSearch(''); setCategory(''); setGender(''); setFrameType(''); setMinPrice(''); setMaxPrice(''); setPage(1);
+    setFilterQuery({ search: '', category: '', gender: '', frameType: '', minPrice: '', maxPrice: '' });
     setShowMobileFilters(false);
   };
 
-  // Client-side sorting because backend page limits may apply, but sorting is comfortable
   const getSortedProducts = () => {
     let sortedList = [...products];
-    if (sortBy === 'price-asc') {
-      sortedList.sort((a, b) => (a.price) - (b.price));
-    } else if (sortBy === 'price-desc') {
-      sortedList.sort((a, b) => (b.price) - (a.price));
-    }
-    // 'newest' corresponds to default API response order (descending createdAt)
+    if (sortBy === 'price-asc') sortedList.sort((a, b) => (a.price) - (b.price));
+    else if (sortBy === 'price-desc') sortedList.sort((a, b) => (b.price) - (a.price));
     return sortedList;
   };
 
-  const handleQuickAddToCart = (product, e) => {
-    e.preventDefault(); // Stop navigation to detail page
+  // Cập nhật hàm Add to Cart để nhận đúng hình ảnh đã được phân giải
+  const handleQuickAddToCart = (product, resolvedImage, e) => {
+    e.preventDefault();
     e.stopPropagation();
 
-    // Default variant
     const variantId = product._id || product.id;
     const price = product.discountPrice || product.price;
-
-    let safeProductImage = 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
-    if (Array.isArray(product.imageUrl) && product.imageUrl.length > 0) {
-      safeProductImage = product.imageUrl[0].imageUrl;
-    } else if (typeof product.image === 'string') {
-      safeProductImage = product.image;
-    } else if (typeof product.imageUrl === 'string') {
-      safeProductImage = product.imageUrl;
-    }
 
     const cartPayload = {
       productId: variantId,
       name: `${product.name} (Mặc định)`,
       price: price,
-      image: safeProductImage,
+      image: resolvedImage,
       quantity: 1,
-      lensId: null, // Default: no lens
+      lensId: null,
       orderType: 'buy-now',
       prescription: null,
     };
@@ -201,16 +160,7 @@ export default function ProductsPage() {
     toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
   };
 
-  const breadcrumbItems = [
-    { label: 'Cửa hàng', link: '/products' }
-  ];
-
-  const categories = [
-    { id: '', label: 'Tất cả' },
-    { id: 'FRAME', label: 'Gọng Kính' },
-    { id: 'SUNGLASSES', label: 'Kính Râm' },
-    { id: 'ACCESSORIES', label: 'Phụ Kiện' }
-  ];
+  const breadcrumbItems = [{ label: 'Cửa hàng', link: '/products' }];
 
   const genders = [
     { id: '', label: 'Tất cả giới tính' },
@@ -219,88 +169,77 @@ export default function ProductsPage() {
     { id: 'UNISEX', label: 'Unisex' }
   ];
 
-  const frameTypes = [
-    { id: '', label: 'Tất cả viền kính' },
-    { id: 'Full-Rim', label: 'Nguyên khung (Full-Rim)' },
-    { id: 'Semi-Rimless', label: 'Nửa khung (Semi-Rimless)' },
-    { id: 'Rimless', label: 'Không khung (Rimless)' },
-    { id: 'Other', label: 'Khác (Other)' }
-  ];
-
   const sortedProducts = getSortedProducts();
 
   const getGenderBadge = (g) => {
     switch (g) {
-      case 'MALE':
-      case 'Nam':
-        return {
-          text: 'Nam',
-          className: 'bg-blue-100/80 text-blue-700 border-blue-200'
-        };
-      case 'FEMALE':
-      case 'Nữ':
-        return {
-          text: 'Nữ',
-          className: 'bg-rose-100/80 text-rose-700 border-rose-200'
-        };
-      default:
-        return {
-          text: 'Unisex',
-          className: 'bg-purple-100/80 text-purple-700 border-purple-200'
-        };
+      case 'MALE': return { text: 'Nam', className: 'bg-zinc-100 text-zinc-900 border-zinc-200' };
+      case 'FEMALE': return { text: 'Nữ', className: 'bg-rose-50 text-rose-700 border-rose-200' };
+      default: return { text: 'Unisex', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     }
   };
 
+  // Luxury UI Classes
+  const inputClass = "w-full border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-zinc-50 hover:bg-white transition-all";
+
   return (
-    <div className="min-h-screen bg-[#F8FAFB] pb-24 pt-28">
+    <div className="min-h-screen bg-zinc-50 pb-24 pt-28 font-sans selection:bg-emerald-200 selection:text-emerald-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Top breadcrumb & metadata row */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 border-b border-gray-200/60 pb-4">
-          <Breadcrumb items={breadcrumbItems} />
-          
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <span>
-              Hiển thị <span className="font-extrabold text-gray-900">{totalElements}</span> sản phẩm
-            </span>
+
+        {/* HEADER & BREADCRUMB */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-10 border-b border-zinc-200/60 pb-6">
+          <div>
+            <Breadcrumb items={breadcrumbItems} />
+            <h1 className="text-4xl font-black tracking-tight text-zinc-900 mt-4">Bộ Sưu Tập.</h1>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+            <span>Hiển thị <span className="font-black text-zinc-900">{totalElements}</span> sản phẩm</span>
+            <div className="w-px h-4 bg-zinc-300 hidden sm:block"></div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Sắp xếp:</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Sắp xếp:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="text-xs font-bold text-gray-700 border border-gray-200 outline-none rounded-md px-3 py-1.5 bg-white cursor-pointer focus:border-teal-500"
+                className="text-xs font-bold text-zinc-900 border border-zinc-200 rounded-xl px-3 py-2 bg-white cursor-pointer focus:outline-none focus:border-emerald-500 hover:border-zinc-300 transition-colors"
               >
                 <option value="newest">Mới nhất</option>
                 <option value="price-asc">Giá: Thấp đến Cao</option>
                 <option value="price-desc">Giá: Cao đến Thấp</option>
               </select>
             </div>
+            {/* Nút lọc Mobile */}
+            <button
+              className="lg:hidden p-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-sm"
+              onClick={() => setShowMobileFilters(true)}
+            >
+              <Filter className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* MAIN LAYOUT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+        {/* MAIN LAYOUT */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+
           {/* SIDEBAR FILTERS (DESKTOP) */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="bg-white border rounded-xl p-5 shadow-sm sticky top-24 flex flex-col h-fit">
-              <div className="flex justify-between items-center border-b pb-4 mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Bộ lọc</h3>
-                <button 
+            <div className="bg-white border border-zinc-100 rounded-[2rem] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] sticky top-28 flex flex-col h-fit">
+              <div className="flex justify-between items-center border-b border-zinc-100 pb-5 mb-6">
+                <h3 className="text-lg font-black text-zinc-900">Bộ lọc</h3>
+                <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="text-xs text-gray-400 hover:text-red-500 transition font-bold"
+                  className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 hover:text-rose-500 transition-colors"
                 >
                   Xóa tất cả
                 </button>
               </div>
 
-              {/* FORM */}
-              <form onSubmit={handleApplyAllFilters} className="space-y-6">
-                
-                {/* Search input */}
+              <form onSubmit={handleApplyAllFilters} className="space-y-8">
+
+                {/* Search */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Tìm kiếm</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Tìm kiếm</label>
                   <input
                     type="text"
                     placeholder="Tên sản phẩm..."
@@ -309,212 +248,167 @@ export default function ProductsPage() {
                       setSearch(e.target.value);
                       if (!e.target.value) handleApplyQuickFilters({ search: '' });
                     }}
-                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 placeholder:text-gray-400 text-gray-700"
+                    className={inputClass}
                   />
                 </div>
 
                 {/* Gender */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Giới tính</label>
-                  <div className="flex flex-col gap-2">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Giới tính</label>
+                  <div className="flex flex-col gap-3">
                     {genders.map((g) => (
-                      <label key={g.id} className="flex items-center gap-3 text-sm text-gray-600 cursor-pointer group">
+                      <label key={g.id} className="flex items-center gap-3 text-sm text-zinc-600 cursor-pointer group font-medium">
                         <input
                           type="radio"
                           name="gender"
                           value={g.id}
                           checked={gender === g.id}
                           onChange={(e) => setGender(e.target.value)}
-                          className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500 cursor-pointer accent-teal-600"
+                          className="w-4 h-4 text-emerald-600 border-zinc-300 focus:ring-emerald-500 cursor-pointer"
                         />
-                        <span>{g.label === 'Tất cả giới tính' ? 'Tất cả' : g.label}</span>
+                        <span className="group-hover:text-zinc-900 transition-colors">{g.label}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                {/* Price Range */}
+                {/* Price */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Khoảng giá (VND)</label>
-                  <div className="flex items-center gap-2 mb-4">
-                    <input
-                      type="number"
-                      placeholder="Từ"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
-                    />
-                    <span className="text-gray-400">-</span>
-                    <input
-                      type="number"
-                      placeholder="Đến"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <input
-                      type="range"
-                      min="0"
-                      max="15000000"
-                      step="100000"
-                      value={minPrice || 0}
-                      onChange={(e) => setMinPrice(Number(e.target.value))}
-                      className="w-full accent-teal-600"
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="15000000"
-                      step="100000"
-                      value={maxPrice || 15000000}
-                      onChange={(e) => setMaxPrice(Number(e.target.value))}
-                      className="w-full accent-teal-600"
-                    />
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Khoảng giá (VND)</label>
+                  <div className="flex items-center gap-3 mb-5">
+                    <input type="number" placeholder="Từ" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className={inputClass} />
+                    <span className="text-zinc-300 font-bold">-</span>
+                    <input type="number" placeholder="Đến" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className={inputClass} />
                   </div>
                 </div>
 
-                {/* Submit filter button */}
+                {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-md font-semibold text-sm transition mt-6"
+                  className="w-full bg-zinc-900 hover:bg-emerald-600 text-white py-4 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-xl hover:shadow-emerald-500/20 active:scale-95 mt-4"
                 >
-                  Áp dụng bộ lọc
+                  ÁP DỤNG BỘ LỌC
                 </button>
               </form>
             </div>
           </div>
 
           {/* PRODUCTS LIST GRID */}
-          <div className="col-span-1 lg:col-span-3 space-y-12">
-            
-            {/* LOADING STATE SKELETON */}
+          <div className="col-span-1 lg:col-span-3">
+
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4 animate-pulse">
-                    <div className="aspect-[4/3] bg-zinc-100 rounded-xl"></div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-zinc-200 rounded w-1/3"></div>
-                      <div className="h-4 bg-zinc-200 rounded w-3/4"></div>
-                      <div className="h-4 bg-zinc-200 rounded w-1/2"></div>
+                  <div key={i} className="bg-white rounded-[2rem] border border-zinc-100 p-4 space-y-4 animate-pulse shadow-sm">
+                    <div className="aspect-[4/3] bg-zinc-100 rounded-2xl"></div>
+                    <div className="space-y-3 px-2 pb-2">
+                      <div className="h-3 bg-zinc-200 rounded-full w-1/3"></div>
+                      <div className="h-5 bg-zinc-200 rounded-full w-3/4"></div>
+                      <div className="h-5 bg-zinc-200 rounded-full w-1/2"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : error ? (
-              <div className="bg-rose-50 border border-rose-100 rounded-2xl p-10 text-center space-y-4">
-                <Info className="w-12 h-12 text-rose-500 mx-auto" />
-                <h3 className="text-rose-900 font-bold text-lg">Đã có lỗi xảy ra</h3>
-                <p className="text-rose-600 text-sm">Không thể kết nối đến máy chủ để lấy sản phẩm.</p>
-                <button 
-                  onClick={fetchProducts}
-                  className="bg-rose-600 text-white rounded-full px-6 py-2 text-xs font-bold inline-block"
-                >
-                  Thử lại
+              <div className="bg-white border border-rose-100 rounded-[2rem] p-16 text-center space-y-5 shadow-sm">
+                <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Info className="w-10 h-10 text-rose-500" />
+                </div>
+                <h3 className="text-zinc-900 font-black text-xl">Đã có lỗi xảy ra</h3>
+                <p className="text-zinc-500 font-medium">Không thể kết nối đến máy chủ để lấy sản phẩm.</p>
+                <button onClick={fetchProducts} className="bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl px-8 py-3.5 text-sm font-bold transition-all shadow-lg active:scale-95">
+                  Thử lại ngay
                 </button>
               </div>
             ) : sortedProducts.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center space-y-4 shadow-sm">
-                <SlidersHorizontal className="w-12 h-12 text-gray-300 mx-auto" />
-                <h3 className="text-gray-800 font-bold text-lg">Không tìm thấy sản phẩm</h3>
-                <p className="text-gray-400 text-sm">Chúng tôi không tìm thấy kết quả nào trùng khớp với bộ lọc của bạn.</p>
-                <button
-                  onClick={handleClearFilters}
-                  className="bg-teal-650 hover:bg-teal-700 text-white rounded-full px-6 py-2.5 text-xs font-bold inline-block transition-colors"
-                >
+              <div className="bg-white rounded-[2rem] border border-zinc-100 p-20 text-center space-y-5 shadow-[0_10px_40px_rgba(0,0,0,0.03)]">
+                <div className="w-24 h-24 bg-zinc-50 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+                  <SlidersHorizontal className="w-10 h-10 text-zinc-300" />
+                </div>
+                <h3 className="text-zinc-900 font-black text-2xl">Không tìm thấy sản phẩm</h3>
+                <p className="text-zinc-500 font-medium max-w-sm mx-auto">Chúng tôi không tìm thấy kết quả nào trùng khớp với bộ lọc của bạn. Hãy thử nới lỏng các điều kiện tìm kiếm.</p>
+                <button onClick={handleClearFilters} className="mt-4 bg-white border border-zinc-200 hover:border-zinc-900 text-zinc-900 rounded-2xl px-8 py-3.5 text-sm font-bold transition-all shadow-sm active:scale-95">
                   Xóa tất cả bộ lọc
                 </button>
               </div>
             ) : (
               /* PRODUCT GRID */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <AnimatePresence mode="popLayout">
                   {sortedProducts.map((p) => {
-                    let images = [];
-                    if (Array.isArray(p.imageUrl)) {
-                      images = p.imageUrl.map((imgObj) => imgObj.imageUrl).filter(Boolean);
-                    } else if (typeof p.image === 'string') {
-                      images = [p.image];
-                    } else if (typeof p.imageUrl === 'string') {
-                      images = [p.imageUrl];
-                    }
-                    const itemImg = images.length > 0 ? images[0] : 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
+                    // LOGIC CHỌN ẢNH THÔNG MINH MỚI
+                    const displayImageObj =
+                      (p.variants && p.variants.length > 0 && p.variants[0].imageUrl?.length > 0)
+                        ? p.variants[0].imageUrl[0]
+                        : (p.imageUrl && p.imageUrl.length > 0)
+                          ? p.imageUrl[0]
+                          : null;
+
+                    const itemImg = getDisplayImageUrl(displayImageObj);
                     const badge = getGenderBadge(p.gender);
 
                     return (
                       <motion.div
                         key={p._id || p.id}
                         layout
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.4 }}
                       >
-                        <Link 
-                          to={`/products/${p._id || p.id}`} 
-                          className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full overflow-hidden relative"
+                        <Link
+                          to={`/products/${p._id || p.id}`}
+                          className="bg-white rounded-[2rem] border border-zinc-100 hover:border-emerald-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full overflow-hidden relative"
                         >
-                          {/* Image container */}
-                          <div className="aspect-[4/3] bg-gray-50 overflow-hidden relative flex items-center justify-center p-4">
+                          {/* Image Box */}
+                          <div className="aspect-[4/3] bg-zinc-50/50 overflow-hidden relative flex items-center justify-center p-6 mix-blend-multiply">
                             {badge && (
-                              <span className={`absolute top-3 left-3 z-10 backdrop-blur-md text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-sm border uppercase tracking-wider ${badge.className}`}>
+                              <span className={`absolute top-4 left-4 z-10 text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border ${badge.className}`}>
                                 {badge.text}
                               </span>
                             )}
-
                             <img
                               src={itemImg}
                               alt={p.name}
-                              className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
-                              onError={(e) => {
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800';
-                                e.currentTarget.onerror = null;
-                              }}
+                              className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-700 ease-out drop-shadow-xl"
                             />
                           </div>
 
-                          {/* Info */}
-                          <div className="p-4 flex flex-col flex-grow">
-                            <p className="text-[11px] text-gray-400 mb-1.5 font-bold tracking-widest uppercase">
+                          {/* Info Box */}
+                          <div className="p-6 flex flex-col flex-grow bg-white relative z-10">
+                            <p className="text-[10px] text-zinc-400 mb-2 font-black tracking-[0.2em] uppercase">
                               {p.brand}
                             </p>
-                            <h4 className="font-semibold text-gray-900 leading-tight line-clamp-2 mb-3 group-hover:text-teal-650 transition-colors duration-250">
+                            <h4 className="font-black text-zinc-900 text-lg leading-snug line-clamp-2 mb-4 group-hover:text-emerald-600 transition-colors duration-300">
                               {p.name}
                             </h4>
-                            
+
                             {/* Tags */}
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {p.shape && (
-                                <span className="text-[11px] font-medium bg-gray-100/80 text-gray-600 px-2 py-1 rounded-md">
-                                  {p.shape}
-                                </span>
-                              )}
-                              {p.frameMaterial && (
-                                <span className="text-[11px] font-medium bg-gray-100/80 text-gray-600 px-2 py-1 rounded-md">
-                                  {p.frameMaterial}
-                                </span>
-                              )}
-                              {p.frameType && (
-                                <span className="text-[11px] font-medium bg-gray-100/80 text-gray-600 px-2 py-1 rounded-md">
-                                  {p.frameType}
-                                </span>
-                              )}
+                            <div className="flex flex-wrap gap-2 mb-6">
+                              {p.shape && <span className="text-[10px] font-bold bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">{p.shape}</span>}
+                              {p.frameType && <span className="text-[10px] font-bold bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">{p.frameType}</span>}
                             </div>
 
-                            {/* Price Section */}
-                            <div className="mt-auto pt-2 border-t border-gray-50 flex items-center justify-between">
+                            {/* Price & Action */}
+                            <div className="mt-auto pt-4 border-t border-zinc-100 flex items-end justify-between">
                               <div className="flex flex-col">
-                                <p className="text-teal-700 font-bold text-base">
+                                {p.discountPrice && p.discountPrice < p.price && (
+                                  <span className="text-xs text-zinc-400 line-through font-semibold mb-0.5">
+                                    {(p.price).toLocaleString('vi-VN')} ₫
+                                  </span>
+                                )}
+                                <p className="text-zinc-900 font-black text-xl tracking-tight">
                                   {(p.discountPrice || p.price).toLocaleString('vi-VN')} ₫
                                 </p>
                               </div>
-                              <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                </svg>
-                              </div>
+
+                              <button
+                                onClick={(e) => handleQuickAddToCart(p, itemImg, e)}
+                                className="w-10 h-10 rounded-2xl bg-zinc-50 border border-zinc-200 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white group-hover:border-zinc-900 transition-all duration-300 active:scale-90"
+                                title="Thêm vào giỏ hàng"
+                              >
+                                <ShoppingCart className="w-4 h-4" />
+                              </button>
                             </div>
                           </div>
                         </Link>
@@ -525,14 +419,14 @@ export default function ProductsPage() {
               </div>
             )}
 
-            {/* PAGINATION CONTROLS */}
+            {/* PAGINATION */}
             {!loading && totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-center gap-2 pt-10 mt-10 border-t border-zinc-200/60">
                 <button
                   type="button"
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="w-10 h-10 flex items-center justify-center border border-gray-250 rounded-full bg-white hover:bg-teal-600 hover:text-white hover:border-teal-600 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-450 disabled:hover:border-gray-250 transition-all cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-400 hover:text-zinc-900 hover:border-zinc-300 disabled:opacity-30 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -542,11 +436,10 @@ export default function ProductsPage() {
                     key={pNum}
                     type="button"
                     onClick={() => setPage(pNum)}
-                    className={`w-10 h-10 flex items-center justify-center rounded-full text-xs font-bold transition-all cursor-pointer ${
-                      page === pNum
-                        ? 'bg-teal-600 text-white shadow-sm'
-                        : 'border border-gray-250 bg-white hover:bg-gray-100 text-gray-700'
-                    }`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${page === pNum
+                        ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20'
+                        : 'bg-white border border-zinc-200 text-zinc-600 hover:border-zinc-400'
+                      }`}
                   >
                     {pNum}
                   </button>
@@ -556,7 +449,7 @@ export default function ProductsPage() {
                   type="button"
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="w-10 h-10 flex items-center justify-center border border-gray-250 rounded-full bg-white hover:bg-teal-600 hover:text-white hover:border-teal-600 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-450 disabled:hover:border-gray-250 transition-all cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-400 hover:text-zinc-900 hover:border-zinc-300 disabled:opacity-30 transition-all"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -565,132 +458,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-
-      {/* MOBILE FILTERS SIDEBAR OVERLAY */}
-      <AnimatePresence>
-        {showMobileFilters && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowMobileFilters(false)}
-              className="fixed inset-0 bg-black z-50 lg:hidden"
-            />
-            {/* Context sheet */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-80 max-w-[90%] bg-white z-50 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto lg:hidden"
-            >
-              <div className="space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-900">Bộ lọc</h3>
-                  <button onClick={() => setShowMobileFilters(false)}>
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-
-                {/* Form fields */}
-                <div className="space-y-5">
-                  {/* Search input */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-700">Tìm kiếm</label>
-                    <input
-                      type="text"
-                      placeholder="Tên sản phẩm..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 placeholder:text-gray-450"
-                    />
-                  </div>
-
-                  {/* Gender selection */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-700">Giới tính</label>
-                    <div className="flex flex-col gap-2">
-                      {genders.map((g) => (
-                        <label key={g.id} className="flex items-center gap-3 text-sm text-gray-600 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="gender-mobile"
-                            value={g.id}
-                            checked={gender === g.id}
-                            onChange={(e) => setGender(e.target.value)}
-                            className="w-4 h-4 text-teal-655 border-gray-300 focus:ring-teal-500 cursor-pointer accent-teal-600"
-                          />
-                          <span>{g.label === 'Tất cả giới tính' ? 'Tất cả' : g.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Price inputs */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-700">Khoảng giá (VND)</label>
-                    <div className="flex items-center gap-2 mb-4">
-                      <input
-                        type="number"
-                        placeholder="Từ"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                        className="w-full border rounded-md px-2 py-1.5 text-sm"
-                      />
-                      <span className="text-gray-400">-</span>
-                      <input
-                        type="number"
-                        placeholder="Đến"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                        className="w-full border rounded-md px-2 py-1.5 text-sm"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <input
-                        type="range"
-                        min="0"
-                        max="15000000"
-                        step="100000"
-                        value={minPrice || 0}
-                        onChange={(e) => setMinPrice(Number(e.target.value))}
-                        className="w-full accent-teal-600"
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max="15000000"
-                        step="100000"
-                        value={maxPrice || 15000000}
-                        onChange={(e) => setMaxPrice(Number(e.target.value))}
-                        className="w-full accent-teal-600"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 space-y-2 border-t border-gray-100 mt-6 animate-[fadeIn_0.3s]">
-                <button
-                  onClick={handleApplyAllFilters}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-md font-bold text-sm tracking-wider uppercase transition-colors shadow-md"
-                >
-                  Áp dụng
-                </button>
-                <button
-                  type="button"
-                  onClick={handleClearFilters}
-                  className="w-full border border-gray-200 text-gray-500 py-2.5 rounded-md font-bold text-sm tracking-wider uppercase transition-colors bg-white hover:bg-gray-50"
-                >
-                  Xóa bộ lọc
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

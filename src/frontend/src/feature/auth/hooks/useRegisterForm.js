@@ -15,8 +15,9 @@ const registerSchema = z.object({
 export const useRegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  // THÊM: State độc lập để chống giật UI
   const [apiError, setApiError] = useState(''); 
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const form = useForm({
     resolver: zodResolver(registerSchema),
@@ -28,23 +29,38 @@ export const useRegisterForm = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setIsSuccess(false);
-    
-    // Lưu ý: Chúng ta KHÔNG xóa apiError ở đây để giữ nguyên hộp đỏ chờ kết quả
+    setResendMessage(''); 
 
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, data);
       
-      setApiError(''); // Chỉ xóa hộp đỏ khi thực sự thành công
+      setApiError(''); 
       setIsSuccess(true);
-      form.reset(); 
       
     } catch (error) {
-      // Cập nhật lại câu chữ lỗi một cách mượt mà
       setApiError(error.response?.data?.message || 'Có lỗi xảy ra khi kết nối đến máy chủ');
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { form, onSubmit, isLoading, isSuccess, apiError }; // Trả về apiError
+  const handleResendEmail = async () => {
+    const email = form.getValues('email'); 
+    if (!email) return;
+
+    setIsResending(true);
+    setResendMessage('');
+    setApiError('');
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/resend-verify-email`, { email });
+      setResendMessage(response.data.message || 'Đã gửi lại email thành công!');
+    } catch (error) {
+      setApiError(error.response?.data?.message || 'Không thể gửi lại email lúc này.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  return { form, onSubmit, isLoading, isSuccess, apiError, isResending, resendMessage, handleResendEmail }; 
 };

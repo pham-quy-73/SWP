@@ -1,81 +1,140 @@
-import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Package, LogOut, ChevronLeft, ChevronRight, ClipboardList, LayoutDashboard } from 'lucide-react';
+import { useState, useContext } from 'react';
+import { NavLink, Outlet, Link } from 'react-router-dom';
+import {
+    LayoutDashboard,
+    Package,
+    ShoppingCart,
+    LogOut,
+    ChevronLeft,
+    ChevronRight,
+    Search
+} from 'lucide-react';
+import { AuthContext } from '../../../contexts/AuthContext';
 
 export default function ManagerLayout() {
-  const [collapsed, setCollapsed] = useState(false);
-  const navigate = useNavigate();
+    const [collapsed, setCollapsed] = useState(false);
+    const { user, logout } = useContext(AuthContext);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
+    const menuItems = [
+        { name: 'Tổng quan', href: '/manager/dashboard', icon: LayoutDashboard },
+        { name: 'Sản phẩm', href: '/manager/products', icon: Package },
+        { name: 'Đơn hàng', href: '/manager/orders', icon: ShoppingCart },
+    ];
 
-  const menuItems = [
-    { name: 'Tổng quan', href: '/manager/dashboard', icon: LayoutDashboard },
-    { name: 'Sản phẩm', href: '/manager/products', icon: Package },
-    { name: 'Đơn hàng', href: '/manager/orders', icon: ClipboardList },
-  ];
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
-      {/* Sidebar */}
-      <aside className={`bg-slate-900 border-r border-slate-800 text-slate-400 transition-all duration-300 flex flex-col shrink-0 ${collapsed ? 'w-16' : 'w-64'}`}>
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 shrink-0">
-          {!collapsed && <span className="font-extrabold text-white text-lg tracking-tight px-2">MANAGER BOARD</span>}
-          <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors mx-auto">
-            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-          </button>
-        </div>
-
-        <nav className="flex-1 py-4 px-3 space-y-1">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                    : 'hover:bg-slate-800 hover:text-slate-200'
-                } ${collapsed ? 'justify-center px-2' : ''}`
-              }
+    return (
+        <div className="flex h-screen bg-zinc-50 font-sans">
+            {/* SIDEBAR */}
+            <aside
+                className={`relative flex flex-col bg-zinc-900 text-zinc-400 transition-all duration-300 ease-in-out shrink-0 z-20 shadow-2xl ${collapsed ? 'w-20' : 'w-[280px]'
+                    }`}
             >
-              <item.icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span>{item.name}</span>}
-            </NavLink>
-          ))}
-        </nav>
+                {/* Logo Area - Đã fix lỗi bị che chữ */}
+                <div className="h-24 flex items-center justify-center shrink-0 px-6">
+                    <Link to="/" className="flex items-center gap-3">
+                        {/* Icon "O" như cũ */}
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg">
+                            <span className="text-zinc-950 font-black text-lg">O</span>
+                        </div>
+                        {/* Chữ OPTICSTORE chỉ hiện khi sidebar mở */}
+                        {!collapsed && (
+                            <span className="text-lg font-black tracking-widest text-white whitespace-nowrap animate-in fade-in duration-500">
+                                OPTICSTORE
+                            </span>
+                        )}
+                    </Link>
+                </div>
 
-        <div className="p-3 border-t border-slate-800 shrink-0">
-          <button
-            onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-rose-950/30 hover:text-rose-450 transition-all text-slate-400 ${
-              collapsed ? 'justify-center px-2' : ''
-            }`}
-          >
-            <LogOut className="w-5 h-5 shrink-0" />
-            {!collapsed && <span>Đăng xuất</span>}
-          </button>
+                {/* Role Info */}
+                {!collapsed && (
+                    <div className="px-8 pb-8 pt-2 animate-in fade-in duration-500">
+                        <div className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50">
+                            <p className="text-[9px] font-bold tracking-[0.2em] text-emerald-400 uppercase mb-1">Manager</p>
+                            <p className="text-sm text-white font-bold truncate">{user?.username || 'Quản lý'}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Nav */}
+                <nav className={`flex-1 ${collapsed ? 'px-3' : 'px-5'} space-y-2`}>
+                    {menuItems.map((item) => (
+                        <NavLink
+                            key={item.name}
+                            to={item.href}
+                            className={({ isActive }) =>
+                                `flex items-center gap-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 ${isActive
+                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+                                    : 'hover:bg-zinc-800 hover:text-zinc-100'
+                                } ${collapsed ? 'justify-center' : 'px-5'}`
+                            }
+                        >
+                            <item.icon className="w-5 h-5 shrink-0" />
+                            {!collapsed && <span>{item.name}</span>}
+                        </NavLink>
+                    ))}
+                </nav>
+
+                {/* Logout */}
+                <div className="p-5">
+                    <button
+                        onClick={logout}
+                        className={`w-full flex items-center gap-4 py-3.5 rounded-2xl text-sm font-bold text-zinc-500 hover:bg-rose-900/20 hover:text-rose-400 transition-all ${collapsed ? 'justify-center' : 'px-5'
+                            }`}
+                    >
+                        <LogOut className="w-5 h-5 shrink-0" />
+                        {!collapsed && <span>Đăng xuất</span>}
+                    </button>
+                </div>
+
+                {/* Toggle Button */}
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="absolute -right-3.5 top-10 bg-white text-zinc-900 w-7 h-7 flex items-center justify-center rounded-full shadow-lg hover:bg-emerald-500 hover:text-white transition-all z-30"
+                >
+                    {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                </button>
+            </aside>
+
+            {/* MAIN CONTENT */}
+            <div className="flex-1 flex flex-col min-w-0 bg-white">
+                <header className="h-20 border-b border-zinc-100 flex items-center justify-between px-10">
+                    <div className="relative w-96">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm..."
+                            className="w-full h-11 pl-11 pr-4 rounded-xl bg-zinc-50 border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {/* User Info */}
+                        <div className="hidden md:flex flex-col items-end">
+                            <span className="text-sm font-bold text-zinc-900">
+                                {user?.username || 'Manager'}
+                            </span>
+                            <span className="text-xs text-zinc-500">
+                                Quản lý hệ thống
+                            </span>
+                        </div>
+
+                        {/* Avatar */}
+                        <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-700">
+                            {(user?.username || 'M').charAt(0).toUpperCase()}
+                        </div>
+
+                        {/* Logout */}
+                        <button
+                            onClick={logout}
+                            className="flex items-center gap-2 px-4 h-10 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all duration-300 font-semibold"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden md:inline">Đăng xuất</span>
+                        </button>
+                    </div>
+                </header>
+                <main className="flex-1 overflow-y-auto p-10">
+                    <Outlet />
+                </main>
+            </div>
         </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-205 flex items-center justify-between px-8 shrink-0 shadow-sm">
-          <span className="font-bold text-slate-800 tracking-tight">Trang Quản Lý Hệ Thống</span>
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase border">
-              Manager
-            </span>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
+    );
 }

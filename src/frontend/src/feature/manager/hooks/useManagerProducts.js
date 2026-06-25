@@ -12,13 +12,13 @@ export const useManagerProducts = (queryParams = {}) => {
     setIsError(false);
     try {
       const apiURL = import.meta.env.VITE_API_URL || '';
-      
-      // Map queryParams to match the backend's naming (limit, search, page)
+
+      // Đã thêm status: 'ALL' để Manager thấy cả sản phẩm ACTIVE và INACTIVE
       const mappedParams = {
-        page: (queryParams.page !== undefined ? queryParams.page : 0) + 1, // backend is 1-indexed
+        page: (queryParams.page !== undefined ? queryParams.page : 0) + 1,
         limit: queryParams.size || 10,
         search: queryParams.q || undefined,
-        status: queryParams.status || 'ACTIVE'
+        status: queryParams.status || 'ALL'
       };
 
       const token = localStorage.getItem('accessToken');
@@ -53,6 +53,7 @@ export const useManagerProducts = (queryParams = {}) => {
 export const useCreateManagerProduct = () => {
   const [isPending, setIsPending] = useState(false);
 
+  // Đã sửa cấu trúc destructuring (payload)
   const mutate = async ({ productData, files }, { onSuccess, onError } = {}) => {
     setIsPending(true);
     const toastId = toast.loading('Đang khởi tạo sản phẩm...');
@@ -91,6 +92,7 @@ export const useCreateManagerProduct = () => {
 export const useUpdateManagerProduct = () => {
   const [isPending, setIsPending] = useState(false);
 
+  // Payload đã được xử lý chuẩn
   const mutate = async ({ id, payload }, { onSuccess, onError } = {}) => {
     setIsPending(true);
     const toastId = toast.loading('Đang cập nhật sản phẩm...');

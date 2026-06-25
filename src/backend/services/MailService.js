@@ -20,7 +20,7 @@ class MailService {
   }
 
   async sendActivationEmail(toEmail, activationToken) {
-    const activationUrl = `${process.env.API_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${activationToken}`;
+    const activationUrl = `${process.env.API_URL || 'http://localhost:5000'}/api/auth/verify-email?token=${activationToken}`;
 
     const mailOptions = {
       from: `"OpticStore" <${process.env.SMTP_USER}>`,

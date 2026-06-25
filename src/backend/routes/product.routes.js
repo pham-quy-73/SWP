@@ -27,10 +27,10 @@ router.delete('/:id', authenticate, requireRole(['MANAGER', 'ADMIN']), ProductCo
 router.get('/:productId/variants', ProductVariantController.getVariants);
 
 // Thêm mới biến thể
-router.post('/:productId/variants', authenticate, requireRole(['MANAGER', 'ADMIN']), ProductVariantController.createVariant);
+router.post('/:productId/variants', authenticate, requireRole(['MANAGER', 'ADMIN']), upload.array('files'), ProductVariantController.createVariant);
 
 // Cập nhật biến thể
-router.put('/:productId/variants/:variantId', authenticate, requireRole(['MANAGER', 'ADMIN']), ProductVariantController.updateVariant);
+router.put('/:productId/variants/:variantId', authenticate, requireRole(['MANAGER', 'ADMIN']), upload.array('files'), ProductVariantController.updateVariant);
 
 // Xóa biến thể
 router.delete('/:productId/variants/:variantId', authenticate, requireRole(['MANAGER', 'ADMIN']), ProductVariantController.deleteVariant);
