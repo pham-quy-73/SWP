@@ -9,7 +9,7 @@ import { Navigate } from 'react-router-dom';
 
 export default function CheckoutPage() {
   const { items } = useCartStore();
-  const { step, setStep, handleContinue, handleBack } = useCheckoutFlow();
+  const { step, setStep, handleContinue, handleBack, isSubmitting } = useCheckoutFlow();
 
   if (items.length === 0) {
     return <Navigate to="/products" replace />;
@@ -34,7 +34,7 @@ export default function CheckoutPage() {
 
           {/* Cột phải */}
           <div className="lg:col-span-5 xl:col-span-4">
-            <OrderSummary step={step} onContinue={handleContinue} onBack={handleBack} />
+            <OrderSummary step={step} onContinue={handleContinue} onBack={handleBack} isSubmitting={isSubmitting} />
           </div>
         </div>
       </div>

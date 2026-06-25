@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Search, MoreHorizontal, Trash2, Lock, Unlock, Loader2, User as UserIcon, ShieldCheck, KeyRound, X, ShieldAlert
- } from 'lucide-react';
-import { 
-  useAdminUsers, 
-  useUpdateUserStatus, 
+import {
+  Search, MoreHorizontal, Trash2, Lock, Unlock, Loader2, User as UserIcon, ShieldCheck, KeyRound, X, ShieldAlert
+} from 'lucide-react';
+import {
+  useAdminUsers,
+  useUpdateUserStatus,
   useDeleteUser,
   useResetUserPassword
 } from '../hooks/useAdminUsers';
@@ -66,8 +67,9 @@ export default function UserManagePage() {
   const submitResetPassword = () => {
     if (!newPassword || newPassword.length < 6) return alert('Mật khẩu phải từ 6 ký tự!');
     resetPassword(
-      { id: resetModal.userId, newPassword }, 
-      { onSuccess: () => {
+      { id: resetModal.userId, newPassword },
+      {
+        onSuccess: () => {
           setResetModal({ isOpen: false, userId: null, userName: '' });
           setNewPassword('');
           setOpenActionId(null);
@@ -94,7 +96,7 @@ export default function UserManagePage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 p-6 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
-      
+
       {/* HEADER */}
       <div className="mb-10 max-w-7xl mx-auto">
         <span className="inline-flex items-center gap-1.5 py-1 px-3 mb-3 text-[10px] font-bold tracking-[0.3em] text-zinc-600 bg-zinc-200/50 rounded-full border border-zinc-200 uppercase">
@@ -107,18 +109,17 @@ export default function UserManagePage() {
       </div>
 
       <div className="max-w-7xl mx-auto bg-white rounded-[2rem] border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[600px]">
-        
+
         {/* TABS NATIVE DIỀU HƯỚNG */}
         <div className="flex items-center gap-6 px-8 border-b border-zinc-100 bg-zinc-50/30 overflow-x-auto custom-scrollbar">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-5 text-sm font-bold tracking-wide uppercase transition-all whitespace-nowrap border-b-2 ${
-                activeTab === tab.id 
-                  ? 'border-emerald-500 text-zinc-900' 
+              className={`py-5 text-sm font-bold tracking-wide uppercase transition-all whitespace-nowrap border-b-2 ${activeTab === tab.id
+                  ? 'border-emerald-500 text-zinc-900'
                   : 'border-transparent text-zinc-400 hover:text-zinc-600'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -160,11 +161,11 @@ export default function UserManagePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-50 bg-white">
-                {users.length > 0 ? (
+                {users && users.length > 0 ? (
                   users.map((user, index) => {
                     const isLocked = user.deleted_at !== null;
                     const isAdmin = user.role === 'ADMIN';
-                    
+
                     return (
                       <tr key={user._id} className="group hover:bg-zinc-50/80 transition-all duration-300">
                         <td className="px-8 py-5">
@@ -206,16 +207,16 @@ export default function UserManagePage() {
                                   <div className="px-4 py-2 border-b border-zinc-50 mb-1">
                                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Bảo mật</p>
                                   </div>
-                                  
+
                                   <button
                                     onClick={() => setResetModal({ isOpen: true, userId: user._id, userName: user.first_name })}
                                     className="w-full px-5 py-2.5 text-xs text-zinc-600 hover:bg-zinc-50 hover:text-emerald-600 flex items-center gap-3 font-bold transition-colors"
                                   >
                                     <KeyRound className="w-4 h-4" /> Cấp lại mật khẩu
                                   </button>
-                                  
+
                                   <div className="h-px bg-zinc-100 my-1 mx-3"></div>
-                                  
+
                                   <button
                                     onClick={() => handleStatusToggle(user._id, isLocked)}
                                     className={`w-full px-5 py-2.5 text-xs flex items-center gap-3 font-bold transition-colors ${isLocked ? 'text-emerald-600 hover:bg-emerald-50' : 'text-amber-600 hover:bg-amber-50'}`}
@@ -253,7 +254,7 @@ export default function UserManagePage() {
         </div>
 
         {/* PAGINATION */}
-        {!isLoading && pagination.totalPages > 1 && (
+        {!isLoading && pagination && pagination.totalPages > 1 && (
           <div className="bg-white px-8 py-6 border-t border-zinc-100 flex items-center justify-between gap-4">
             <span className="text-zinc-500 text-sm font-medium">
               Trang <span className="font-bold text-zinc-900">{pagination.page}</span> / {pagination.totalPages}
@@ -282,18 +283,18 @@ export default function UserManagePage() {
       {resetModal.isOpen && (
         <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative">
-            <button onClick={() => setResetModal({ isOpen: false })} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900">
+            <button onClick={() => setResetModal({ isOpen: false, userId: null, userName: '' })} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900">
               <X className="w-5 h-5" />
             </button>
-            
+
             <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4">
               <KeyRound className="w-6 h-6" />
             </div>
-            
+
             <h3 className="text-lg font-black text-zinc-900 mb-1">Cấp lại mật khẩu</h3>
             <p className="text-sm text-zinc-500 mb-6">Nhập mật khẩu mới cho <span className="font-bold text-zinc-900">{resetModal.userName}</span>.</p>
-            
-            <input 
+
+            <input
               type="text"
               placeholder="Mật khẩu mới (tối thiểu 6 ký tự)"
               value={newPassword}
@@ -301,7 +302,7 @@ export default function UserManagePage() {
               className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 mb-6"
             />
 
-            <button 
+            <button
               onClick={submitResetPassword}
               disabled={isResetting || newPassword.length < 6}
               className="w-full bg-zinc-900 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition-all disabled:opacity-50"

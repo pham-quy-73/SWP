@@ -37,6 +37,11 @@ export const paymentApi = {
         params: { orderId: orderId },
       })
       .then((res) => res.data),
+  // Mô phỏng thanh toán
+  mockCheckout: async (orderId, simulateStatus) =>
+    await api
+      .post('/payment/mock-checkout', { orderId, simulateStatus })
+      .then((res) => res.data),
   getOrderDetails: async (orderId) =>
     await api.get(`/orders/${orderId}`).then((res) => res.data),
 };

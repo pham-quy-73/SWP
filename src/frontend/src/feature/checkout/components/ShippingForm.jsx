@@ -51,9 +51,9 @@ export const ShippingForm = () => {
       },
       () => {
         setIsLocating(false);
-        toast.error('Không thể lấy vị trí hiện tại.');
+        toast.error('Không thể tự động lấy vị trí hiện tại. Vui lòng nhập thủ công địa chỉ nhận hàng của bạn.');
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
     );
   };
 

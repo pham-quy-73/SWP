@@ -2,7 +2,7 @@ import { Lock, ShieldCheck, Loader2, Info } from 'lucide-react';
 import { useCartStore } from '../../product/store/useCartStore';
 import { usePaymentRequirement } from '../hooks/usePaymentRequirement';
 
-export const OrderSummary = ({ step, onContinue, onBack }) => {
+export const OrderSummary = ({ step, onContinue, onBack, isSubmitting }) => {
   const { items } = useCartStore();
   const { data: response, isLoading, isError } = usePaymentRequirement();
   const result = response?.result;
@@ -133,11 +133,16 @@ export const OrderSummary = ({ step, onContinue, onBack }) => {
       <div className="flex flex-col gap-3 bg-gray-50/50 p-5 pt-0 border-t border-gray-100">
         <button
           onClick={onContinue}
-          disabled={items.length === 0 || isError}
+          disabled={items.length === 0 || isError || isSubmitting}
           className="w-full h-12 text-sm bg-[#1e2575] hover:bg-[#151b54] text-white font-bold shadow-lg transition-all active:scale-[0.98] rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
         >
           {isError ? (
             'Lỗi tính toán'
+          ) : isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Đang xử lý đặt hàng...
+            </>
           ) : (
             <>
               <Lock className="w-4 h-4" />
