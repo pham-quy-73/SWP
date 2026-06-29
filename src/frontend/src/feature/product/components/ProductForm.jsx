@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2, Circle } from 'lucide-react';
-import { useCartStore } from '../../product/store/useCartStore';
+import { ShoppingBag, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { useCartStore } from '../../product/store/useCartStore'; // Đảm bảo đường dẫn import chính xác
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -16,14 +16,12 @@ const getDisplayImageUrl = (imgObj) => {
 export default function ProductForm({ product, isLoading, onVariantChange }) {
   const { addToCart } = useCartStore();
 
-  // States cho Biến thể Gọng kính
   const [variants, setVariants] = useState([]);
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [isLoadingVariants, setIsLoadingVariants] = useState(false);
 
-  // States cho Tròng kính (Lens Add-on)
   const [lenses, setLenses] = useState([]);
-  const [selectedLensId, setSelectedLensId] = useState('none'); // 'none' nghĩa là không mua tròng
+  const [selectedLensId, setSelectedLensId] = useState('none');
   const [isLoadingLenses, setIsLoadingLenses] = useState(false);
 
   // Fetch Biến thể của Gọng
@@ -45,7 +43,8 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
             sizeLabel: 'Freesize',
             lensWidthMm: 52, bridgeWidthMm: 18, templeLengthMm: 140,
             price: product.discountPrice || product.price,
-            orderItemType: 'IN_STOCK'
+            orderItemType: 'IN_STOCK',
+            quantity: 0 // Mặc định hết hàng nếu không có biến thể thực
           };
           setVariants([defaultVariant]);
           setSelectedVariantId(defaultVariant.id);
@@ -60,7 +59,7 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
     fetchVariants();
   }, [product]);
 
-  // NÂNG CẤP: Fetch danh sách Tròng kính (Chỉ tải nếu sản phẩm đang xem không phải là Tròng)
+  // Fetch danh sách Tròng kính
   useEffect(() => {
     const fetchLenses = async () => {
       if (!product || product.category === 'LENS') return;
@@ -68,7 +67,6 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
       setIsLoadingLenses(true);
       try {
         const apiURL = import.meta.env.VITE_API_URL || '';
-        // Gọi API lấy các sản phẩm có category là LENS
         const res = await axios.get(`${apiURL}/api/products`, {
           params: { category: 'LENS', limit: 100 }
         });
@@ -89,6 +87,9 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
   const selectedVariant = variants.find((v) => (v._id || v.id) === selectedVariantId) || variants[0];
   const selectedLens = selectedLensId !== 'none' ? lenses.find(l => (l._id || l.id) === selectedLensId) : null;
 
+  // KIỂM TRA TỒN KHO
+  const isOutOfStock = selectedVariant ? selectedVariant.quantity <= 0 : true;
+
   useEffect(() => {
     if (onVariantChange && selectedVariant) {
       onVariantChange(selectedVariant);
@@ -103,7 +104,6 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
     );
   }
 
-  // NÂNG CẤP: Tính tổng tiền bao gồm cả Gọng và Tròng (nếu có)
   const basePrice = selectedVariant?.price || product.discountPrice || product.price;
   const lensPrice = selectedLens ? (selectedLens.discountPrice || selectedLens.price) : 0;
   const totalPrice = basePrice + lensPrice;
@@ -111,6 +111,12 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
   const handleAddToCart = () => {
     if (!selectedVariant) {
       toast.error('Vui lòng chọn phiên bản gọng kính!');
+      return;
+    }
+
+    // NÂNG CẤP: Chặn Logic Frontend không cho thêm nếu hết hàng
+    if (isOutOfStock) {
+      toast.error('Rất tiếc, phiên bản bạn chọn đã hết hàng!');
       return;
     }
 
@@ -123,15 +129,14 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
 
     const safeProductImage = getDisplayImageUrl(displayImageObj);
 
-    // Cập nhật Payload giỏ hàng
     const cartPayload = {
-      productId: selectedVariant._id || selectedVariant.id,
+      productId: product._id || product.id,
+      variantId: selectedVariant._id || selectedVariant.id, // Đã bổ sung Variant ID
       name: `${product.name} - ${selectedVariant.colorName}`,
-      price: basePrice, // Giá gọng
+      price: basePrice,
       image: safeProductImage,
       quantity: 1,
       orderType: 'buy-now',
-      // THÔNG TIN TRÒNG ĐÍNH KÈM
       lensId: selectedLens ? (selectedLens._id || selectedLens.id) : null,
       lensName: selectedLens ? selectedLens.name : null,
       lensPrice: lensPrice,
@@ -144,26 +149,28 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
 
   return (
     <div className="space-y-10">
-      {/* 1. CHỌN PHIÊN BẢN (MÀU SẮC GỌNG) */}
+      {/* 1. CHỌN PHIÊN BẢN */}
       <div className="space-y-4">
         <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          1. Lựa chọn màu sắc
+          1. Lựa chọn phiên bản
         </h3>
 
         <div className="flex flex-col gap-3">
           {variants.map((v) => {
             const variantId = v._id || v.id;
             const isSelected = selectedVariantId === variantId;
+            const hasStock = v.quantity > 0; // Biến kiểm tra tồn kho
+
             return (
               <button
                 key={variantId}
                 type="button"
                 onClick={() => setSelectedVariantId(variantId)}
                 className={`relative flex items-start gap-4 p-4 w-full text-left rounded-2xl border transition-all duration-300 ${isSelected
-                  ? 'border-zinc-900 bg-zinc-50 shadow-md'
-                  : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50/50'
-                  }`}
+                    ? 'border-zinc-900 bg-zinc-50 shadow-md'
+                    : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50/50'
+                  } ${!hasStock ? 'opacity-60 grayscale-[50%]' : ''}`} // Làm mờ nếu hết hàng
               >
                 <div className="mt-0.5 shrink-0 text-zinc-900 transition-transform">
                   {isSelected ? (
@@ -177,15 +184,19 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
                   <p className="font-black text-zinc-900 text-base uppercase tracking-tight">
                     {v.colorName}
                   </p>
+
+                  {/* NÂNG CẤP: Hiển thị trạng thái Tồn kho */}
                   <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider ${hasStock
+                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                        : 'bg-rose-50 text-rose-600 border border-rose-100'
+                      }`}>
+                      {hasStock ? `Còn ${v.quantity} SP` : 'Hết hàng'}
+                    </span>
+
                     {v.sizeLabel && (
                       <span className="text-[10px] font-bold px-2 py-1 bg-white text-zinc-600 rounded-lg border border-zinc-200 uppercase">
                         Size {v.sizeLabel}
-                      </span>
-                    )}
-                    {(v.lensWidthMm > 0) && (
-                      <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1 uppercase tracking-widest">
-                        {v.lensWidthMm}-{v.bridgeWidthMm}-{v.templeLengthMm} mm
                       </span>
                     )}
                   </div>
@@ -196,8 +207,8 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
                     {v.price.toLocaleString('vi-VN')} ₫
                   </p>
                   <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded border ${v.orderItemType === 'PRE_ORDER'
-                    ? 'text-amber-700 bg-amber-50 border-amber-200'
-                    : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      ? 'text-amber-700 bg-amber-50 border-amber-200'
+                      : 'text-zinc-500 bg-zinc-50 border-zinc-200'
                     }`}>
                     {v.orderItemType === 'PRE_ORDER' ? 'Đặt trước' : 'Có sẵn'}
                   </span>
@@ -208,8 +219,8 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
         </div>
       </div>
 
-      {/* 2. CHỌN TRÒNG KÍNH (LENS) - Chỉ hiển thị nếu không phải đang xem Tròng */}
-      {(product.category === 'SUNGLASSES') && lenses.length > 0 && (
+      {/* 2. CHỌN TRÒNG KÍNH */}
+      {(product.category === 'FRAME' || product.category === 'SUNGLASSES') && lenses.length > 0 && (
         <div className="space-y-4 pt-6 border-t border-zinc-100">
           <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -217,7 +228,6 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
           </h3>
 
           <div className="flex flex-col gap-3">
-            {/* Tùy chọn: Không mua tròng */}
             <button
               type="button"
               onClick={() => setSelectedLensId('none')}
@@ -239,7 +249,6 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
               </div>
             </button>
 
-            {/* Các tùy chọn Tròng kính */}
             {lenses.map((lens) => {
               const lensId = lens._id || lens.id;
               const isSelected = selectedLensId === lensId;
@@ -282,7 +291,7 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
       <div className="pt-6 border-t border-zinc-100">
         <div className="flex flex-col gap-2 mb-6">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-500">Giá gọng:</span>
+            <span className="text-zinc-500">Giá sản phẩm:</span>
             <span className="font-bold text-zinc-900">{basePrice.toLocaleString('vi-VN')} ₫</span>
           </div>
           {selectedLens && (
@@ -300,13 +309,25 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
           </div>
         </div>
 
+        {/* NÂNG CẤP: Khóa nút nếu hết hàng */}
         <button
           type="button"
+          disabled={isOutOfStock}
           onClick={handleAddToCart}
-          className="w-full h-14 text-sm font-bold bg-zinc-900 hover:bg-emerald-600 text-white shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 active:scale-95 rounded-2xl flex items-center justify-center gap-3 tracking-widest uppercase"
+          className={`w-full h-14 text-sm font-bold shadow-xl transition-all duration-300 rounded-2xl flex items-center justify-center gap-3 tracking-widest uppercase ${isOutOfStock
+              ? 'bg-zinc-200 text-zinc-500 cursor-not-allowed'
+              : 'bg-zinc-900 hover:bg-emerald-600 text-white hover:shadow-emerald-500/20 active:scale-95'
+            }`}
         >
-          <ShoppingBag className="w-5 h-5" />
-          Thêm vào giỏ hàng
+          {isOutOfStock ? (
+            <>
+              <AlertCircle className="w-5 h-5" /> Sản phẩm tạm hết hàng
+            </>
+          ) : (
+            <>
+              <ShoppingBag className="w-5 h-5" /> Thêm vào giỏ hàng
+            </>
+          )}
         </button>
       </div>
     </div>

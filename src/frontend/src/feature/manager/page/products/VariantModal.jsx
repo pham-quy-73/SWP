@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Loader2, Upload } from 'lucide-react';
 
 const EMPTY_FORM = {
-  sku: '', // Nâng cấp: Thêm SKU
+  sku: '', 
   colorName: '',
   frameFinish: '',
   lensWidthMm: 0,
@@ -10,7 +10,7 @@ const EMPTY_FORM = {
   templeLengthMm: 0,
   sizeLabel: '',
   price: 0,
-  discountPrice: '', // Nâng cấp: Thêm discountPrice
+  discountPrice: '', 
   quantity: 0,
   status: 'ACTIVE',
   orderItemType: 'IN_STOCK',
@@ -118,21 +118,46 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
             </div>
 
             {/* Hàng 2: Giá cả */}
-            <div><label className={labelClass}>Giá bán gốc (VNĐ) *</label><input type="number" name="price" placeholder="Ví dụ: 4700000" value={form.price || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-            <div><label className={labelClass}>Giá khuyến mãi (VNĐ)</label><input type="number" name="discountPrice" placeholder="Để trống nếu không Sale" value={form.discountPrice || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+            <div>
+              <label className={labelClass}>Giá bán gốc (VNĐ) *</label>
+              <input type="number" name="price" placeholder="Ví dụ: 4700000" value={form.price !== undefined ? form.price : ''} onChange={handleChange} className={inputClass} min={0} />
+            </div>
+            <div>
+              <label className={labelClass}>Giá khuyến mãi (VNĐ)</label>
+              <input type="number" name="discountPrice" placeholder="Để trống nếu không Sale" value={form.discountPrice !== undefined ? form.discountPrice : ''} onChange={handleChange} className={inputClass} min={0} />
+            </div>
 
             {/* Các trường còn lại */}
-            <div><label className={labelClass}>Số lượng tồn kho *</label><input type="number" name="quantity" placeholder="Ví dụ: 50" value={form.quantity || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-            <div><label className={labelClass}>Nhãn kích thước</label><input name="sizeLabel" placeholder="Ví dụ: M, L..." value={form.sizeLabel} onChange={handleChange} className={inputClass} /></div>
-            <div><label className={labelClass}>Kiểu hoàn thiện</label><input name="frameFinish" placeholder="Ví dụ: Bóng, Nhám..." value={form.frameFinish} onChange={handleChange} className={inputClass} /></div>
+            <div>
+              <label className={labelClass}>Số lượng tồn kho *</label>
+              {/* Đã fix lỗi không cho phép nhập hoặc hiển thị số 0 */}
+              <input type="number" name="quantity" placeholder="Ví dụ: 50" value={form.quantity !== undefined ? form.quantity : ''} onChange={handleChange} className={inputClass} min={0} />
+            </div>
+            <div>
+              <label className={labelClass}>Nhãn kích thước</label>
+              <input name="sizeLabel" placeholder="Ví dụ: M, L..." value={form.sizeLabel} onChange={handleChange} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Kiểu hoàn thiện</label>
+              <input name="frameFinish" placeholder="Ví dụ: Bóng, Nhám..." value={form.frameFinish} onChange={handleChange} className={inputClass} />
+            </div>
 
             {/* Thông số kính */}
             <div className="col-span-2 mt-2 border-t border-zinc-100 pt-6">
               <h3 className="text-sm font-bold text-zinc-900 mb-4">Thông số kỹ thuật</h3>
               <div className="grid grid-cols-3 gap-4">
-                <div><label className={labelClass}>Tròng (mm)</label><input type="number" name="lensWidthMm" value={form.lensWidthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-                <div><label className={labelClass}>Cầu mắt (mm)</label><input type="number" name="bridgeWidthMm" value={form.bridgeWidthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-                <div><label className={labelClass}>Càng kính (mm)</label><input type="number" name="templeLengthMm" value={form.templeLengthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+                <div>
+                  <label className={labelClass}>Tròng (mm)</label>
+                  <input type="number" name="lensWidthMm" value={form.lensWidthMm !== undefined ? form.lensWidthMm : ''} onChange={handleChange} className={inputClass} min={0} />
+                </div>
+                <div>
+                  <label className={labelClass}>Cầu mắt (mm)</label>
+                  <input type="number" name="bridgeWidthMm" value={form.bridgeWidthMm !== undefined ? form.bridgeWidthMm : ''} onChange={handleChange} className={inputClass} min={0} />
+                </div>
+                <div>
+                  <label className={labelClass}>Càng kính (mm)</label>
+                  <input type="number" name="templeLengthMm" value={form.templeLengthMm !== undefined ? form.templeLengthMm : ''} onChange={handleChange} className={inputClass} min={0} />
+                </div>
               </div>
             </div>
 
