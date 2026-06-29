@@ -213,7 +213,7 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
         <div className="space-y-4 pt-6 border-t border-zinc-100">
           <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            2. Lựa chọn Thấu kính (Gia công tại cửa hàng)
+            2. Lựa chọn Thấu kính
           </h3>
 
           <div className="flex flex-col gap-3">
@@ -234,8 +234,8 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
                 )}
               </div>
               <div className="flex-1">
-                <p className="font-bold text-zinc-900 text-sm">Chỉ mua gọng (Không kèm tròng)</p>
-                <p className="text-xs text-zinc-500 mt-1">Giao gọng kính nguyên bản của nhà sản xuất.</p>
+                <p className="font-bold text-zinc-900 text-sm">Chỉ mua gọng (không kèm tròng)</p>
+                <p className="text-xs text-zinc-500 mt-1">Sử dụng tròng nhựa mẫu mặc định của nhà sản xuất.</p>
               </div>
             </button>
 

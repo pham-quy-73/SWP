@@ -18,7 +18,7 @@ const ProductManagePage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [page, setPage] = useState(1);
-  const size = 10;
+  const size = 20; // Tải 50 sản phẩm để tránh bị khuất ở trang sau
 
   const [openActionId, setOpenActionId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,7 +32,7 @@ const ProductManagePage = () => {
     return () => window.removeEventListener('click', handleClickGlobal);
   }, []);
 
-  // Delay tìm kiếm
+  // Delay tìm kiếm 500ms
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -51,37 +51,46 @@ const ProductManagePage = () => {
     const params = {
       page: page - 1,
       size,
-      isManager: true, // Báo cho Backend biết đây là Admin để không ẩn dữ liệu
+      isManager: true,
     };
     if (debouncedSearch) params.search = debouncedSearch;
     if (filterStatus) params.status = filterStatus;
-
-    // Nếu đang ở Tab Tròng Kính, ép buộc Backend chỉ lấy LENS
-    if (activeTab === 'LENS') {
-      params.category = 'LENS';
-    }
-
     return params;
-  }, [debouncedSearch, page, size, activeTab, filterStatus]);
+  }, [debouncedSearch, page, size, filterStatus]);
 
   const { data, isLoading, isError, refetch } = useManagerProducts(queryParams);
 
-  // 3. LỌC DỮ LIỆU FRONTEND (Đảm bảo an toàn 100%)
-  const rawProducts = data?.items || [];
+  // 3. BỘ TRÍCH XUẤT DỮ LIỆU SIÊU CẤP (Quét mọi kiểu bọc dữ liệu của Backend)
+  const rawProducts = useMemo(() => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (data.items && Array.isArray(data.items)) return data.items;
+    if (data.result && Array.isArray(data.result)) return data.result;
+    if (data.result?.items && Array.isArray(data.result.items)) return data.result.items;
+    if (data.products && Array.isArray(data.products)) return data.products;
+    if (data.data && Array.isArray(data.data)) return data.data;
+    if (data.data?.items && Array.isArray(data.data.items)) return data.data.items;
+    return [];
+  }, [data]);
+
+  // 4. LỌC THEO TAB Ở FRONTEND
   const products = useMemo(() => {
-    if (activeTab === 'LENS') {
-      return rawProducts.filter(p => p.category === 'LENS');
-    }
-    // Ở Tab GLASSES, loại bỏ hoàn toàn Tròng kính
-    return rawProducts.filter(p => p.category !== 'LENS');
+    return rawProducts.filter(p => {
+      const cat = String(p.category || '').trim().toUpperCase();
+      if (activeTab === 'LENS') {
+        return cat === 'LENS';
+      }
+      return cat !== 'LENS';
+    });
   }, [rawProducts, activeTab]);
 
-  const totalElements = data?.totalElements || 0;
-
-  // 4. CÁC HÀM XỬ LÝ (MUTATIONS)
+  // 5. CÁC HÀM XỬ LÝ (MUTATIONS)
   const deleteMutation = useDeleteManagerProduct();
   const createMutation = useCreateManagerProduct();
   const updateMutation = useUpdateManagerProduct();
+
+  // Kiểm tra trạng thái loading tổng thể của các API thay đổi dữ liệu
+  const isMutating = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   const handleClearFilters = () => {
     setSearchTerm('');
@@ -121,7 +130,6 @@ const ProductManagePage = () => {
 
   const handleSubmit = (form) => {
     const finalProductData = { ...form.productData };
-    // Đảm bảo không bị nhầm category khi lưu
     if (modalType === 'LENS') finalProductData.category = 'LENS';
 
     if (editingProduct) {
@@ -137,7 +145,7 @@ const ProductManagePage = () => {
     }
   };
 
-  // 5. CÁC HÀM HIỂN THỊ UI
+  // 6. CÁC HÀM TRỢ GIÚP UI
   const getCategoryBadge = (category) => {
     const cat = category?.toUpperCase() || '';
     if (cat === 'FRAME') return 'bg-zinc-100 text-zinc-900 border-zinc-200';
@@ -301,7 +309,7 @@ const ProductManagePage = () => {
                       </td>
 
                       <td className="px-6 py-6 align-middle">
-                        <span className="font-bold text-zinc-900 text-sm">{(product.price).toLocaleString('vi-VN')} ₫</span>
+                        <span className="font-bold text-zinc-900 text-sm">{(product.price || 0).toLocaleString('vi-VN')} ₫</span>
                       </td>
 
                       <td className="px-6 py-6 align-middle text-center">
@@ -360,7 +368,7 @@ const ProductManagePage = () => {
                   ))
                   : !isError && (
                     <tr>
-                      <td colSpan={6} className="px-6 py-32 text-center">
+                      <td colSpan={activeTab === 'LENS' ? 5 : 6} className="px-6 py-32 text-center">
                         <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
                           <div className="w-24 h-24 bg-zinc-50 border border-zinc-100 rounded-[2rem] flex items-center justify-center mb-6">
                             <Package className="w-10 h-10 text-zinc-300" />
@@ -383,7 +391,7 @@ const ProductManagePage = () => {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         product={editingProduct}
-        isSubmitting={isLoading}
+        isSubmitting={isMutating}
         initialType={modalType}
       />
     </div>
