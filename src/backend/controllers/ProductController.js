@@ -1,32 +1,45 @@
 import Product from '../models/Product.js';
 
 class ProductController {
+
   async getProducts(req, res, next) {
     try {
       const {
         page = 1, limit = 10, search, category, brand, gender, shape,
-        frameMaterial, frameType, minPrice, maxPrice, status
+        frameMaterial, frameType, minPrice, maxPrice, status,
+        isManager // Thêm cờ này để phân biệt Admin gọi hay Khách hàng gọi
       } = req.query;
 
       const query = {};
 
-      // Xử lý status: Nếu truyền ALL (từ Manager) thì lấy tất cả, nếu không thì lấy ACTIVE cho Customer
+      // 1. Lọc theo trạng thái
       if (status === 'ALL') {
-         // Lấy tất cả, không gán gì vào query.status
+        // Quản lý xem tất cả
       } else if (status) {
-         query.status = status;
+        query.status = status;
       } else {
-         query.status = 'ACTIVE';
+        query.status = 'ACTIVE'; // Khách hàng mặc định chỉ thấy hàng ACTIVE
       }
 
+      // 2. LOGIC QUAN TRỌNG: ẨN TRÒNG KÍNH (LENS) KHỎI DANH MỤC CHUNG
+      if (category) {
+        query.category = category; // Nếu chỉ đích danh lấy category nào thì lấy category đó (VD: popup chọn tròng sẽ gọi API với category=LENS)
+      } else {
+        // Nếu không truyền category (Trang chủ gọi): 
+        // - Quản lý (Manager) thì thấy tất cả.
+        // - Khách hàng (Customer) thì ẨN 'LENS' đi.
+        if (!isManager || isManager === 'false') {
+          query.category = { $ne: 'LENS' };
+        }
+      }
+
+      // 3. Các bộ lọc khác giữ nguyên
       if (search) {
         query.$or = [
           { name: { $regex: search, $options: 'i' } },
           { brand: { $regex: search, $options: 'i' } }
         ];
       }
-
-      if (category) query.category = category;
       if (brand) query.brand = { $regex: brand, $options: 'i' };
       if (gender) query.gender = gender.toUpperCase();
       if (shape) query.shape = { $regex: shape, $options: 'i' };
@@ -75,28 +88,26 @@ class ProductController {
         return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: Name, Brand hoặc Price!' });
       }
 
-      // Format lại ảnh cũ (nếu có)
       if (productData.imageUrl && Array.isArray(productData.imageUrl)) {
         productData.imageUrl = productData.imageUrl.map(img => (typeof img === 'string' ? { imageUrl: img } : img));
       } else {
         productData.imageUrl = [];
       }
 
-      // Xử lý Upload Ảnh Mới (Tự động chuyển dấu \ thành /)
       if (req.files && req.files.length > 0) {
         const imageUrls = req.files.map(file => ({
           imageUrl: `/${(file.path || file.filename).replace(/\\/g, '/')}`
         }));
         productData.imageUrl = [...productData.imageUrl, ...imageUrls];
       } else if (productData.imageUrl.length === 0) {
-        // Ảnh mặc định
         productData.imageUrl = [{ imageUrl: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=800' }];
       }
 
       if (productData.price !== undefined) productData.price = Number(productData.price);
       if (productData.discountPrice !== undefined) productData.discountPrice = Number(productData.discountPrice);
       if (productData.weightGram !== undefined) productData.weightGram = Number(productData.weightGram);
-      if (productData.stock_quantity !== undefined) productData.stock_quantity = Number(productData.stock_quantity);
+
+      // Nâng cấp: Đã gỡ bỏ logic liên quan đến stock_quantity tại đây
 
       const product = new Product(productData);
       await product.save();
@@ -117,14 +128,12 @@ class ProductController {
         updateData = JSON.parse(req.body.product);
       }
 
-      // Chuẩn hóa mảng ảnh gửi từ Frontend
       if (updateData.imageUrl && Array.isArray(updateData.imageUrl)) {
         updateData.imageUrl = updateData.imageUrl.map(img => (typeof img === 'string' ? { imageUrl: img } : img));
       } else {
         updateData.imageUrl = [];
       }
 
-      // Gộp thêm ảnh Upload (Tự động đổi \ thành /)
       if (req.files && req.files.length > 0) {
         const newImageUrls = req.files.map(file => ({
           imageUrl: `/${(file.path || file.filename).replace(/\\/g, '/')}`
@@ -132,11 +141,11 @@ class ProductController {
         updateData.imageUrl = [...updateData.imageUrl, ...newImageUrls];
       }
 
-      // Ép kiểu các trường Number
       if (updateData.price !== undefined) updateData.price = Number(updateData.price);
       if (updateData.discountPrice !== undefined) updateData.discountPrice = Number(updateData.discountPrice);
       if (updateData.weightGram !== undefined) updateData.weightGram = Number(updateData.weightGram);
-      if (updateData.stock_quantity !== undefined) updateData.stock_quantity = Number(updateData.stock_quantity);
+
+      // Nâng cấp: Đã gỡ bỏ logic liên quan đến stock_quantity tại đây
 
       const product = await Product.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
       if (!product) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });

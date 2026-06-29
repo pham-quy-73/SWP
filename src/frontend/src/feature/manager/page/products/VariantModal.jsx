@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Loader2, Upload } from 'lucide-react';
 
 const EMPTY_FORM = {
+  sku: '', // Nâng cấp: Thêm SKU
   colorName: '',
   frameFinish: '',
   lensWidthMm: 0,
@@ -9,6 +10,7 @@ const EMPTY_FORM = {
   templeLengthMm: 0,
   sizeLabel: '',
   price: 0,
+  discountPrice: '', // Nâng cấp: Thêm discountPrice
   quantity: 0,
   status: 'ACTIVE',
   orderItemType: 'IN_STOCK',
@@ -28,6 +30,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
           ? variant.imageUrl.map((img) => (typeof img === 'string' ? img : (img.imageUrl ?? ''))).filter(Boolean)
           : [];
         setForm({
+          sku: variant.sku ?? '',
           colorName: variant.colorName ?? '',
           frameFinish: variant.frameFinish ?? '',
           lensWidthMm: variant.lensWidthMm ?? 0,
@@ -35,6 +38,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
           templeLengthMm: variant.templeLengthMm ?? 0,
           sizeLabel: variant.sizeLabel ?? '',
           price: variant.price ?? 0,
+          discountPrice: variant.discountPrice ?? '',
           quantity: variant.quantity ?? 0,
           status: variant.status ?? 'ACTIVE',
           orderItemType: variant.orderItemType ?? 'IN_STOCK',
@@ -90,7 +94,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
               {variant ? 'Cập Nhật Phiên Bản' : 'Thêm Phiên Bản Mới'}
             </h2>
             <p className="text-xs text-zinc-500 mt-1 font-medium">
-              {variant ? 'Sửa đổi cấu hình chi tiết cho biến thể này.' : 'Thiết lập màu sắc, kích thước và ảnh cho cấu hình mới.'}
+              {variant ? 'Sửa đổi cấu hình chi tiết cho biến thể này.' : 'Thiết lập màu sắc, kích thước và mã kho cho cấu hình mới.'}
             </p>
           </div>
           <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-2xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all">
@@ -101,20 +105,38 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
         {/* BODY */}
         <div className="overflow-y-auto px-8 py-8 flex-1 custom-scrollbar">
           <div className="grid grid-cols-2 gap-x-6 gap-y-6">
-            <div className="col-span-2">
+
+            {/* Hàng 1: Mã SKU & Tên màu */}
+            <div className="col-span-2 sm:col-span-1">
+              <label className={labelClass}>Mã kho (SKU)</label>
+              <input name="sku" placeholder="Ví dụ: RB-BLK-M-01" value={form.sku} onChange={handleChange} className={inputClass} />
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
               <label className={labelClass}>Tên màu sắc *</label>
               <input name="colorName" placeholder="Ví dụ: Đen nhám, Vàng hồng..." value={form.colorName} onChange={handleChange} className={inputClass} />
             </div>
 
-            <div><label className={labelClass}>Kiểu hoàn thiện</label><input name="frameFinish" placeholder="Ví dụ: Bóng, Nhám..." value={form.frameFinish} onChange={handleChange} className={inputClass} /></div>
-            <div><label className={labelClass}>Nhãn kích thước</label><input name="sizeLabel" placeholder="Ví dụ: M, L..." value={form.sizeLabel} onChange={handleChange} className={inputClass} /></div>
-            <div><label className={labelClass}>Giá bán (VNĐ)</label><input type="number" name="price" placeholder="Ví dụ: 4700000" value={form.price || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-            <div><label className={labelClass}>Số lượng tồn kho</label><input type="number" name="quantity" placeholder="Ví dụ: 50" value={form.quantity || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-            <div><label className={labelClass}>Tròng (mm)</label><input type="number" name="lensWidthMm" value={form.lensWidthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-            <div><label className={labelClass}>Cầu mắt (mm)</label><input type="number" name="bridgeWidthMm" value={form.bridgeWidthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
-            <div><label className={labelClass}>Càng kính (mm)</label><input type="number" name="templeLengthMm" value={form.templeLengthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+            {/* Hàng 2: Giá cả */}
+            <div><label className={labelClass}>Giá bán gốc (VNĐ) *</label><input type="number" name="price" placeholder="Ví dụ: 4700000" value={form.price || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+            <div><label className={labelClass}>Giá khuyến mãi (VNĐ)</label><input type="number" name="discountPrice" placeholder="Để trống nếu không Sale" value={form.discountPrice || ''} onChange={handleChange} className={inputClass} min={0} /></div>
 
-            <div>
+            {/* Các trường còn lại */}
+            <div><label className={labelClass}>Số lượng tồn kho *</label><input type="number" name="quantity" placeholder="Ví dụ: 50" value={form.quantity || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+            <div><label className={labelClass}>Nhãn kích thước</label><input name="sizeLabel" placeholder="Ví dụ: M, L..." value={form.sizeLabel} onChange={handleChange} className={inputClass} /></div>
+            <div><label className={labelClass}>Kiểu hoàn thiện</label><input name="frameFinish" placeholder="Ví dụ: Bóng, Nhám..." value={form.frameFinish} onChange={handleChange} className={inputClass} /></div>
+
+            {/* Thông số kính */}
+            <div className="col-span-2 mt-2 border-t border-zinc-100 pt-6">
+              <h3 className="text-sm font-bold text-zinc-900 mb-4">Thông số kỹ thuật</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className={labelClass}>Tròng (mm)</label><input type="number" name="lensWidthMm" value={form.lensWidthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+                <div><label className={labelClass}>Cầu mắt (mm)</label><input type="number" name="bridgeWidthMm" value={form.bridgeWidthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+                <div><label className={labelClass}>Càng kính (mm)</label><input type="number" name="templeLengthMm" value={form.templeLengthMm || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+              </div>
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
               <label className={labelClass}>Loại kho hàng</label>
               <select name="orderItemType" value={form.orderItemType} onChange={handleChange} className={inputClass}>
                 <option value="IN_STOCK">Có sẵn (In Stock)</option>
@@ -122,7 +144,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
               </select>
             </div>
 
-            <div className="col-span-2">
+            <div className="col-span-2 sm:col-span-1">
               <label className={labelClass}>Trạng thái hiển thị</label>
               <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
                 <option value="ACTIVE">Hiển thị trên Cửa hàng</option>

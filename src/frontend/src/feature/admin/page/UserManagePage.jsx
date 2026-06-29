@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import {
-  Search, MoreHorizontal, Trash2, Lock, Unlock, Loader2, User as UserIcon, ShieldCheck, KeyRound, X, ShieldAlert
+  Search, MoreHorizontal, Trash2, Lock, Unlock, Loader2, User as UserIcon, ShieldCheck, KeyRound, X, ShieldAlert, Plus
 } from 'lucide-react';
 import {
   useAdminUsers,
   useUpdateUserStatus,
   useDeleteUser,
-  useResetUserPassword
+  useResetUserPassword,
+  useCreateUser
 } from '../hooks/useAdminUsers';
 
 export default function UserManagePage() {
@@ -20,6 +21,17 @@ export default function UserManagePage() {
   // States cho tính năng Đổi mật khẩu
   const [resetModal, setResetModal] = useState({ isOpen: false, userId: null, userName: '' });
   const [newPassword, setNewPassword] = useState('');
+
+  // States cho tính năng Tạo tài khoản
+  const [createModal, setCreateModal] = useState(false);
+  const [newUser, setNewUser] = useState({
+    first_name: '',
+    last_name: '',
+    username: '',
+    email: '',
+    password: '',
+    role: 'MANAGER' // Mặc định là MANAGER
+  });
 
   useEffect(() => {
     const handleClickGlobal = () => setOpenActionId(null);
@@ -51,6 +63,7 @@ export default function UserManagePage() {
   const { mutate: updateStatus } = useUpdateUserStatus();
   const { mutate: deleteUser } = useDeleteUser();
   const { mutate: resetPassword, isPending: isResetting } = useResetUserPassword();
+  const { mutate: createUser, isPending: isCreating } = useCreateUser();
 
   // Handlers
   const handleStatusToggle = (id, isCurrentlyLocked) => {
@@ -78,11 +91,27 @@ export default function UserManagePage() {
     );
   };
 
+  const submitCreateUser = () => {
+    if (!newUser.username || !newUser.email || !newUser.password || !newUser.first_name || !newUser.last_name) {
+      return alert('Vui lòng điền đầy đủ thông tin bắt buộc (Họ, Tên, Tên đăng nhập, Email, Mật khẩu)!');
+    }
+    if (newUser.password.length < 6) {
+      return alert('Mật khẩu khởi tạo phải từ 6 ký tự!');
+    }
+
+    createUser(newUser, {
+      onSuccess: () => {
+        setCreateModal(false);
+        setNewUser({ first_name: '', last_name: '', username: '', email: '', password: '', role: 'MANAGER' });
+        refetch();
+      }
+    });
+  };
+
   // UI Helpers
   const tabs = [
     { id: 'ALL', label: 'Tất cả' },
     { id: 'MANAGER', label: 'Quản lý (Manager)' },
-    { id: 'CUSTOMER', label: 'Khách hàng' },
     { id: 'ADMIN', label: 'Quản trị viên' }
   ];
 
@@ -110,15 +139,15 @@ export default function UserManagePage() {
 
       <div className="max-w-7xl mx-auto bg-white rounded-[2rem] border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[600px]">
 
-        {/* TABS NATIVE DIỀU HƯỚNG */}
+        {/* TABS ĐIỀU HƯỚNG */}
         <div className="flex items-center gap-6 px-8 border-b border-zinc-100 bg-zinc-50/30 overflow-x-auto custom-scrollbar">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`py-5 text-sm font-bold tracking-wide uppercase transition-all whitespace-nowrap border-b-2 ${activeTab === tab.id
-                  ? 'border-emerald-500 text-zinc-900'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-600'
+                ? 'border-emerald-500 text-zinc-900'
+                : 'border-transparent text-zinc-400 hover:text-zinc-600'
                 }`}
             >
               {tab.label}
@@ -127,7 +156,7 @@ export default function UserManagePage() {
         </div>
 
         {/* TOOLBAR */}
-        <div className="px-8 py-6 border-b border-zinc-100 flex items-center justify-between gap-5">
+        <div className="px-8 py-6 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-5">
           <div className="relative w-full sm:w-[400px] group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" />
@@ -140,6 +169,13 @@ export default function UserManagePage() {
               className="block w-full pl-11 pr-4 py-3 border border-zinc-200 rounded-2xl bg-zinc-50/50 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-medium"
             />
           </div>
+
+          <button
+            onClick={() => setCreateModal(true)}
+            className="flex items-center gap-2 bg-zinc-900 hover:bg-emerald-600 text-white px-5 py-3 rounded-2xl text-sm font-bold transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4" /> Tạo tài khoản
+          </button>
         </div>
 
         {/* BẢNG DỮ LIỆU */}
@@ -192,7 +228,6 @@ export default function UserManagePage() {
                           </span>
                         </td>
                         <td className="px-6 py-5 text-center">
-                          {/* CHỈ HIỂN THỊ NÚT THAO TÁC NẾU KHÔNG PHẢI LÀ ADMIN KHÁC */}
                           {!isAdmin ? (
                             <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
                               <button
@@ -252,136 +287,6 @@ export default function UserManagePage() {
             </table>
           )}
         </div>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-};
-
-export default function UserManagePage() {
-  const [activeTab, setActiveTab] = useState('staff');
-  const [activeRole, setActiveRole] = useState('MANAGER');
-  const [usersList, setUsersList] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [isPendingAssign, setIsPendingAssign] = useState(false);
-
-  // Phân trang (G1-FE): backend trả pagination object
-  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
-
-  const fetchUsers = async (page = 1) => {
-    setIsLoading(true);
-    try {
-      const apiURL = import.meta.env.VITE_API_URL || '';
-      const token = localStorage.getItem('accessToken');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      const currentRole = activeTab === 'customer' ? 'CUSTOMER' : activeRole;
-
-      const response = await axios.get(`${apiURL}/api/users`, {
-        params: {
-          role: currentRole,
-          search: search || undefined,
-          page,
-          limit: pagination.limit
-        },
-        headers
-      });
-
-      if (response.data && response.data.result) {
-        setUsersList(response.data.result);
-      }
-      if (response.data.pagination) {
-        setPagination(response.data.pagination);
-      }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-      toast.error('Không thể tải danh sách tài khoản');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers(1);
-  }, [activeTab, activeRole]);
-
-  const handlePageChange = (newPage) => {
-    fetchUsers(newPage);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    fetchUsers(1); // Reset về trang 1 khi tìm kiếm mới
-  };
-
-  const handleDemoteToCustomer = async (staff) => {
-    if (!window.confirm(`Bạn có chắc muốn bãi nhiệm nhân viên "${staff.username}"?\nHọ sẽ bị thu hồi quyền và chuyển thành Customer.`)) {
-      return;
-    }
-
-    setIsPendingAssign(true);
-    const toastId = toast.loading('Đang thu hồi quyền...');
-    try {
-      const apiURL = import.meta.env.VITE_API_URL || '';
-      const token = localStorage.getItem('accessToken');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      await axios.put(
-        `${apiURL}/api/users/${staff._id || staff.id}/role`,
-        { role: 'CUSTOMER' },
-        { headers }
-      );
-
-      toast.success(`Đã thu hồi quyền của "${staff.username}" thành công!`, { id: toastId });
-      fetchUsers();
-    } catch (error) {
-      console.error('Failed to demote:', error);
-      // Hiển thị message từ BE nếu có (ví dụ SELF_ACTION_FORBIDDEN khi thao tác lên chính mình)
-      const message =
-        error?.response?.data?.message ||
-        'Thu hồi quyền thất bại, vui lòng thử lại!';
-      toast.error(message, { id: toastId });
-    } finally {
-      setIsPendingAssign(false);
-    }
-  };
-
-  const handleToggleStatus = async (user, newStatus) => {
-    const actionText = newStatus === 'INACTIVE' ? 'Khóa' : 'Mở khóa';
-    if (!window.confirm(`Bạn có chắc muốn ${actionText.toLowerCase()} tài khoản "${user.username}"?`)) {
-      return;
-    }
-
-    setIsPendingAssign(true);
-    const toastId = toast.loading(`Đang ${actionText.toLowerCase()} tài khoản...`);
-    try {
-      const apiURL = import.meta.env.VITE_API_URL || '';
-      const token = localStorage.getItem('accessToken');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      await axios.put(
-        `${apiURL}/api/users/${user._id || user.id}/status`,
-        { status: newStatus },
-        { headers }
-      );
-
-      toast.success(`${actionText} tài khoản thành công!`, { id: toastId });
-      fetchUsers();
-    } catch (error) {
-      console.error('Failed to toggle status:', error);
-      const message =
-        error?.response?.data?.message ||
-        `${actionText} tài khoản thất bại!`;
-      toast.error(message, { id: toastId });
-    } finally {
-      setIsPendingAssign(false);
-    }
-  };
 
         {/* PAGINATION */}
         {!isLoading && pagination && pagination.totalPages > 1 && (
@@ -409,21 +314,18 @@ export default function UserManagePage() {
         )}
       </div>
 
-      {/* MODAL RESET PASSWORD NẰM ĐÈ LÊN MÀN HÌNH */}
+      {/* MODAL RESET PASSWORD */}
       {resetModal.isOpen && (
         <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative">
             <button onClick={() => setResetModal({ isOpen: false, userId: null, userName: '' })} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900">
               <X className="w-5 h-5" />
             </button>
-
             <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4">
               <KeyRound className="w-6 h-6" />
             </div>
-
             <h3 className="text-lg font-black text-zinc-900 mb-1">Cấp lại mật khẩu</h3>
             <p className="text-sm text-zinc-500 mb-6">Nhập mật khẩu mới cho <span className="font-bold text-zinc-900">{resetModal.userName}</span>.</p>
-
             <input
               type="text"
               placeholder="Mật khẩu mới (tối thiểu 6 ký tự)"
@@ -431,7 +333,6 @@ export default function UserManagePage() {
               onChange={e => setNewPassword(e.target.value)}
               className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 mb-6"
             />
-
             <button
               onClick={submitResetPassword}
               disabled={isResetting || newPassword.length < 6}
@@ -443,61 +344,85 @@ export default function UserManagePage() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {activeTab === 'staff' ? (
-          <StaffView
-            activeRole={activeRole}
-            setActiveRole={setActiveRole}
-            usersList={usersList}
-            isLoading={isLoading}
-            assignRole={fetchUsers}
-            deleteStaff={handleDemoteToCustomer}
-            isPendingAssign={isPendingAssign}
-            onToggleStatus={handleToggleStatus}
-            onDeleteUser={handleDeleteUser}
-          />
-        ) : (
-          <CustomerView
-            usersList={usersList}
-            isLoading={isLoading}
-            assignRole={fetchUsers}
-            onToggleStatus={handleToggleStatus}
-            onDeleteUser={handleDeleteUser}
-            isPendingAssign={isPendingAssign}
-          />
-        )}
+      {/* MODAL TẠO TÀI KHOẢN MỚI */}
+      {createModal && (
+        <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative">
+            <button onClick={() => setCreateModal(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900">
+              <X className="w-5 h-5" />
+            </button>
 
-        {/* Phân trang */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-            <p className="text-sm text-slate-500">
-              Hiển thị <span className="font-semibold text-slate-700">{usersList.length}</span> trong
-              tổng <span className="font-semibold text-slate-700">{pagination.total}</span> tài khoản
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page <= 1 || isLoading}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={14} />
-                Trước
-              </button>
-              <span className="px-3 py-1.5 text-sm font-bold text-slate-700 bg-indigo-50 rounded-lg">
-                {pagination.page} / {pagination.totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page >= pagination.totalPages || isLoading}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                Sau
-                <ChevronRight size={14} />
-              </button>
+            <div className="w-12 h-12 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-4">
+              <UserIcon className="w-6 h-6" />
             </div>
+
+            <h3 className="text-lg font-black text-zinc-900 mb-1">Cấp phát tài khoản</h3>
+            <p className="text-sm text-zinc-500 mb-6">Tạo mới tài khoản nội bộ và phân quyền truy cập.</p>
+
+            <div className="space-y-4 mb-6">
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  placeholder="Họ"
+                  value={newUser.last_name}
+                  onChange={e => setNewUser({ ...newUser, last_name: e.target.value })}
+                  className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên"
+                  value={newUser.first_name}
+                  onChange={e => setNewUser({ ...newUser, first_name: e.target.value })}
+                  className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder="Tên đăng nhập (Bắt buộc)"
+                value={newUser.username}
+                onChange={e => setNewUser({ ...newUser, username: e.target.value })}
+                className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+              />
+
+              <input
+                type="email"
+                placeholder="Email (Bắt buộc)"
+                value={newUser.email}
+                onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+              />
+
+              <input
+                type="text"
+                placeholder="Mật khẩu khởi tạo (tối thiểu 6 ký tự)"
+                value={newUser.password}
+                onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+              />
+
+              <select
+                value={newUser.role}
+                onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+                className="w-full border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 bg-white"
+              >
+                <option value="MANAGER">Quản lý (Manager)</option>
+              </select>
+            </div>
+
+            <button
+              onClick={submitCreateUser}
+              disabled={isCreating}
+              className="w-full bg-zinc-900 hover:bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold transition-all disabled:opacity-50"
+            >
+              {isCreating ? 'ĐANG TẠO...' : 'XÁC NHẬN TẠO TÀI KHOẢN'}
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
+
+// Bổ sung cú pháp export này để đảm bảo App.jsx có thể import mà không bị lỗi
+export { UserManagePage };
