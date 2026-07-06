@@ -1,6 +1,7 @@
 import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
 import Product from '../models/Product.js';
+import ProductVariant from '../models/ProductVariant.js'; // BỔ SUNG: Model Biến thể để trừ kho
 
 class OrderController {
   /**
@@ -8,8 +9,8 @@ class OrderController {
    */
   async createOrder(req, res, next) {
     try {
-      const orderInfo = typeof req.body.orderInfo === 'string' 
-        ? JSON.parse(req.body.orderInfo) 
+      const orderInfo = typeof req.body.orderInfo === 'string'
+        ? JSON.parse(req.body.orderInfo)
         : req.body.orderInfo;
 
       if (!orderInfo || !orderInfo.items || orderInfo.items.length === 0) {
@@ -20,34 +21,50 @@ class OrderController {
       let totalAmount = 0;
       const orderItemsToCreate = [];
 
-      // 1. Kiểm tra tồn kho và tính tổng tiền
       for (const item of items) {
-        const product = await Product.findById(item.productVariantId);
-        if (!product) {
-          return res.status(400).json({ error_code: 'PRODUCT_NOT_FOUND', message: `Sản phẩm với ID ${item.productVariantId} không tồn tại` });
-        }
+        // THÊM: Kiểm tra tất cả các tên trường có thể được gửi từ Frontend
+        const targetVariantId = item.variantId || item.productVariantId || item.productId;
 
-        if (product.stock_quantity < item.quantity) {
+        // Log để debug nếu lỗi vẫn xảy ra
+        console.log("Đang tìm variantId:", targetVariantId);
+
+        const variant = await ProductVariant.findById(targetVariantId).populate('productId');
+        if (!variant) {
+          // Nếu không tìm thấy, trả về thông báo rõ ràng hơn
           return res.status(400).json({
-            error_code: 'OUT_OF_STOCK',
-            message: `Sản phẩm "${product.name}" chỉ còn ${product.stock_quantity} cái trong kho, không đủ đáp ứng số lượng ${item.quantity}.`
+            error_code: 'VARIANT_NOT_FOUND',
+            message: `Không tìm thấy biến thể với ID: ${targetVariantId}`
           });
         }
 
-        const price = product.discountPrice !== undefined ? product.discountPrice : product.price;
-        totalAmount += price * item.quantity;
+        // Tồn kho nằm ở trường 'quantity' của ProductVariant
+        if (variant.quantity < item.quantity) {
+          return res.status(400).json({
+            error_code: 'OUT_OF_STOCK',
+            message: `Phiên bản màu "${variant.colorName}" chỉ còn ${variant.quantity} sản phẩm, không đủ đáp ứng số lượng ${item.quantity}.`
+          });
+        }
+
+        // Tính tiền: (Giá gọng + giá tròng) * số lượng
+        const basePrice = variant.discountPrice !== undefined ? variant.discountPrice : variant.price;
+        const lensPrice = item.lensPrice || 0;
+        const finalUnitPrice = basePrice + lensPrice;
+
+        totalAmount += finalUnitPrice * item.quantity;
 
         orderItemsToCreate.push({
-          product_id: product._id,
+          product_id: variant.productId._id, // Lưu sp gốc để dễ truy xuất
+          variant_id: variant._id,           // Đã thêm: ID Biến thể
+          lens_id: item.lensId || null,      // Đã thêm: ID Tròng kính
           quantity: item.quantity,
-          unit_price: price
+          unit_price: finalUnitPrice
         });
       }
 
-      // 2. Trừ tồn kho sản phẩm
-      for (const item of items) {
-        await Product.findByIdAndUpdate(item.productVariantId, {
-          $inc: { stock_quantity: -item.quantity }
+      // 2. TRỪ TỒN KHO AN TOÀN BẰNG $inc
+      for (const itemToCreate of orderItemsToCreate) {
+        await ProductVariant.findByIdAndUpdate(itemToCreate.variant_id, {
+          $inc: { quantity: -itemToCreate.quantity }
         });
       }
 
@@ -70,6 +87,8 @@ class OrderController {
         const orderItem = new OrderItem({
           order_id: order._id,
           product_id: itemToCreate.product_id,
+          variant_id: itemToCreate.variant_id,
+          lens_id: itemToCreate.lens_id,
           quantity: itemToCreate.quantity,
           unit_price: itemToCreate.unit_price
         });
@@ -113,29 +132,55 @@ class OrderController {
 
       const ordersWithItems = [];
       for (const order of orders) {
-        const items = await OrderItem.find({ order_id: order._id }).populate('product_id');
+        try {
+          const items = await OrderItem.find({ order_id: order._id })
+            .populate('product_id')
+            .populate('variant_id');
 
-        const mappedItems = items.map(item => ({
-          orderItemId: item._id,
-          productId: item.product_id?._id,
-          productName: item.product_id?.name,
-          quantity: item.quantity,
-          unitPrice: item.unit_price,
-          totalPrice: item.unit_price * item.quantity,
-          orderItemType: 'IN_STOCK'
-        }));
+          const mappedItems = items.map(item => {
+            // SIÊU AN TOÀN: Kiểm tra kỹ từng lớp trước khi lấy dữ liệu
+            const productName = item.product_id ? item.product_id.name : 'Sản phẩm đã xóa';
+            const colorName = item.variant_id ? item.variant_id.colorName : 'Mặc định';
 
-        ordersWithItems.push({
-          orderId: order._id,
-          orderName: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()}`,
-          orderStatus: order.status,
-          deliveryAddress: order.delivery_address,
-          totalAmount: order.total_amount,
-          finalTotalAfterRefund: order.total_amount,
-          remainingAmount: order.status === 'PENDING' ? order.total_amount : 0,
-          items: mappedItems,
-          createdAt: order.created_at
-        });
+            return {
+              orderItemId: item._id,
+              productId: item.product_id ? item.product_id._id : null,
+              productName: productName,
+              colorName: colorName,
+              quantity: item.quantity || 1, // Mặc định là 1 nếu lỗi
+              unitPrice: item.unit_price || 0,
+              totalPrice: (item.unit_price || 0) * (item.quantity || 1),
+              orderItemType: 'IN_STOCK'
+            };
+          });
+
+          // Tránh trường hợp order._id bị lỗi toString()
+          const safeOrderId = order._id ? order._id.toString() : 'UNKNOWN';
+          const shortId = safeOrderId !== 'UNKNOWN' ? safeOrderId.slice(-6).toUpperCase() : 'N/A';
+
+          ordersWithItems.push({
+            orderId: order._id,
+            orderName: `Đơn hàng #${shortId}`,
+            orderStatus: order.status || 'PENDING',
+            deliveryAddress: order.delivery_address || 'Chưa cập nhật',
+            totalAmount: order.total_amount || 0,
+            finalTotalAfterRefund: order.total_amount || 0,
+            remainingAmount: order.status === 'PENDING' ? (order.total_amount || 0) : 0,
+            items: mappedItems,
+            createdAt: order.created_at || new Date()
+          });
+        } catch (itemError) {
+          console.error(`[Lỗi xử lý đơn hàng ${order._id}]:`, itemError.message);
+          // Vẫn push một bản ghi trống để UI không bị vỡ
+          ordersWithItems.push({
+            orderId: order._id,
+            orderName: 'Đơn hàng lỗi dữ liệu',
+            orderStatus: order.status || 'ERROR',
+            totalAmount: order.total_amount || 0,
+            items: [],
+            createdAt: order.created_at || new Date()
+          });
+        }
       }
 
       return res.status(200).json({
@@ -149,6 +194,7 @@ class OrderController {
         }
       });
     } catch (error) {
+      console.error("[Lỗi API myOrders]:", error);
       next(error);
     }
   }
@@ -173,12 +219,14 @@ class OrderController {
         return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Không thể hủy đơn hàng ở trạng thái hiện tại' });
       }
 
-      // Hoàn lại số lượng tồn kho sản phẩm
+      // HOÀN LẠI TỒN KHO SẢN PHẨM (Dùng $inc để cộng số lượng)
       const items = await OrderItem.find({ order_id: order._id });
       for (const item of items) {
-        await Product.findByIdAndUpdate(item.product_id, {
-          $inc: { stock_quantity: item.quantity }
-        });
+        if (item.variant_id) {
+          await ProductVariant.findByIdAndUpdate(item.variant_id, {
+            $inc: { quantity: item.quantity }
+          });
+        }
       }
 
       order.status = 'CANCELLED';
@@ -206,7 +254,6 @@ class OrderController {
         query.status = status.toUpperCase();
       }
 
-      // Populate user_id để hiển thị thông tin tên, email khách hàng
       const orders = await Order.find(query)
         .populate('user_id', 'username email first_name last_name phone')
         .sort({ created_at: -1 });
@@ -227,18 +274,16 @@ class OrderController {
     try {
       const { id } = req.params;
       const order = await Order.findById(id).populate('user_id', 'username email first_name last_name phone');
-      
+
       if (!order) {
         return res.status(404).json({ error_code: 'ORDER_NOT_FOUND', message: 'Không tìm thấy đơn hàng' });
       }
 
-      // Kiểm tra phân quyền: Khách hàng chỉ xem được đơn hàng của chính họ
       if (req.user.role === 'CUSTOMER' && order.user_id._id.toString() !== req.user._id.toString()) {
         return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Bạn không có quyền xem chi tiết đơn hàng này' });
       }
 
-      // Lấy thêm danh sách sản phẩm thuộc đơn hàng này
-      const items = await OrderItem.find({ order_id: id }).populate('product_id');
+      const items = await OrderItem.find({ order_id: id }).populate('product_id').populate('variant_id').populate('lens_id');
 
       return res.status(200).json({
         code: 0,
@@ -258,8 +303,6 @@ class OrderController {
       next(error);
     }
   }
-
-
 
   /**
    * Cập nhật trạng thái đơn hàng (cho Manager/Admin)
@@ -306,8 +349,7 @@ class OrderController {
       if (!order) {
         return res.status(404).json({ error_code: 'ORDER_NOT_FOUND', message: 'Không tìm thấy đơn hàng' });
       }
-      
-      // Xóa đồng thời các OrderItem để giải phóng bộ nhớ
+
       await OrderItem.deleteMany({ order_id: id });
 
       return res.status(200).json({
@@ -321,4 +363,3 @@ class OrderController {
 }
 
 export default new OrderController();
-

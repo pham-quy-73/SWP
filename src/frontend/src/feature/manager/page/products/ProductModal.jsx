@@ -6,6 +6,7 @@ const EMPTY_FORM = {
   brand: '',
   price: 0,
   category: '',
+  // Đã trả về rỗng hoàn toàn, không cần lách luật nữa
   frameType: '',
   gender: '',
   shape: '',
@@ -23,6 +24,7 @@ export default function ProductModal({
   onSubmit,
   product,
   isSubmitting = false,
+  initialType = 'FRAME', // Nhận từ trang Quản lý để biết đang click nút Thêm Kính hay Thêm Tròng
 }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -41,12 +43,13 @@ export default function ProductModal({
         setImagePreviews(normalizedImageUrl);
         setSelectedFiles([]);
       } else {
-        setForm(EMPTY_FORM);
+        // Tự động gán category dựa trên nút mà Admin bấm
+        setForm({ ...EMPTY_FORM, category: initialType === 'LENS' ? 'LENS' : 'FRAME' });
         setImagePreviews([]);
         setSelectedFiles([]);
       }
     }
-  }, [open, product]);
+  }, [open, product, initialType]);
 
   if (!open) return null;
 
@@ -74,18 +77,24 @@ export default function ProductModal({
       }));
     } else {
       const fileIndex = indexToRemove - existingImageCount;
-
-      setSelectedFiles((prev) =>
-        prev.filter((_, i) => i !== fileIndex),
-      );
+      setSelectedFiles((prev) => prev.filter((_, i) => i !== fileIndex));
     }
-
-    setImagePreviews((prev) =>
-      prev.filter((_, i) => i !== indexToRemove),
-    );
+    setImagePreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
-  // Class hỗ trợ thiết kế tối giản, sang trọng
+  // LOGIC FRONTEND VALIDATION CHUẨN MỰC
+  const isFormValid = () => {
+    // 1. Các trường cơ bản bắt buộc cho MỌI sản phẩm
+    if (!form.name || !form.brand || form.price === '' || form.price === null) return false;
+
+    // 2. Nếu KHÔNG phải là Tròng kính, bắt buộc phải chọn Loại viền và Giới tính
+    if (form.category !== 'LENS') {
+      if (!form.frameType || !form.gender) return false;
+    }
+
+    return true;
+  };
+
   const inputClass =
     'w-full border border-zinc-200 rounded-2xl px-4 py-3.5 text-sm font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-zinc-50/50 hover:bg-zinc-50 transition-all';
   const labelClass = 'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1';
@@ -97,11 +106,10 @@ export default function ProductModal({
     >
       <div className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl shadow-zinc-900/20 animate-in zoom-in-95 fade-in duration-300 max-h-[90vh] flex flex-col font-sans overflow-hidden">
 
-        {/* HEADER */}
         <div className="flex items-center justify-between px-8 py-6 border-b border-zinc-100 bg-white z-10">
           <div>
             <h2 className="text-2xl font-black text-zinc-900 tracking-tight">
-              {product ? 'Cập Nhật Kính' : 'Thêm Mẫu Kính Mới'}
+              {product ? 'Cập Nhật Sản Phẩm' : (form.category === 'LENS' ? 'Thêm Tròng Kính' : 'Thêm Kính/Gọng')}
             </h2>
             <p className="text-xs text-zinc-500 mt-1 font-medium">
               {product
@@ -117,14 +125,15 @@ export default function ProductModal({
           </button>
         </div>
 
-        {/* BODY */}
         <div className="overflow-y-auto px-8 py-8 flex-1 custom-scrollbar">
           <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+
+            {/* CÁC TRƯỜNG CƠ BẢN (LUÔN HIỂN THỊ) */}
             <div className="col-span-2">
               <label className={labelClass}>Tên sản phẩm *</label>
               <input
                 name="name"
-                placeholder="Ví dụ: Kính Mát Classic Aviator"
+                placeholder={form.category === 'LENS' ? "Ví dụ: Tròng kính chống xước 1.56" : "Ví dụ: Kính Mát Classic Aviator"}
                 value={form.name}
                 onChange={handleChange}
                 className={inputClass}
@@ -135,7 +144,7 @@ export default function ProductModal({
               <label className={labelClass}>Thương hiệu *</label>
               <input
                 name="brand"
-                placeholder="Ví dụ: Ray-Ban"
+                placeholder={form.category === 'LENS' ? "Ví dụ: Chemi, Essilor..." : "Ví dụ: Ray-Ban"}
                 value={form.brand}
                 onChange={handleChange}
                 className={inputClass}
@@ -163,99 +172,10 @@ export default function ProductModal({
                 onChange={handleChange}
                 className={inputClass}
               >
-                <option value="">Chọn danh mục</option>
                 <option value="FRAME">Gọng kính (Frame)</option>
                 <option value="SUNGLASSES">Kính râm (Sunglasses)</option>
-                <option value="ACCESSORIES">Phụ kiện (Accessories)</option>
+                <option value="LENS">Tròng kính (Lens)</option>
               </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Loại viền kính *</label>
-              <select
-                name="frameType"
-                value={form.frameType}
-                onChange={handleChange}
-                className={inputClass}
-              >
-                <option value="">Chọn viền</option>
-                <option value="Full-Rim">Nguyên khung (Full-Rim)</option>
-                <option value="Semi-Rimless">Nửa khung (Semi-Rimless)</option>
-                <option value="Rimless">Không khung (Rimless)</option>
-                <option value="Other">Khác</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Giới tính *</label>
-              <select
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                className={inputClass}
-              >
-                <option value="">Chọn đối tượng</option>
-                <option value="MALE">Nam</option>
-                <option value="FEMALE">Nữ</option>
-                <option value="UNISEX">Unisex</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Kiểu dáng mắt kính</label>
-              <input
-                name="shape"
-                placeholder="Ví dụ: Round, Oval..."
-                value={form.shape}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Chất liệu gọng</label>
-              <input
-                name="frameMaterial"
-                placeholder="Ví dụ: Titanium..."
-                value={form.frameMaterial}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Bản lề</label>
-              <input
-                name="hingeType"
-                placeholder="Ví dụ: Standard..."
-                value={form.hingeType}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Đệm mũi</label>
-              <input
-                name="nosePadType"
-                placeholder="Ví dụ: Adjustable..."
-                value={form.nosePadType}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Trọng lượng (gram)</label>
-              <input
-                type="number"
-                name="weightGram"
-                placeholder="Ví dụ: 25"
-                value={form.weightGram || ''}
-                onChange={handleChange}
-                className={inputClass}
-                min={0}
-              />
             </div>
 
             <div>
@@ -271,72 +191,78 @@ export default function ProductModal({
               </select>
             </div>
 
-            <div className="col-span-2 mt-2">
-              <label className={labelClass}>Hình ảnh bộ sưu tập</label>
-              <div className="flex flex-col gap-4">
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50 hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all group"
-                >
-                  <Upload className="w-6 h-6 text-zinc-400 group-hover:text-emerald-500 shrink-0 transition-colors mb-1" />
-                  <span className="text-sm font-bold text-zinc-600 group-hover:text-emerald-600 transition-colors">
-                    Click để tải ảnh lên
-                  </span>
-                  <span className="text-xs text-zinc-400">Hỗ trợ JPG, PNG (Max 5MB)</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
+            {/* CÁC TRƯỜNG CHỈ HIỂN THỊ KHI KHÔNG PHẢI LÀ TRÒNG KÍNH (LENS) */}
+            {form.category !== 'LENS' && (
+              <>
+                <div className="col-span-2 border-t border-zinc-100 pt-4 mt-2">
+                  <h3 className="text-sm font-bold text-zinc-900 mb-4">Thông số gọng kính</h3>
                 </div>
 
-                {imagePreviews.length > 0 && (
-                  <div className="flex gap-4 flex-wrap mt-2">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative w-20 h-20 rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden shrink-0 group">
-                        <img
-                          src={preview}
-                          alt={`preview-${index}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <X className="w-5 h-5 text-white" />
-                        </button>
+                <div>
+                  <label className={labelClass}>Loại viền kính *</label>
+                  <select name="frameType" value={form.frameType} onChange={handleChange} className={inputClass}>
+                    <option value="">-- Chọn viền --</option>
+                    <option value="Full-Rim">Nguyên khung (Full-Rim)</option>
+                    <option value="Semi-Rimless">Nửa khung (Semi-Rimless)</option>
+                    <option value="Rimless">Không khung (Rimless)</option>
+                    <option value="Other">Khác</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Giới tính *</label>
+                  <select name="gender" value={form.gender} onChange={handleChange} className={inputClass}>
+                    <option value="">-- Chọn đối tượng --</option>
+                    <option value="MALE">Nam</option>
+                    <option value="FEMALE">Nữ</option>
+                    <option value="UNISEX">Unisex</option>
+                  </select>
+                </div>
+
+                <div><label className={labelClass}>Kiểu dáng mắt kính</label><input name="shape" placeholder="Ví dụ: Round, Oval..." value={form.shape} onChange={handleChange} className={inputClass} /></div>
+                <div><label className={labelClass}>Chất liệu gọng</label><input name="frameMaterial" placeholder="Ví dụ: Titanium..." value={form.frameMaterial} onChange={handleChange} className={inputClass} /></div>
+                <div><label className={labelClass}>Bản lề</label><input name="hingeType" placeholder="Ví dụ: Standard..." value={form.hingeType} onChange={handleChange} className={inputClass} /></div>
+                <div><label className={labelClass}>Đệm mũi</label><input name="nosePadType" placeholder="Ví dụ: Adjustable..." value={form.nosePadType} onChange={handleChange} className={inputClass} /></div>
+                <div><label className={labelClass}>Trọng lượng (gram)</label><input type="number" name="weightGram" placeholder="Ví dụ: 25" value={form.weightGram || ''} onChange={handleChange} className={inputClass} min={0} /></div>
+
+                {/* UP ẢNH CHO GỌNG KÍNH */}
+                <div className="col-span-2 mt-2 border-t border-zinc-100 pt-6">
+                  <label className={labelClass}>Hình ảnh đại diện</label>
+                  <div className="flex flex-col gap-4">
+                    <div onClick={() => fileInputRef.current?.click()} className="flex-1 flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50 hover:border-emerald-400 hover:bg-emerald-50/30 cursor-pointer transition-all group">
+                      <Upload className="w-6 h-6 text-zinc-400 group-hover:text-emerald-500 shrink-0 transition-colors mb-1" />
+                      <span className="text-sm font-bold text-zinc-600 group-hover:text-emerald-600 transition-colors">Click để tải ảnh lên</span>
+                      <span className="text-xs text-zinc-400">Hỗ trợ JPG, PNG (Max 5MB)</span>
+                      <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+                    </div>
+
+                    {imagePreviews.length > 0 && (
+                      <div className="flex gap-4 flex-wrap mt-2">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative w-20 h-20 rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden shrink-0 group">
+                            <img src={preview} alt={`preview-${index}`} className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                            <button type="button" onClick={() => removeImage(index)} className="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X className="w-5 h-5 text-white" /></button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* FOOTER */}
         <div className="flex items-center justify-end gap-3 px-8 py-6 border-t border-zinc-100 bg-white z-10">
-          <button
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-6 py-3 border border-zinc-200 rounded-2xl text-sm font-bold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all disabled:opacity-50"
-          >
-            Hủy bỏ
-          </button>
+          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-3 border border-zinc-200 rounded-2xl text-sm font-bold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all disabled:opacity-50">Hủy bỏ</button>
+
+          {/* NÚT SUBMIT THÔNG MINH */}
           <button
             onClick={() => onSubmit({ productData: form, files: selectedFiles })}
-            disabled={isSubmitting || !form.name || !form.brand}
+            disabled={isSubmitting || !isFormValid()}
             className="flex items-center justify-center gap-2 px-8 py-3 bg-zinc-900 text-white rounded-2xl text-sm font-bold tracking-wide hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-emerald-500/20 active:scale-95"
           >
-            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {product ? 'LƯU THAY ĐỔI' : 'TẠO MỚI'}
+            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />} {product ? 'LƯU THAY ĐỔI' : 'TẠO MỚI'}
           </button>
         </div>
 

@@ -120,6 +120,7 @@ export const useDeleteUser = () => {
     return { mutate, isPending };
 };
 
+// 5. CẤP LẠI MẬT KHẨU
 export const useResetUserPassword = () => {
     const [isPending, setIsPending] = useState(false);
 
@@ -136,6 +137,33 @@ export const useResetUserPassword = () => {
             if (onSuccess) onSuccess();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Lỗi khi cấp lại mật khẩu', { id: toastId });
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    return { mutate, isPending };
+};
+
+// 6. TẠO TÀI KHOẢN MỚI (CẤP PHÁT CHO MANAGER/ADMIN)
+export const useCreateUser = () => {
+    const [isPending, setIsPending] = useState(false);
+
+    const mutate = async (userData, { onSuccess } = {}) => {
+        setIsPending(true);
+        const toastId = toast.loading('Đang tạo tài khoản...');
+        try {
+            const apiURL = import.meta.env.VITE_API_URL || '';
+            const token = localStorage.getItem('accessToken');
+            
+            await axios.post(`${apiURL}/api/users`, userData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            toast.success('Tạo tài khoản thành công!', { id: toastId });
+            if (onSuccess) onSuccess();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Lỗi khi tạo tài khoản', { id: toastId });
         } finally {
             setIsPending(false);
         }

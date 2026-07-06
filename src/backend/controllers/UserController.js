@@ -164,7 +164,6 @@ class UserController {
     } catch (error) { next(error); }
   }
 
-  // --- 3. THÊM HÀM MỚI NÀY VÀO CUỐI FILE (Trước dấu ngoặc nhọn đóng class) ---
   async resetPassword(req, res, next) {
     try {
       const { id } = req.params;
@@ -177,20 +176,72 @@ class UserController {
       const user = await User.findById(id);
       if (!user) return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy' });
 
-      // [BẢO MẬT] Chặn đổi pass ADMIN khác
       if (user.role === 'ADMIN') {
         return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Không được phép cấp lại mật khẩu của Quản trị viên khác!' });
       }
-
-      // Mã hóa mật khẩu mới
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(newPassword, salt);
+      user.password = newPassword;
       await user.save();
 
       return res.status(200).json({ code: 0, message: 'Cấp lại mật khẩu thành công' });
-    } catch (error) { next(error); }
+    } catch (error) {
+      next(error);
+    }
   }
-  
+  /**
+   * Admin cấp phát tài khoản mới
+   * Bỏ qua xác thực email (is_email_verified = true)
+   */
+  async createUser(req, res, next) {
+    try {
+      const { first_name, last_name, username, email, password, role } = req.body;
+
+      if (!username || !email || !password || !first_name || !last_name) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Vui lòng điền đầy đủ thông tin bắt buộc!' });
+      }
+
+      const existingUser = await User.findOne({
+        $or: [{ email }, { username }]
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          error_code: 'DUPLICATE_ERROR',
+          message: 'Tên đăng nhập hoặc Email đã tồn tại trong hệ thống!'
+        });
+      }
+
+      const allowedRoles = ['CUSTOMER', 'SALE', 'MANAGER', 'SHIPPER', 'ADMIN'];
+      const assignedRole = allowedRoles.includes(role?.toUpperCase()) ? role.toUpperCase() : 'MANAGER';
+
+      // 4. Tạo tài khoản mới
+      const newUser = new User({
+        first_name,
+        last_name,
+        username,
+        email,
+        password,
+        role: assignedRole,
+        is_email_verified: true,
+        deleted_at: null
+      });
+
+      await newUser.save();
+
+      return res.status(201).json({
+        code: 0,
+        message: 'Cấp phát tài khoản thành công',
+        result: {
+          _id: newUser._id,
+          username: newUser.username,
+          email: newUser.email,
+          role: newUser.role
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /**
    * Lấy thông tin cá nhân của người dùng đang đăng nhập
    */

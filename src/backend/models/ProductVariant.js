@@ -1,20 +1,5 @@
 import mongoose from 'mongoose';
 
-/**
- * @typedef {Object} ProductVariant
- * @property {mongoose.Types.ObjectId} productId
- * @property {string} colorName
- * @property {string} frameFinish
- * @property {number} lensWidthMm
- * @property {number} bridgeWidthMm
- * @property {number} templeLengthMm
- * @property {string} sizeLabel
- * @property {number} price
- * @property {number} quantity
- * @property {string} status - ACTIVE, INACTIVE
- * @property {string} orderItemType - IN_STOCK, PRE_ORDER
- */
-
 const VariantImageSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
@@ -28,6 +13,11 @@ const ProductVariantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     required: true
+  },
+  sku: {
+    type: String,
+    trim: true,
+    default: '' // Nâng cấp: Bổ sung mã SKU
   },
   colorName: {
     type: String,
@@ -57,6 +47,10 @@ const ProductVariantSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  discountPrice: {
+    type: Number,
+    min: 0 // Nâng cấp: Bổ sung giá khuyến mãi riêng cho biến thể
   },
   quantity: {
     type: Number,

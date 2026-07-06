@@ -44,8 +44,13 @@ export const useCartStore = create()(
           ),
         })),
 
+      // NÂNG CẤP: Đã cộng gộp Tiền Gọng (price) + Tiền Tròng (lensPrice)
       getCartTotal: () => {
-        return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return get().items.reduce((total, item) => {
+          const basePrice = item.price || 0;
+          const lensPrice = item.lensPrice || 0;
+          return total + ((basePrice + lensPrice) * item.quantity);
+        }, 0);
       },
 
       openCart: () => set({ isOpen: true }),
