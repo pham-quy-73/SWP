@@ -274,6 +274,56 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
             </div>
           )}
 
+          {/* Lịch sử xử lý đơn hàng */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-[11px]">
+              <ClipboardList size={16} className="text-indigo-650" /> Lịch sử xử lý đơn hàng
+            </div>
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              {(!order.status_history || order.status_history.length === 0) ? (
+                <p className="text-sm text-slate-400 italic font-medium">Chưa có lịch sử cập nhật cho đơn hàng này.</p>
+              ) : (
+                <div className="relative border-l border-slate-200 ml-3 pl-6 space-y-6">
+                  {order.status_history.slice().sort((a,b) => new Date(a.updated_at) - new Date(b.updated_at)).map((log, idx) => {
+                    const updater = log.updated_by || {};
+                    const updaterName = updater.first_name || updater.last_name
+                      ? `${updater.first_name || ''} ${updater.last_name || ''}`.trim()
+                      : updater.username || 'Hệ thống';
+
+                    return (
+                      <div key={idx} className="relative">
+                        {/* Checkpoint Dot */}
+                        <span className="absolute -left-[30px] top-1.5 w-3.5 h-3.5 rounded-full bg-indigo-600 border-4 border-white shadow-sm" />
+                        
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                          <span className="text-sm font-bold text-slate-800">
+                            Trạng thái: {STATUS_CONFIG[log.to_status]?.label || log.to_status}
+                          </span>
+                          <span className="text-xs text-slate-400 font-semibold font-mono">
+                            {new Date(log.updated_at).toLocaleString('vi-VN')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1.5 font-medium">
+                          Người thao tác: <span className="font-bold text-slate-700">{updaterName}</span>
+                          {log.is_override && (
+                            <span className="text-rose-600 font-extrabold ml-2 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase text-[9px] tracking-wide inline-block">
+                              ADMIN ghi đè (Override)
+                            </span>
+                          )}
+                        </p>
+                        {log.note && (
+                          <p className="text-xs text-indigo-700 bg-indigo-50/50 border border-dashed border-indigo-100 px-3 py-1.5 rounded-xl mt-2 inline-block font-medium">
+                            Ghi chú: {log.note}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Danh sách sản phẩm mua */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">

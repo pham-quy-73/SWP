@@ -49,7 +49,27 @@ const OrderSchema = new mongoose.Schema({
     bank_name: { type: String, default: '' },
     bank_account_number: { type: String, default: '' },
     account_holder_name: { type: String, default: '' }
-  }
+  },
+  payment_status: {
+    type: String,
+    enum: ['UNPAID', 'PAID'],
+    default: 'UNPAID'
+  },
+  transaction_id: {
+    type: String,
+    default: ''
+  },
+  paid_at: {
+    type: Date
+  },
+  status_history: [{
+    from_status: { type: String, default: '' },
+    to_status: { type: String, required: true },
+    updated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    updated_at: { type: Date, default: Date.now },
+    is_override: { type: Boolean, default: false },
+    note: { type: String, default: '' }
+  }]
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });

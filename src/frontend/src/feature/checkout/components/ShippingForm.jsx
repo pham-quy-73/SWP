@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCheckoutStore } from '../store/useCheckoutStore';
-import { MapPin, Phone, Truck, LocateFixed, Loader2, Map as MapIcon, User } from 'lucide-react';
+import { MapPin, Phone, Truck, LocateFixed, Loader2, Map as MapIcon, User, BookMarked } from 'lucide-react';
 import { toast } from 'sonner';
+import { profileApi } from '../../profile/api/api';
 
 const Input = ({ className, ...props }) => (
   <input
@@ -14,6 +15,50 @@ export const ShippingForm = () => {
   const { shippingData, updateShippingData } = useCheckoutStore();
   const [isLocating, setIsLocating] = useState(false);
   const [coords, setCoords] = useState(null);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+
+  // Nạp sổ địa chỉ đã lưu và tự động chọn địa chỉ mặc định (nếu chưa có shippingData)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await profileApi.getAddresses();
+        if (cancelled) return;
+        setSavedAddresses(list);
+
+        const hasCurrent = shippingData.name || shippingData.address || shippingData.phone;
+        if (!hasCurrent && list.length > 0) {
+          const preferred = list.find((a) => a.is_default) || list[0];
+          setSelectedAddressId(preferred._id);
+          updateShippingData({
+            name: preferred.recipient_name,
+            address: preferred.delivery_address,
+            phone: preferred.phone_number,
+          });
+        }
+      } catch (err) {
+        console.warn('Không thể tải sổ địa chỉ:', err.message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSelectSaved = (id) => {
+    setSelectedAddressId(id);
+    if (!id) return;
+    const addr = savedAddresses.find((a) => a._id === id);
+    if (!addr) return;
+    updateShippingData({
+      name: addr.recipient_name,
+      address: addr.delivery_address,
+      phone: addr.phone_number,
+    });
+    setCoords(null);
+  };
 
   // 1. Hàm tìm tọa độ bằng GPS
   const handleGetLocation = () => {
@@ -98,6 +143,31 @@ export const ShippingForm = () => {
       </div>
 
       <div className="space-y-5">
+        {/* CHỌN ĐỊA CHỈ ĐÃ LƯU (Sổ địa chỉ) */}
+        {savedAddresses.length > 0 && (
+          <div className="space-y-1.5">
+            <label htmlFor="savedAddress" className="text-sm font-semibold text-gray-700 ml-1 flex items-center gap-1.5">
+              <BookMarked className="w-3.5 h-3.5 text-[#4A8795]" />
+              Chọn từ sổ địa chỉ
+            </label>
+            <select
+              id="savedAddress"
+              value={selectedAddressId}
+              onChange={(e) => handleSelectSaved(e.target.value)}
+              className="w-full h-12 px-3.5 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#4A8795] focus:bg-white transition-all"
+            >
+              <option value="">— Nhập địa chỉ mới —</option>
+              {savedAddresses.map((addr) => (
+                <option key={addr._id} value={addr._id}>
+                  {addr.is_default ? '★ ' : ''}
+                  {addr.label ? `${addr.label} — ` : ''}
+                  {addr.recipient_name} | {addr.phone_number} | {addr.delivery_address}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* TRƯỜNG NHẬP TÊN NGƯỜI NHẬN */}
         <div className="space-y-1.5">
           <label htmlFor="name" className="text-sm font-semibold text-gray-700 ml-1">

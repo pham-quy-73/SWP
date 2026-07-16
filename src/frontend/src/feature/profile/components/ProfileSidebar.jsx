@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { User, Package } from 'lucide-react';
+import { User, Package, MapPin } from 'lucide-react';
 
 const sidebarItems = [
   {
@@ -12,6 +12,11 @@ const sidebarItems = [
     title: 'Đơn hàng của tôi',
     href: '/profile/orders',
     icon: Package,
+  },
+  {
+    title: 'Sổ địa chỉ',
+    href: '/profile/addresses',
+    icon: MapPin,
   },
 ];
 

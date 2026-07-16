@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import Order from './models/Order.js';
 import OrderItem from './models/OrderItem.js';
 import Product from './models/Product.js';
+import ProductVariant from './models/ProductVariant.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,9 +44,9 @@ function startOrderStatusCleanupJob() {
           // Hoàn lại số lượng tồn kho cho sản phẩm
           const items = await OrderItem.find({ order_id: order._id });
           for (const item of items) {
-            if (item.product_id) {
-              await Product.findByIdAndUpdate(item.product_id, {
-                $inc: { stock_quantity: item.quantity }
+            if (item.variant_id) {
+              await ProductVariant.findByIdAndUpdate(item.variant_id, {
+                $inc: { quantity: item.quantity }
               });
             }
           }

@@ -11,6 +11,7 @@ import { PaymentFailurePage } from './pages/PaymentFailurePage';
 import { ProfileLayout } from './feature/profile/layout/ProfileLayout';
 import ProfilePage from './feature/profile/page/ProfilePage';
 import MyOrders from './feature/profile/page/MyOrder';
+import MyAddresses from './feature/profile/page/MyAddresses';
 import LoginForm from './feature/auth/components/LoginForm';
 import RegisterForm from './feature/auth/components/RegisterForm';
 import { Toaster } from 'sonner';
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/profile" element={<PrivateRoute><ProfileLayout /></PrivateRoute>}>
             <Route index element={<ProfilePage />} />
             <Route path="orders" element={<MyOrders />} />
+            <Route path="addresses" element={<MyAddresses />} />
           </Route>
         </Route>
 

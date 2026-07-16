@@ -1,6 +1,7 @@
-import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
+import ProductVariant from '../models/ProductVariant.js';
+import { priceOrderItem, PricingError } from '../services/PricingService.js';
 import crypto from 'crypto';
 
 class PaymentController {
@@ -18,20 +19,18 @@ class PaymentController {
       const itemRequirements = [];
 
       for (const item of items) {
-        const product = await Product.findById(item.productVariantId);
-        if (!product) {
-          return res.status(400).json({ error_code: 'PRODUCT_NOT_FOUND', message: `Không tìm thấy sản phẩm với ID ${item.productVariantId}` });
-        }
-
-        const price = product.discountPrice !== undefined ? product.discountPrice : product.price;
-        const itemTotal = price * item.quantity;
+        // Định giá theo giá DB qua PricingService (dùng chung với createOrder)
+        // để số tiền báo lúc checkout khớp số tiền tính thật khi tạo đơn.
+        const { basePrice, lensPrice, finalUnitPrice } = await priceOrderItem(item);
+        const itemTotal = finalUnitPrice * item.quantity;
         orderTotal += itemTotal;
 
         itemRequirements.push({
           productVariantId: item.productVariantId,
-          unitPrice: price,
-          lensPrice: 0,
-          itemTotal: itemTotal,
+          lensId: item.lensId || null,
+          unitPrice: basePrice,
+          lensPrice,
+          itemTotal,
           paymentPercentage: 1.0, // Thanh toán trước 100% cho hàng có sẵn
           requiredPayment: itemTotal
         });
@@ -48,6 +47,9 @@ class PaymentController {
         }
       });
     } catch (error) {
+      if (error instanceof PricingError) {
+        return res.status(error.status).json(error.body);
+      }
       next(error);
     }
   }
@@ -71,10 +73,17 @@ class PaymentController {
         return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Đơn hàng này đã được thanh toán hoặc hoàn thành.' });
       }
 
-      const tmnCode = '5UHY3ACA';
-      const secretKey = 'RVSG2B54PAF7GFE00588J1W2MCVPYVMS';
-      const vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-      const returnUrl = 'http://localhost:3000/payment/vnpay-callback';
+      const tmnCode = process.env.VNP_TMN_CODE;
+      const secretKey = process.env.VNP_HASH_SECRET;
+      const vnpUrl = process.env.VNP_URL || 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
+      // VNPay redirect về đúng endpoint callback của backend: /api/payment/vnpay-callback.
+      // Bắt buộc cấu hình qua VNP_RETURN_URL (khác host/port theo môi trường) — không hard-code.
+      const returnUrl = process.env.VNP_RETURN_URL;
+
+      if (!tmnCode || !secretKey || !returnUrl) {
+        console.error('VNPay is not fully configured (VNP_TMN_CODE / VNP_HASH_SECRET / VNP_RETURN_URL).');
+        return res.status(500).json({ error_code: 'CONFIG_ERROR', message: 'Cổng thanh toán chưa được cấu hình.' });
+      }
 
       const date = new Date();
       // Format YYYYMMDDHHmmss
@@ -130,8 +139,12 @@ class PaymentController {
   async vnpayCallback(req, res, next) {
     try {
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-      const secretKey = 'RVSG2B54PAF7GFE00588J1W2MCVPYVMS';
-      
+      const secretKey = process.env.VNP_HASH_SECRET;
+
+      if (!secretKey) {
+        console.error('VNPay hash secret is not configured (VNP_HASH_SECRET).');
+        return res.redirect(`${clientUrl}/checkout/failure`);
+      }
       const vnp_Params = { ...req.query };
       const secureHash = vnp_Params['vnp_SecureHash'];
 
@@ -166,14 +179,49 @@ class PaymentController {
 
       const userEmail = order.user_id?.email || '';
 
-      // 2. Kiểm tra ResponseCode ('00' là thành công)
+      // 2. Chống double-processing: chỉ xử lý đơn đang chờ thanh toán (PENDING).
+      // Nếu đơn đã CONFIRMED/CANCELLED thì bỏ qua (callback lặp / user refresh),
+      // điều hướng theo trạng thái hiện tại mà không cập nhật lại.
+      if (order.status !== 'PENDING') {
+        if (order.status === 'CONFIRMED' || order.status === 'COMPLETED') {
+          return res.redirect(`${clientUrl}/checkout/success?orderId=${orderId}&email=${userEmail}`);
+        }
+        return res.redirect(`${clientUrl}/checkout/failure`);
+      }
+
+      // 3. Đối chiếu số tiền: VNPay gửi vnp_Amount = số tiền * 100.
+      // Không tin số tiền từ callback; phải khớp với total_amount đã lưu ở DB.
+      const expectedAmount = Math.round(order.total_amount * 100);
+      const paidAmount = parseInt(vnp_Params['vnp_Amount'], 10);
+      if (!Number.isFinite(paidAmount) || paidAmount !== expectedAmount) {
+        console.error(`VNPay amount mismatch for order ${orderId}: expected ${expectedAmount}, got ${vnp_Params['vnp_Amount']}.`);
+        return res.redirect(`${clientUrl}/checkout/failure`);
+      }
+
+      // 4. Kiểm tra ResponseCode ('00' là thành công)
       if (responseCode === '00') {
+        const prevStatus = order.status;
         order.status = 'CONFIRMED';
+        order.payment_status = 'PAID';
+        order.transaction_id = vnp_Params['vnp_TransactionNo'] || '';
+        order.paid_at = new Date();
+        order.status_history.push({
+          from_status: prevStatus,
+          to_status: 'CONFIRMED',
+          note: `Thanh toán thành công qua VNPay (Mã GD: ${order.transaction_id})`
+        });
         await order.save();
         return res.redirect(`${clientUrl}/checkout/success?orderId=${orderId}&email=${userEmail}`);
       } else {
         // Giao dịch không thành công
+        const prevStatus = order.status;
         order.status = 'CANCELLED';
+        order.payment_status = 'UNPAID';
+        order.status_history.push({
+          from_status: prevStatus,
+          to_status: 'CANCELLED',
+          note: `Thanh toán thất bại qua VNPay (ResponseCode: ${responseCode})`
+        });
         await order.save();
         return res.redirect(`${clientUrl}/checkout/failure`);
       }
@@ -187,6 +235,11 @@ class PaymentController {
    */
   async mockCheckout(req, res, next) {
     try {
+      // Chỉ cho phép mô phỏng thanh toán ở môi trường dev; chặn hoàn toàn ở production.
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ error_code: 'FORBIDDEN', message: 'Chức năng mô phỏng thanh toán không khả dụng.' });
+      }
+
       const { orderId, simulateStatus } = req.body;
       if (!orderId) {
         return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Thiếu mã đơn hàng' });
@@ -204,7 +257,16 @@ class PaymentController {
       const userEmail = order.user_id?.email || '';
 
       if (simulateStatus === 'SUCCESS') {
+        const prevStatus = order.status;
         order.status = 'CONFIRMED';
+        order.payment_status = 'PAID';
+        order.transaction_id = 'MOCK_TXN_' + Date.now();
+        order.paid_at = new Date();
+        order.status_history.push({
+          from_status: prevStatus,
+          to_status: 'CONFIRMED',
+          note: `Giả lập giao dịch thanh toán thành công (Mã GD: ${order.transaction_id})`
+        });
         await order.save();
         return res.status(200).json({
           code: 0,
@@ -217,12 +279,21 @@ class PaymentController {
         // Giao dịch không thành công -> Hủy đơn và trả lại tồn kho
         const items = await OrderItem.find({ order_id: order._id });
         for (const item of items) {
-          await Product.findByIdAndUpdate(item.product_id, {
-            $inc: { stock_quantity: item.quantity }
-          });
+          if (item.variant_id) {
+            await ProductVariant.findByIdAndUpdate(item.variant_id, {
+              $inc: { quantity: item.quantity }
+            });
+          }
         }
         
+        const prevStatus = order.status;
         order.status = 'CANCELLED';
+        order.payment_status = 'UNPAID';
+        order.status_history.push({
+          from_status: prevStatus,
+          to_status: 'CANCELLED',
+          note: 'Giả lập giao dịch thanh toán thất bại'
+        });
         await order.save();
         return res.status(200).json({
           code: 0,
