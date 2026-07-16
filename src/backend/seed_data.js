@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Product from './models/Product.js';
+import ProductVariant from './models/ProductVariant.js';
 
 dotenv.config();
 
@@ -12,13 +13,11 @@ const __dirname = path.dirname(__filename);
 
 // Hàm chuyển đổi và làm sạch dữ liệu để khớp 100% với ProductSchema
 const filterRawItemToSchema = (item) => {
-  // Chuẩn hoá Category (Chỉ nhận FRAME, SUNGLASSES hoặc ACCESSORIES)
+  // Chuẩn hoá Category (Chỉ nhận FRAME, SUNGLASSES hoặc LENS)
   let category = 'FRAME';
   const rawCat = (item.category || '').toUpperCase();
-  if (['FRAME', 'SUNGLASSES', 'ACCESSORIES'].includes(rawCat)) {
+  if (['FRAME', 'SUNGLASSES', 'LENS'].includes(rawCat)) {
     category = rawCat;
-  } else if (rawCat === 'LENS') {
-    category = 'FRAME'; // Gộp các mẫu LENS từ JSON thô thành FRAME
   }
 
   // Chuẩn hoá viền kính để khớp enum ['Full-Rim', 'Semi-Rimless', 'Rimless', 'Other']
@@ -45,7 +44,6 @@ const filterRawItemToSchema = (item) => {
     price: item.minPrice || item.price || 0, // Dùng minPrice làm giá gốc
     discountPrice: (item.maxPrice > item.minPrice) ? item.minPrice : undefined, // Lấy giá ưu đãi nếu có chênh lệch
     imageUrl: (item.imageUrl || []).map(img => ({ imageUrl: img.imageUrl })), // Giữ cấu trúc imageUrl của ImageSchema
-    stock_quantity: 20, // Số tồn kho mặc định
     description: `Kính thời trang thương hiệu ${item.brand} dòng ${item.name} chính hãng chất lượng cao. Sản xuất bằng chất liệu ${item.frameMaterial || 'cao cấp'}, dáng kính ${item.shape || 'thời thượng'}, thích hợp đeo hàng ngày.`,
     category,
     frameType,
@@ -67,6 +65,10 @@ const seedProducts = async () => {
     console.log('MongoDB Connected Successfully.');
 
     // Xoá dữ liệu cũ
+    console.log('Clearing existing product variants...');
+    await ProductVariant.deleteMany({});
+    console.log('Existing product variants cleared.');
+
     console.log('Clearing existing products...');
     await Product.deleteMany({});
     console.log('Existing products cleared.');
@@ -84,10 +86,59 @@ const seedProducts = async () => {
     // Lưu vào database
     console.log('Inserting filtered data to MongoDB...');
     const createdProducts = await Product.insertMany(cleanedProducts);
+    console.log(`Imported ${createdProducts.length} items to database.`);
+
+    // Tạo các biến thể tương ứng cho từng sản phẩm
+    console.log('Generating product variants...');
+    const variantsToCreate = [];
+
+    for (const p of createdProducts) {
+      let colors = [];
+      if (p.category === 'LENS') {
+        colors = ['Trong suốt'];
+      } else {
+        colors = ['Đen bóng', 'Đồi mồi', 'Trong suốt'];
+      }
+
+      colors.forEach((color, index) => {
+        // Tạo SKU: SKU-BRAND-NAME-COLOR (sau khi loại bỏ kí tự đặc biệt)
+        const brandSlug = p.brand.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const nameSlug = p.name.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const colorSlug = index === 0 ? 'BLK' : index === 1 ? 'TOR' : 'CLR';
+        const sku = `SKU-${brandSlug}-${nameSlug}-${colorSlug}`;
+
+        // Lấy hình ảnh từ sản phẩm (nếu có) gán vào biến thể
+        const variantImages = p.imageUrl && p.imageUrl.length > 0
+          ? p.imageUrl.map(img => ({ imageUrl: img.imageUrl }))
+          : [];
+
+        variantsToCreate.push({
+          productId: p._id,
+          sku,
+          colorName: color,
+          frameFinish: color === 'Đen bóng' ? 'Glossy' : 'Matte',
+          lensWidthMm: 52,
+          bridgeWidthMm: 18,
+          templeLengthMm: 140,
+          sizeLabel: 'Standard',
+          price: p.price,
+          discountPrice: p.discountPrice,
+          quantity: 20, // Tồn kho mặc định để có sẵn hàng bán
+          status: 'ACTIVE',
+          orderItemType: 'IN_STOCK',
+          imageUrl: variantImages
+        });
+      });
+    }
+
+    console.log(`Inserting ${variantsToCreate.length} variants to MongoDB...`);
+    const createdVariants = await ProductVariant.insertMany(variantsToCreate);
     console.log('Seeding completed successfully!');
-    console.log(`Imported ${createdProducts.length} items to database:`);
+    
+    console.log(`Imported ${createdProducts.length} products and ${createdVariants.length} variants:`);
     createdProducts.forEach((p, idx) => {
-      console.log(` ${idx + 1}. [${p.category}] ${p.brand} - ${p.name} (${p.frameType}, ${p.gender}, Giá: ${p.price.toLocaleString()} VND)`);
+      const pVariants = createdVariants.filter(v => v.productId.toString() === p._id.toString());
+      console.log(` ${idx + 1}. [${p.category}] ${p.brand} - ${p.name} (Variants: ${pVariants.map(v => v.colorName).join(', ')})`);
     });
 
     await mongoose.connection.close();

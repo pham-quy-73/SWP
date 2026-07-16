@@ -16,7 +16,11 @@ export const usePaymentRequirement = () => {
 
     const payload = {
       items: items.map((item) => ({
-        productVariantId: item.productId,
+        // Giỏ hàng có 2 nguồn thêm hàng với quy ước ID khác nhau:
+        // - ProductsPage lưu variant ID vào productId
+        // - ProductForm lưu variant ID riêng ở variantId (productId là Product ID)
+        // Ưu tiên variantId, fallback productId để backend luôn nhận đúng ProductVariant ID.
+        productVariantId: item.variantId || item.productId,
         lensId: item.lensId || null,
         quantity: item.quantity,
       })),

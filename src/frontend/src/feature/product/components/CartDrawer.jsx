@@ -107,7 +107,7 @@ export const CartDrawer = () => {
                 <div className="space-y-1.5 px-1">
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-sm font-black text-zinc-900 uppercase tracking-tighter">
-                      Tổng tạm tính
+                      Thành tiền
                     </span>
                     <span className="text-2xl font-black text-zinc-900 tracking-tighter">
                       {totalAmount.toLocaleString()}₫

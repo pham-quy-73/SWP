@@ -10,6 +10,7 @@ router.get('/me', authenticate, UserController.getMe);
 // Tất cả các tuyến đường phía dưới đều yêu cầu đăng nhập với vai trò ADMIN
 router.use(authenticate, requireRole(['ADMIN']));
 
+router.post('/', UserController.createUser);
 router.get('/', UserController.getAllUsers);
 router.get('/:id', UserController.getUserById);
 router.put('/:id/role', UserController.updateUserRole);

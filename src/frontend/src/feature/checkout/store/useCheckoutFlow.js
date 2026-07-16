@@ -64,7 +64,7 @@ export const useCheckoutFlow = () => {
           };
         }
         return {
-          productVariantId: item.productId,
+          productVariantId: item.variantId || item.productId,
           quantity: item.quantity,
           lensId: item.lensId || null,
           prescription: mappedPrescription,

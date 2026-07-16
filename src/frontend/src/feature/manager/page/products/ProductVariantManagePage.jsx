@@ -75,7 +75,8 @@ export default function ProductVariantManagePage() {
             templeLengthMm: 140,
             price: product.discountPrice || product.price,
             orderItemType: 'IN_STOCK',
-            status: 'ACTIVE'
+            status: 'ACTIVE',
+            quantity: 0 // Thêm trường quantity mặc định
           }]);
         }
       } catch (err) {
@@ -136,13 +137,14 @@ export default function ProductVariantManagePage() {
       const apiURL = import.meta.env.VITE_API_URL || '';
       const token = localStorage.getItem('accessToken');
       const headers = {
-        'Content-Type': 'multipart/form-data', // BẮT BUỘC: Đổi header sang form-data
+        'Content-Type': 'multipart/form-data', 
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       };
 
-      // Tạo FormData chứa thông tin và file ảnh
       const formData = new FormData();
-      formData.append('variant', JSON.stringify(form.variantData));
+      // Đảm bảo convert quantity sang Number trước khi gửi lên API
+      const safeData = { ...form.variantData, quantity: Number(form.variantData.quantity) || 0 };
+      formData.append('variant', JSON.stringify(safeData));
 
       if (form.files && form.files.length > 0) {
         form.files.forEach((file) => {
@@ -290,6 +292,10 @@ export default function ProductVariantManagePage() {
                   <th className="px-6 py-5 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">
                     Giá bán
                   </th>
+                  {/* NÂNG CẤP: Cột hiển thị Tồn Kho */}
+                  <th className="px-6 py-5 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] text-center">
+                    Tồn kho
+                  </th>
                   <th className="px-6 py-5 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] text-center">
                     Loại kho
                   </th>
@@ -303,160 +309,178 @@ export default function ProductVariantManagePage() {
               </thead>
               <tbody className="divide-y divide-zinc-50 bg-white">
                 {filteredVariants.length > 0 ? (
-                  filteredVariants.map((variant, index) => (
-                    <tr
-                      key={variant.id || variant._id}
-                      className="group hover:bg-zinc-50/80 transition-all duration-300 animate-in slide-in-from-bottom-2 fade-in fill-mode-backwards"
-                      style={{ animationDelay: `${index * 30}ms` }}
-                    >
-                      <td className="px-8 py-6 align-middle">
-                        <div className="flex items-center gap-4">
-                          {/* Đã sửa phần hiển thị ảnh ở đây */}
-                          <div className="w-12 h-12 rounded-2xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center overflow-hidden shrink-0">
-                            {variant.imageUrl && variant.imageUrl.length > 0 ? (
-                              <img
-                                src={getDisplayImageUrl(variant.imageUrl[0])}
-                                alt={variant.colorName}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <ImageIcon className="w-5 h-5 text-zinc-300" />
-                            )}
-                          </div>
-
-                          <div className="flex flex-col gap-1.5">
-                            <span className="font-black text-zinc-900 text-base group-hover:text-emerald-600 transition-colors tracking-tight">
-                              {variant.colorName}
-                            </span>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Tag className="w-3 h-3 text-zinc-300" />
-                              {variant.frameFinish && (
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 bg-white px-2 py-1 rounded border border-zinc-200">
-                                  {variant.frameFinish}
-                                </span>
-                              )}
-                              {variant.sizeLabel && (
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 bg-white px-2 py-1 rounded border border-zinc-200">
-                                  {variant.sizeLabel}
-                                </span>
+                  filteredVariants.map((variant, index) => {
+                    const quantity = variant.quantity || 0;
+                    return (
+                      <tr
+                        key={variant.id || variant._id}
+                        className="group hover:bg-zinc-50/80 transition-all duration-300 animate-in slide-in-from-bottom-2 fade-in fill-mode-backwards"
+                        style={{ animationDelay: `${index * 30}ms` }}
+                      >
+                        <td className="px-8 py-6 align-middle">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center overflow-hidden shrink-0">
+                              {variant.imageUrl && variant.imageUrl.length > 0 ? (
+                                <img
+                                  src={getDisplayImageUrl(variant.imageUrl[0])}
+                                  alt={variant.colorName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <ImageIcon className="w-5 h-5 text-zinc-300" />
                               )}
                             </div>
+
+                            <div className="flex flex-col gap-1.5">
+                              <span className="font-black text-zinc-900 text-base group-hover:text-emerald-600 transition-colors tracking-tight">
+                                {variant.colorName}
+                              </span>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Tag className="w-3 h-3 text-zinc-300" />
+                                {variant.frameFinish && (
+                                  <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 bg-white px-2 py-1 rounded border border-zinc-200">
+                                    {variant.frameFinish}
+                                  </span>
+                                )}
+                                {variant.sizeLabel && (
+                                  <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 bg-white px-2 py-1 rounded border border-zinc-200">
+                                    {variant.sizeLabel}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-6 align-middle">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-semibold text-zinc-500 bg-zinc-50 border border-zinc-200 px-2 py-1 rounded-lg">
-                            {(variant.id || variant._id || '').slice(0, 8)}...
-                          </span>
-                          <button
-                            onClick={() => handleCopyId(variant.id || variant._id)}
-                            title="Sao chép ID đầy đủ"
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                          >
-                            {copiedId === (variant.id || variant._id) ? (
-                              <Check className="w-4 h-4 text-emerald-500" />
+                        </td>
+                        
+                        <td className="px-6 py-6 align-middle">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-semibold text-zinc-500 bg-zinc-50 border border-zinc-200 px-2 py-1 rounded-lg">
+                              {(variant.id || variant._id || '').slice(0, 8)}...
+                            </span>
+                            <button
+                              onClick={() => handleCopyId(variant.id || variant._id)}
+                              title="Sao chép ID đầy đủ"
+                              className="p-1.5 rounded-lg text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            >
+                              {copiedId === (variant.id || variant._id) ? (
+                                <Check className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-6 align-middle">
+                          <div className="flex flex-col gap-1 text-xs text-zinc-500 font-medium">
+                            <span>
+                              Tròng: <span className="font-black text-zinc-900 text-sm">{variant.lensWidthMm}</span>
+                            </span>
+                            <span>
+                              Cầu: <span className="font-black text-zinc-900 text-sm">{variant.bridgeWidthMm}</span>
+                            </span>
+                            <span>
+                              Càng: <span className="font-black text-zinc-900 text-sm">{variant.templeLengthMm}</span>
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-6 align-middle">
+                          <div className="flex items-baseline gap-1 font-black text-zinc-900 text-lg tracking-tight">
+                            {Number(variant.price ?? 0).toLocaleString('vi-VN')}
+                            <span className="text-xs font-bold text-zinc-400">đ</span>
+                          </div>
+                        </td>
+
+                        {/* NÂNG CẤP: Giao diện Tồn Kho (Badge Cảnh báo) */}
+                        <td className="px-6 py-6 align-middle text-center">
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <span className={`font-black text-lg ${quantity === 0 ? 'text-rose-500' : 'text-zinc-900'}`}>
+                              {quantity}
+                            </span>
+                            {quantity === 0 ? (
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-rose-500 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">Hết hàng</span>
+                            ) : quantity <= 5 ? (
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Sắp hết</span>
                             ) : (
-                              <Copy className="w-4 h-4" />
+                              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Còn hàng</span>
                             )}
-                          </button>
-                        </div>
-                      </td>
+                          </div>
+                        </td>
 
-                      <td className="px-6 py-6 align-middle">
-                        <div className="flex flex-col gap-1 text-xs text-zinc-500 font-medium">
-                          <span>
-                            Tròng: <span className="font-black text-zinc-900 text-sm">{variant.lensWidthMm}</span>
-                          </span>
-                          <span>
-                            Cầu: <span className="font-black text-zinc-900 text-sm">{variant.bridgeWidthMm}</span>
-                          </span>
-                          <span>
-                            Càng: <span className="font-black text-zinc-900 text-sm">{variant.templeLengthMm}</span>
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-6 align-middle">
-                        <div className="flex items-baseline gap-1 font-black text-zinc-900 text-lg tracking-tight">
-                          {Number(variant.price ?? 0).toLocaleString('vi-VN')}
-                          <span className="text-xs font-bold text-zinc-400">đ</span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-6 align-middle text-center">
-                        <span
-                          className={`inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border ${getOrderTypeBadge(
-                            variant.orderItemType,
-                          )}`}
-                        >
-                          {variant.orderItemType === 'IN_STOCK' ? 'Có sẵn' : 'Đặt trước'}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-6 align-middle text-center">
-                        <span
-                          className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase border gap-1.5 ${getStatusBadge(
-                            variant.status,
-                          )}`}
-                        >
-                          {variant.status === 'ACTIVE' && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                          )}
-                          {variant.status === 'ACTIVE' ? 'Hiển thị' : 'Đã ẩn'}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-6 align-middle text-center">
-                        <div className="flex items-center justify-center relative" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() =>
-                              setOpenActionId(openActionId === (variant.id || variant._id) ? null : (variant.id || variant._id))
-                            }
-                            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${openActionId === (variant.id || variant._id)
-                              ? 'bg-zinc-900 text-white shadow-lg'
-                              : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
-                              }`}
+                        <td className="px-6 py-6 align-middle text-center">
+                          <span
+                            className={`inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border ${getOrderTypeBadge(
+                              variant.orderItemType,
+                            )}`}
                           >
-                            <MoreHorizontal className="w-5 h-5" />
-                          </button>
+                            {variant.orderItemType === 'IN_STOCK' ? 'Có sẵn' : 'Đặt trước'}
+                          </span>
+                        </td>
 
-                          {openActionId === (variant.id || variant._id) && (
-                            <div
-                              className={`absolute right-0 w-48 bg-white border border-zinc-100 rounded-2xl shadow-xl shadow-zinc-200/50 z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${
-                                // TỰ ĐỘNG DROP-UP CHO 2 SẢN PHẨM CUỐI CÙNG
-                                index >= filteredVariants.length - 2 && index > 1
-                                  ? 'bottom-full mb-2 origin-bottom-right'
-                                  : 'top-full mt-2 origin-top-right'
+                        <td className="px-6 py-6 align-middle text-center">
+                          <span
+                            className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase border gap-1.5 ${getStatusBadge(
+                              variant.status,
+                            )}`}
+                          >
+                            {variant.status === 'ACTIVE' && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            )}
+                            {variant.status === 'ACTIVE' ? 'Hiển thị' : 'Đã ẩn'}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-6 align-middle text-center">
+                          <div className="flex items-center justify-center relative" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() =>
+                                setOpenActionId(openActionId === (variant.id || variant._id) ? null : (variant.id || variant._id))
+                              }
+                              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${openActionId === (variant.id || variant._id)
+                                ? 'bg-zinc-900 text-white shadow-lg'
+                                : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
                                 }`}
                             >
-                              <div className="px-5 py-2 border-b border-zinc-50 mb-1">
-                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                                  Tùy chọn
-                                </p>
+                              <MoreHorizontal className="w-5 h-5" />
+                            </button>
+
+                            {openActionId === (variant.id || variant._id) && (
+                              <div
+                                className={`absolute right-0 w-48 bg-white border border-zinc-100 rounded-2xl shadow-xl shadow-zinc-200/50 z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${
+                                  index >= filteredVariants.length - 2 && index > 1
+                                    ? 'bottom-full mb-2 origin-bottom-right'
+                                    : 'top-full mt-2 origin-top-right'
+                                  }`}
+                              >
+                                <div className="px-5 py-2 border-b border-zinc-50 mb-1">
+                                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    Tùy chọn
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => handleOpenEdit(variant)}
+                                  className="w-full px-5 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 flex items-center gap-3 transition-colors font-semibold"
+                                >
+                                  <Edit className="w-4 h-4" /> Chỉnh sửa
+                                </button>
+                                <div className="h-px bg-zinc-100 my-1 mx-3"></div>
+                                <button
+                                  onClick={() => handleDelete(variant.id || variant._id)}
+                                  className="w-full px-5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors font-semibold"
+                                >
+                                  <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
+                                </button>
                               </div>
-                              <button
-                                onClick={() => handleOpenEdit(variant)}
-                                className="w-full px-5 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 flex items-center gap-3 transition-colors font-semibold"
-                              >
-                                <Edit className="w-4 h-4" /> Chỉnh sửa
-                              </button>
-                              <div className="h-px bg-zinc-100 my-1 mx-3"></div>
-                              <button
-                                onClick={() => handleDelete(variant.id || variant._id)}
-                                className="w-full px-5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors font-semibold"
-                              >
-                                <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-32 text-center">
+                    <td colSpan={8} className="px-6 py-32 text-center">
                       <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
                         <div className="w-24 h-24 bg-zinc-50 border border-zinc-100 rounded-[2rem] flex items-center justify-center mb-6">
                           <Package className="w-10 h-10 text-zinc-300" />

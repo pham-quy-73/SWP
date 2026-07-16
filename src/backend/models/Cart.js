@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-/**
- * @typedef {Object} Cart
- * @property {mongoose.Types.ObjectId} user_id
- * @property {mongoose.Types.ObjectId} product_id
- * @property {number} quantity
- */
 const CartSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +10,18 @@ const CartSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     required: true
+  },
+  // NÂNG CẤP: Phải biết chính xác khách chọn Gọng màu gì, size gì
+  variant_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ProductVariant',
+    required: true
+  },
+  // NÂNG CẤP: Lưu thêm ID của Tròng kính (nếu khách có chọn mua kèm)
+  lens_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    default: null
   },
   quantity: {
     type: Number,

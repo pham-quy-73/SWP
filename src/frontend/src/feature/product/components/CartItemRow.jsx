@@ -17,15 +17,19 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
     item.prescription?.os?.add
   );
 
-  const hasPrescription = false; // hasImage || hasManualInput || !!item.prescription?.notes;
+  const hasPrescription = false; // Tạm tắt theo logic cũ của bạn
+
+  // NÂNG CẤP: Tính tổng giá trị của riêng dòng này (Gọng + Tròng) nhân với số lượng
+  const basePrice = item.price || 0;
+  const lensPrice = item.lensPrice || 0;
+  const rowTotal = (basePrice + lensPrice) * item.quantity;
 
   return (
     <div
-      className={`flex flex-col bg-white border rounded-2xl overflow-hidden transition-all duration-300 group/item ${
-        showRx
+      className={`flex flex-col bg-white border rounded-2xl overflow-hidden transition-all duration-300 group/item ${showRx
           ? 'border-zinc-300 shadow-md'
           : 'border-zinc-200 shadow-sm hover:border-zinc-300 hover:shadow-md'
-      }`}
+        }`}
     >
       {/* PHẦN TRÊN: THÔNG TIN CƠ BẢN SẢN PHẨM */}
       <div className="p-3.5 flex gap-4 bg-white relative z-10">
@@ -45,9 +49,25 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
         <div className="flex-1 flex flex-col justify-between py-0.5">
           <div className="space-y-2">
             <div className="flex justify-between items-start gap-2">
-              <h3 className="font-black text-zinc-900 text-[15px] leading-tight line-clamp-2 pr-4">
-                {item.name}
-              </h3>
+              <div className="flex-1">
+                <h3 className="font-black text-zinc-900 text-[15px] leading-tight line-clamp-2 pr-2">
+                  {item.name}
+                </h3>
+
+                {/* NÂNG CẤP: Hiển thị chi tiết Tròng Kính mua kèm */}
+                {item.lensId && (
+                  <div className="mt-1.5 flex flex-col gap-0.5">
+                    <p className="text-[12px] text-zinc-500 font-medium leading-snug flex items-center gap-1.5">
+                      <span className="w-1 h-1 bg-zinc-300 rounded-full"></span>
+                      {item.lensName}
+                    </p>
+                    <p className="text-[11px] font-bold text-emerald-600 pl-2.5">
+                      Giá: {lensPrice.toLocaleString('vi-VN')}₫
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => removeFromCart(item.id)}
@@ -61,18 +81,17 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
             <div className="flex flex-wrap items-center gap-2">
               {item.lensId && (
                 <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2 h-6 rounded border border-orange-200/60">
-                  Tròng Kính
+                  Kèm Tròng
                 </span>
               )}
               {hasPrescription && (
                 <button
                   type="button"
                   onClick={() => setShowRx(!showRx)}
-                  className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 h-6 rounded border transition-all ${
-                    showRx
+                  className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 h-6 rounded border transition-all ${showRx
                       ? 'bg-zinc-900 text-white border-zinc-900 shadow-inner'
                       : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 hover:border-zinc-300'
-                  }`}
+                    }`}
                 >
                   <Eye className="w-3 h-3" />
                   Đơn Kính
@@ -105,8 +124,9 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
+            {/* NÂNG CẤP: Hiển thị đúng tổng tiền đã gồm tròng kính */}
             <p className="font-black text-zinc-900 text-[17px] tracking-tight">
-              {(item.price * item.quantity).toLocaleString()}₫
+              {rowTotal.toLocaleString('vi-VN')}₫
             </p>
           </div>
         </div>
@@ -130,11 +150,10 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
                     <img
                       src={item.prescription?.imageUrl || ''}
                       alt="Ảnh đơn kính"
-                      className={`bg-white rounded-lg border border-zinc-200 shadow-sm transition-all ${
-                        !hasManualInput
+                      className={`bg-white rounded-lg border border-zinc-200 shadow-sm transition-all ${!hasManualInput
                           ? 'w-full h-auto max-h-[250px] object-contain p-2'
                           : 'w-[72px] h-[72px] object-cover'
-                      }`}
+                        }`}
                     />
                   </div>
                 )}

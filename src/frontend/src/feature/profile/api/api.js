@@ -1,30 +1,15 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '',
-});
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import { httpClient } from '../../../lib/httpClient';
 
 export const profileApi = {
   // 1. Lấy thông tin cá nhân
   getProfile: async () => {
-    const response = await api.get('/users/me');
+    const response = await httpClient.get('/users/me');
     return response.data.result;
   },
 
   // 2. Cập nhật thông tin cá nhân
   updateProfile: (data) => {
-    return api.put('/profile', data, {
+    return httpClient.put('/profile', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -33,12 +18,12 @@ export const profileApi = {
 
   // 3. Thay đổi mật khẩu
   changePassword: (data) => {
-    return api.post('/profile/change-password', data);
+    return httpClient.post('/profile/change-password', data);
   },
 
   // 4. Lấy đơn hàng của người dùng
   getOrders: async (page = 0, size = 10) => {
-    const response = await api.get(
+    const response = await httpClient.get(
       `/orders/me?page=${page}&size=${size}&sortBy=createdAt&sortDir=desc`,
     );
     return response.data.result;
@@ -46,29 +31,50 @@ export const profileApi = {
 
   // 5. Hủy đơn hàng (chỉ áp dụng cho PRE_ORDER chưa xử lý)
   cancelOrder: (orderId) => {
-    return api.put(`/orders/${orderId}/cancel`);
+    return httpClient.put(`/orders/${orderId}/cancel`);
   },
 
-  // 6. Lấy địa chỉ của người dùng
-  getAddresses: () => {
-    return api.get('/profile/addresses');
+  // 6. Address Book — CRUD địa chỉ đã lưu (persistent)
+  getAddresses: async () => {
+    const response = await httpClient.get('/api/addresses');
+    return response.data.result || [];
+  },
+
+  createAddress: async (payload) => {
+    const response = await httpClient.post('/api/addresses', payload);
+    return response.data.result;
+  },
+
+  updateAddress: async (id, payload) => {
+    const response = await httpClient.put(`/api/addresses/${id}`, payload);
+    return response.data.result;
+  },
+
+  setDefaultAddress: async (id) => {
+    const response = await httpClient.put(`/api/addresses/${id}/default`);
+    return response.data.result;
+  },
+
+  deleteAddress: async (id) => {
+    const response = await httpClient.delete(`/api/addresses/${id}`);
+    return response.data;
   },
 
   // 6. Feedback APIs
   getFeedbackByOrder: (orderId) => {
-    return api.get(`/feedbacks/order/${orderId}`);
+    return httpClient.get(`/feedbacks/order/${orderId}`);
   },
 
   getFeedbackDetail: (feedbackId) => {
-    return api.get(`/feedbacks/${feedbackId}`);
+    return httpClient.get(`/feedbacks/${feedbackId}`);
   },
 
   getMyFeedbacks: () => {
-    return api.get('/feedbacks/me');
+    return httpClient.get('/feedbacks/me');
   },
 
   createFeedback: (data) => {
-    return api.post('/feedbacks', data, {
+    return httpClient.post('/feedbacks', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -76,7 +82,7 @@ export const profileApi = {
   },
 
   updateFeedback: (feedbackId, data) => {
-    return api.put(`/feedbacks/${feedbackId}`, data, {
+    return httpClient.put(`/feedbacks/${feedbackId}`, data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -84,6 +90,6 @@ export const profileApi = {
   },
 
   deleteFeedback: (feedbackId) => {
-    return api.delete(`/feedbacks/${feedbackId}`);
+    return httpClient.delete(`/feedbacks/${feedbackId}`);
   },
 };

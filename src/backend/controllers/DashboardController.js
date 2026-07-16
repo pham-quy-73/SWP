@@ -1,5 +1,6 @@
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
+import ProductVariant from '../models/ProductVariant.js';
 
 class DashboardController {
   async getDashboardStats(req, res, next) {
@@ -53,10 +54,10 @@ class DashboardController {
         created_at: { $gte: startOfToday }
       });
 
-      // 5. Số vật phẩm sắp hết hàng (tồn kho dưới 10)
-      const lowStockItems = await Product.countDocuments({
+      // 5. Số vật phẩm sắp hết hàng (tồn kho dưới 10) — tồn kho nằm ở ProductVariant.quantity
+      const lowStockItems = await ProductVariant.countDocuments({
         status: 'ACTIVE',
-        stock_quantity: { $lt: 10 }
+        quantity: { $lt: 10 }
       });
 
       return res.status(200).json({

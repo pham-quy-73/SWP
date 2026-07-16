@@ -33,6 +33,7 @@ class ProductVariantController {
 
       const variant = new ProductVariant({
         productId,
+        sku: variantData.sku || '', // Lưu SKU
         colorName: variantData.colorName || '',
         frameFinish: variantData.frameFinish || '',
         lensWidthMm: Number(variantData.lensWidthMm) || 0,
@@ -40,6 +41,7 @@ class ProductVariantController {
         templeLengthMm: Number(variantData.templeLengthMm) || 0,
         sizeLabel: variantData.sizeLabel || '',
         price: Number(variantData.price) || 0,
+        discountPrice: variantData.discountPrice ? Number(variantData.discountPrice) : undefined, // Lưu discountPrice
         quantity: Number(variantData.quantity) || 0,
         status: variantData.status || 'ACTIVE',
         orderItemType: variantData.orderItemType || 'IN_STOCK',
@@ -78,6 +80,7 @@ class ProductVariantController {
       const variant = await ProductVariant.findByIdAndUpdate(
         variantId,
         {
+          sku: updateData.sku, // Cập nhật SKU
           colorName: updateData.colorName,
           frameFinish: updateData.frameFinish,
           lensWidthMm: updateData.lensWidthMm !== undefined ? Number(updateData.lensWidthMm) : undefined,
@@ -85,6 +88,7 @@ class ProductVariantController {
           templeLengthMm: updateData.templeLengthMm !== undefined ? Number(updateData.templeLengthMm) : undefined,
           sizeLabel: updateData.sizeLabel,
           price: updateData.price !== undefined ? Number(updateData.price) : undefined,
+          discountPrice: updateData.discountPrice !== undefined ? Number(updateData.discountPrice) : undefined, // Cập nhật discountPrice
           quantity: updateData.quantity !== undefined ? Number(updateData.quantity) : undefined,
           status: updateData.status,
           orderItemType: updateData.orderItemType,

@@ -1,7 +1,6 @@
 import Refund from '../models/Refund.js';
 import Order from '../models/Order.js';
 import OrderItem from '../models/OrderItem.js';
-import Payment from '../models/Payment.js';
 import ProductVariant from '../models/ProductVariant.js';
 
 class RefundController {
@@ -13,13 +12,10 @@ class RefundController {
       const page = parseInt(req.query.page) || 0;
       const size = parseInt(req.query.size) || 10;
 
-      // 1. Tìm tất cả các payment có status = PAID
-      const paidPayments = await Payment.find({ status: 'PAID' });
-      const paidOrderIds = paidPayments.map(p => p.order_id);
-
-      // 2. Tìm các đơn hàng CANCELLED và nằm trong nhóm paidOrderIds
+      // Tìm các đơn hàng CANCELLED nhưng đã thanh toán thành công.
+      // Dữ liệu thanh toán nằm trực tiếp trên Order, không cần truy vấn bảng Payment.
       const query = {
-        _id: { $in: paidOrderIds },
+        payment_status: 'PAID',
         status: 'CANCELLED'
       };
 
@@ -39,9 +35,8 @@ class RefundController {
           ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
           : userObj.username || 'Ẩn danh';
 
-        // Lấy số tiền đã thanh toán từ payment
-        const payment = paidPayments.find(p => p.order_id.toString() === o._id.toString());
-        const paidAmount = payment ? payment.amount : o.total_amount;
+        // Lấy số tiền đã thanh toán trực tiếp từ tổng giá trị đơn hàng
+        const paidAmount = o.total_amount;
 
         return {
           orderId: o._id,
@@ -111,6 +106,12 @@ class RefundController {
         return res.status(404).json({ error_code: 'VARIANT_NOT_FOUND', message: 'Không tìm thấy biến thể' });
       }
 
+      // 1. Tìm các đơn hàng CANCELLED và đã được thanh toán (payment_status = PAID)
+      const query = {
+        status: 'CANCELLED',
+        payment_status: 'PAID'
+      };
+
       // Tìm tất cả các items của sản phẩm cha
       const orderItems = await OrderItem.find({ product_id: variant.productId });
       const orderIds = orderItems.map(item => item.order_id);
@@ -121,10 +122,6 @@ class RefundController {
         status: { $in: ['PENDING', 'AWAITING_VERIFICATION', 'CONFIRMED'] }
       }).populate('user_id', 'username email first_name last_name phone');
 
-      // Lấy danh sách payments để tìm số tiền đã chi trả thực tế
-      const orderDbIds = orders.map(o => o._id);
-      const payments = await Payment.find({ order_id: { $in: orderDbIds }, status: 'PAID' });
-
       // Định dạng dữ liệu trả về kiểu RefundItem cho frontend
       const affectedItems = orders.map(o => {
         const userObj = o.user_id || {};
@@ -132,8 +129,8 @@ class RefundController {
           ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
           : userObj.username || 'Ẩn danh';
 
-        const payment = payments.find(p => p.order_id.toString() === o._id.toString());
-        const paidAmount = payment ? payment.amount : o.total_amount;
+        // ADR-003: số tiền đã thanh toán lấy từ thông tin nhúng trên Order.
+        const paidAmount = o.total_amount;
 
         return {
           order: {
@@ -176,12 +173,18 @@ class RefundController {
         const order = await Order.findById(orderId);
         if (!order) continue;
 
-        // Tìm payment thành công để hoàn đúng số tiền
-        const payment = await Payment.findOne({ order_id: orderId, status: 'PAID' });
-        const refundAmount = payment ? payment.amount : order.total_amount;
+        // Hoàn đúng số tiền của đơn hàng nếu đã thanh toán
+        const refundAmount = order.payment_status === 'PAID' ? order.total_amount : 0;
 
         // Thay đổi status của đơn hàng thành CANCELLED để tránh trùng lặp
+        const prevStatus = order.status;
         order.status = 'CANCELLED';
+        order.status_history.push({
+          from_status: prevStatus,
+          to_status: 'CANCELLED',
+          updated_by: req.user?._id || null,
+          note: 'Hủy đơn hàng phục vụ tiến trình hoàn tiền hàng loạt'
+        });
         await order.save();
 
         // Tạo bản ghi Refund PENDING
@@ -273,14 +276,21 @@ class RefundController {
       refund.status = 'COMPLETED';
       await refund.save();
 
-      // Cập nhật trạng thái Order thành REFUNDED
-      await Order.findByIdAndUpdate(refund.order_id, { status: 'REFUNDED' });
-
-      // Cập nhật trạng thái Payment thành REFUNDED hoặc ghi nhận thanh toán hoàn
-      await Payment.findOneAndUpdate(
-        { order_id: refund.order_id, status: 'PAID' },
-        { status: 'UNPAID' } // hoặc xoá đi, nhưng ở đây ta chỉ cần update Order thành REFUNDED là đủ phân biệt
-      );
+      // Cập nhật trạng thái Order thành REFUNDED.
+      // Cập nhật trạng thái thanh toán của Order sang UNPAID để ghi nhận hoàn trả
+      const order = await Order.findById(refund.order_id);
+      if (order) {
+        const prevStatus = order.status;
+        order.status = 'REFUNDED';
+        order.payment_status = 'UNPAID';
+        order.status_history.push({
+          from_status: prevStatus,
+          to_status: 'REFUNDED',
+          updated_by: req.user?._id || null,
+          note: `Hoàn tiền thành công. Mã yêu cầu hoàn: ${refundId}`
+        });
+        await order.save();
+      }
 
       return res.status(200).json({
         code: 0,
