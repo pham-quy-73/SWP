@@ -18,8 +18,8 @@ services:
       dockerfile: Dockerfile
     container_name: optic-backend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     env_file:
       - ./src/backend/.env
     environment:
@@ -35,7 +35,7 @@ services:
       context: ./src/frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://13.212.12.171:3000
+        - VITE_API_URL=http://13.212.12.171
     container_name: optic-frontend
     restart: unless-stopped
     ports:
