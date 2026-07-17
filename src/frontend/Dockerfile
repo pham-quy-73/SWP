@@ -23,6 +23,9 @@ RUN npm run build
 # --- Stage 2: Serve tĩnh bằng Nginx ---
 FROM nginx:alpine
 
+# Sao chép file cấu hình Nginx phục vụ SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Sao chép bản build tĩnh từ Stage 1 sang thư mục root của Nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
