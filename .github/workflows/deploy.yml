@@ -1,0 +1,38 @@
+name: Deploy Optics Management to AWS EC2
+
+on:
+  push:
+    branches:
+      - main # Hoặc master tùy theo nhánh chính của bạn
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH to AWS EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            # 1. Di chuyển vào thư mục chứa code trên server AWS
+            cd /home/ubuntu/SWP
+
+            # 2. Reset các thay đổi rác trên server để tránh xung đột khi git pull
+            git reset --hard HEAD
+            
+            # 3. Kéo code mới nhất từ GitHub về
+            git pull origin main
+
+            # 4. Tự động Build và chạy lại các Docker container
+            docker compose down
+            docker compose up -d --build
+
+            # 5. Dọn dẹp ảnh Docker cũ (để tránh đầy bộ nhớ server)
+            docker image prune -f
