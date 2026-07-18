@@ -63,8 +63,14 @@ function startOrderStatusCleanupJob() {
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || true }));
+const allowedOrigin = process.env.CLIENT_URL;
+const origins = allowedOrigin ? allowedOrigin.split(',') : 'http://localhost:5173';
+app.use(cors({
+  origin: origins,
+  credentials: true
+}));
 app.use(express.json());
+
 
 // Mở khóa thư mục 'uploads' để Frontend lấy được ảnh
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -75,7 +81,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+  const isConnected = mongoose.connection.readyState === 1;
+  const dbStatus = isConnected ? 'Connected' : 'Disconnected';
+  if (!isConnected) {
+    return res.status(503).json({
+      message: 'Backend is running but Database is disconnected',
+      database: dbStatus
+    });
+  }
   res.status(200).json({
     message: 'Backend is connected to Frontend successfully!',
     database: `Database Status: ${dbStatus}`
@@ -96,8 +109,9 @@ app.use('/payment', paymentRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
 
