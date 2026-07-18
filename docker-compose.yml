@@ -1,17 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Cơ sở dữ liệu MongoDB
-  database:
-    image: mongo:latest
-    container_name: optic-database
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
-  # 2. Express Backend API
+  # 1. Express Backend API
   backend:
     build:
       context: ./src/backend
@@ -23,13 +13,9 @@ services:
     env_file:
       - ./src/backend/.env
     environment:
-      - MONGO_URI=mongodb://database:27017/SWP
-      - MONGODB_URI=mongodb://database:27017/SWP
       - CLIENT_URL=http://13.212.12.171
-    depends_on:
-      - database
 
-  # 3. React Frontend Client
+  # 2. React Frontend Client
   frontend:
     build:
       context: ./src/frontend
@@ -45,6 +31,3 @@ services:
     depends_on:
       - backend
 
-volumes:
-  mongo-data:
-    driver: local
