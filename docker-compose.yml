@@ -38,7 +38,7 @@ services:
     container_name: optic-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     mem_limit: 256m
     logging:
       driver: "json-file"
