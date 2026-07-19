@@ -11,6 +11,8 @@ export const CartDrawer = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const totalAmount = getCartTotal();
+  // Đồng nhất với badge trên Header: đếm tổng quantity, không đếm số dòng
+  const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
 
   // Khóa cuộn trang nền (body scroll lock) khi mở Cart Drawer
   useEffect(() => {
@@ -50,8 +52,11 @@ export const CartDrawer = () => {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <ShoppingBag className="w-6 h-6 text-zinc-900" />
-                  <span className="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full font-black border-2 border-white shadow-sm">
-                    {items.length}
+                  <span
+                    aria-label={`${totalQuantity} sản phẩm trong giỏ hàng`}
+                    className="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full font-black border-2 border-white shadow-sm"
+                  >
+                    {totalQuantity}
                   </span>
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tighter text-zinc-900">

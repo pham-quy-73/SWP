@@ -215,9 +215,9 @@
     "semantic_hash": "4abc9d0dd9acb85f4f6452681f5ed9a7"
   },
   "src/frontend/src/components/layout/Header.jsx": {
-    "mtime": 1784453518.1512802,
-    "ast_hash": "f3f2d0c843bdf7dc79e03e5365e532ec",
-    "semantic_hash": ""
+    "mtime": 1782182937.511951,
+    "ast_hash": "54b0a3483c2fddb127b51f80965ecfba",
+    "semantic_hash": "54b0a3483c2fddb127b51f80965ecfba"
   },
   "src/frontend/src/components/layout/MainLayout.jsx": {
     "mtime": 1781572825.154499,
@@ -420,14 +420,14 @@
     "semantic_hash": "4e3c2b363f5f8ec1b27f01ee35158d09"
   },
   "src/frontend/src/feature/product/components/CartDrawer.jsx": {
-    "mtime": 1784453508.261488,
-    "ast_hash": "bf01c0bed6202f426c9b4ca007aad08f",
-    "semantic_hash": ""
+    "mtime": 1783328513.8865862,
+    "ast_hash": "262afd02d4d3ab231e4317e48618316a",
+    "semantic_hash": "262afd02d4d3ab231e4317e48618316a"
   },
   "src/frontend/src/feature/product/components/CartItemRow.jsx": {
-    "mtime": 1784453521.789253,
-    "ast_hash": "88abe878ba73fa6b5146c91dee071a5e",
-    "semantic_hash": ""
+    "mtime": 1783328513.8865862,
+    "ast_hash": "b49df70cf335bedcb0abbd2ec9bfba49",
+    "semantic_hash": "b49df70cf335bedcb0abbd2ec9bfba49"
   },
   "src/frontend/src/feature/product/components/PrescriptionModal.jsx": {
     "mtime": 1781711554.5116684,
@@ -455,9 +455,9 @@
     "semantic_hash": "03037518897ccb44cccf879342980a13"
   },
   "src/frontend/src/feature/product/store/useCartStore.js": {
-    "mtime": 1784453476.8730881,
-    "ast_hash": "2c6f91a29c85528f1e250ebdbee448ee",
-    "semantic_hash": ""
+    "mtime": 1783328513.8875828,
+    "ast_hash": "427a9134dc903a22b957c03c384c5db8",
+    "semantic_hash": "427a9134dc903a22b957c03c384c5db8"
   },
   "src/frontend/src/feature/product/store/usePrescriptionStore.js": {
     "mtime": 1781711546.0971236,
@@ -555,8 +555,8 @@
     "semantic_hash": "c76c7b3af9fc8daef372dac86597ddf3"
   },
   "src/frontend/src/pages/ProductsPage.jsx": {
-    "mtime": 1784453493.6967914,
-    "ast_hash": "5bc4b078e3a2583c0e11acdc94e5f004",
+    "mtime": 1784451872.1143765,
+    "ast_hash": "31a43c5723f0f69d957d4687b89d0852",
     "semantic_hash": ""
   },
   "src/frontend/tailwind.config.js": {
@@ -715,8 +715,8 @@
     "semantic_hash": ""
   },
   ".sdd/specs/feature-cart/cart.spec.md": {
-    "mtime": 1784453739.4023237,
-    "ast_hash": "df095f428ddce16233a8f36562a1f00b",
+    "mtime": 1784452686.8881626,
+    "ast_hash": "6bb52a74e7710f09e5e94d0fe2522e70",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-checkout/CONTEXT.md": {

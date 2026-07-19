@@ -63,7 +63,9 @@ export default function ProductVariantManagePage() {
       console.error('Error fetching variants:', error);
       try {
         const apiURL = import.meta.env.VITE_API_URL || '';
-        const prodResp = await axios.get(`${apiURL}/api/products/${productId}`);
+        const token = localStorage.getItem('accessToken');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const prodResp = await axios.get(`${apiURL}/api/products/${productId}`, { headers });
         const product = prodResp.data?.result || prodResp.data;
         if (product) {
           setVariants([{

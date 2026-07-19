@@ -13,11 +13,12 @@ export const useManagerProducts = (queryParams = {}) => {
     try {
       const apiURL = import.meta.env.VITE_API_URL || '';
 
-      // Đã thêm status: 'ALL' để Manager thấy cả sản phẩm ACTIVE và INACTIVE
+      // status: 'ALL' để Manager thấy cả ACTIVE và INACTIVE.
+      // Quyền staff (thấy INACTIVE + LENS) do backend suy ra từ token gửi kèm header.
       const mappedParams = {
         page: (queryParams.page !== undefined ? queryParams.page : 0) + 1,
         limit: queryParams.size || 10,
-        search: queryParams.q || undefined,
+        search: queryParams.search || undefined,
         status: queryParams.status || 'ALL'
       };
 

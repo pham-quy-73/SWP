@@ -51,7 +51,6 @@ const ProductManagePage = () => {
     const params = {
       page: page - 1,
       size,
-      isManager: true,
     };
     if (debouncedSearch) params.search = debouncedSearch;
     if (filterStatus) params.status = filterStatus;

@@ -17,7 +17,9 @@ export const CartItemRow = ({ item, updateQuantity, removeFromCart }) => {
     item.prescription?.os?.add
   );
 
-  const hasPrescription = false; // Tạm tắt theo logic cũ của bạn
+  // Hiển thị khối đơn kính khi item thực sự có dữ liệu prescription
+  // (hiện FE chưa có form nhập nên luôn ẩn; sẵn sàng cho feature nhập đơn kính sau này)
+  const hasPrescription = hasImage || hasManualInput;
 
   // NÂNG CẤP: Tính tổng giá trị của riêng dòng này (Gọng + Tròng) nhân với số lượng
   const basePrice = item.price || 0;

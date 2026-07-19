@@ -1,11 +1,11 @@
 # Graph Report - optic  (2026-07-19)
 
 ## Corpus Check
-- 165 files · ~795,402 words
+- 165 files · ~794,708 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 935 nodes · 1193 edges · 81 communities (67 shown, 14 thin omitted)
+- 934 nodes · 1192 edges · 84 communities (72 shown, 12 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
@@ -93,6 +93,9 @@
 - graphify
 - extraction-spec.md
 - TASK.md
+- useLoginForm.js
+- RegisterForm.jsx
+- ProductVariantManagePage.jsx
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 21 edges
@@ -121,39 +124,39 @@
 ## Import Cycles
 - None detected.
 
-## Communities (81 total, 14 thin omitted)
+## Communities (84 total, 12 thin omitted)
 
 ### Community 0 - "App.jsx"
-Cohesion: 0.07
-Nodes (28): App(), AuthLayout(), Footer(), Header(), MainLayout(), PrivateRoute(), AuthContext, AuthProvider() (+20 more)
+Cohesion: 0.19
+Nodes (10): App(), PrivateRoute(), AuthContext, AuthProvider(), AdminLayout(), ManagerLayout(), CartDrawer(), CartItemRow() (+2 more)
 
 ### Community 1 - "ProductVariant.js"
-Cohesion: 0.13
-Nodes (11): ADR-0003, PaymentController, OrderSchema, OrderItemSchema, PrescriptionSchema, ProductVariantSchema, VariantImageSchema, RefundSchema (+3 more)
+Cohesion: 0.06
+Nodes (18): ADR-0003, DashboardController, OrderController, PaymentController, RefundController, OrderSchema, OrderItemSchema, PrescriptionSchema (+10 more)
 
 ### Community 2 - "dependencies"
 Cohesion: 0.05
 Nodes (36): bcryptjs, cors, dotenv, express, google-auth-library, joi, jsonwebtoken, mongoose (+28 more)
 
 ### Community 3 - "MyOrder.jsx"
-Cohesion: 0.07
-Nodes (20): policyApi, refundApi, ProductFeedback(), profileApi, orderApi, FeedbackModal(), FeedbackPreview(), useMyOrders() (+12 more)
+Cohesion: 0.18
+Nodes (10): FeedbackModal(), FeedbackPreview(), useMyOrders(), ALL_STATUSES, fmt(), ITEM_STATUS, MyOrders(), OrderCard() (+2 more)
 
 ### Community 4 - "index.js"
-Cohesion: 0.20
-Nodes (13): authenticate(), optionalAuthenticate(), requireRole(), router, router, router, upload, router (+5 more)
+Cohesion: 0.07
+Nodes (30): connectDB(), escapeRegex(), isStaff(), ProductController, removeLocalImages(), SORT_OPTIONS, ProductVariantController, authenticate() (+22 more)
 
 ### Community 5 - "useRefunds.js"
-Cohesion: 0.15
-Nodes (22): CreateBatchModal(), fmt(), getDisplayImageUrl(), CustomerCancelModal(), fmt(), getProductName(), fmt(), getProductName() (+14 more)
+Cohesion: 0.13
+Nodes (23): refundApi, CreateBatchModal(), fmt(), getDisplayImageUrl(), CustomerCancelModal(), fmt(), getProductName(), fmt() (+15 more)
 
 ### Community 6 - "dependencies"
 Cohesion: 0.07
 Nodes (29): axios, dependencies, axios, framer-motion, @hookform/resolvers, lucide-react, react, react-dom (+21 more)
 
 ### Community 7 - "useCartStore"
-Cohesion: 0.09
-Nodes (24): paymentApi, CheckoutStepper(), OrderSummary(), PaymentForm(), ReviewOrder(), ShippingForm(), VnpayCheckoutButton(), useCheckoutVnpay() (+16 more)
+Cohesion: 0.12
+Nodes (20): paymentApi, CheckoutStepper(), OrderSummary(), PaymentForm(), ReviewOrder(), ShippingForm(), VnpayCheckoutButton(), useCheckoutVnpay() (+12 more)
 
 ### Community 8 - "User"
 Cohesion: 0.07
@@ -168,8 +171,8 @@ Cohesion: 0.07
 Nodes (26): 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2 Event-driven (Kích hoạt bằng sự kiện), 3.3 State-driven (Khi ở trạng thái), 3.4 Optional / Where (Tùy chọn), 3.5 Unwanted (Lỗi / Edge Case), 3. Functional Requirements (Yêu cầu chức năng — EARS) (+18 more)
 
 ### Community 11 - "Feature: Giỏ hàng (Cart) — SPECIFICATION"
-Cohesion: 0.19
-Nodes (7): escapeRegex(), isStaff(), ProductController, removeLocalImages(), SORT_OPTIONS, ProductVariantController, httpError()
+Cohesion: 0.24
+Nodes (3): policyApi, orderApi, httpClient
 
 ### Community 12 - "What You Must Do When Invoked"
 Cohesion: 0.08
@@ -220,12 +223,12 @@ Cohesion: 0.14
 Nodes (13): 1. Context & Goal, 2. Actors & Roles, 3.1 Ubiquitous (Luôn luôn đúng), 3.2 Event-driven (Phản ứng với sự kiện), 3.3 State-driven (Hành vi liên tục trong trạng thái), 3. Functional Requirements (EARS Notation), 4. Non-functional Requirements, 5. Data Model (MongoDB Schema) (+5 more)
 
 ### Community 30 - "server.js"
-Cohesion: 0.19
-Nodes (8): connectDB(), errorHandler(), notFound(), router, router, app, __dirname, __filename
+Cohesion: 0.25
+Nodes (5): profileApi, useProfileQuery(), emptyForm, MyAddresses(), ProfilePage()
 
 ### Community 31 - "RefundController.js"
-Cohesion: 0.20
-Nodes (7): DashboardController, ImageSchema, ProductSchema, __dirname, __filename, filterRawItemToSchema(), seedProducts()
+Cohesion: 0.28
+Nodes (5): useDashboardRevenue(), ManagerDashboardPage(), ProfileSidebar(), sidebarItems, ProfileLayout()
 
 ### Community 32 - "AGENTS.md — Hướng dẫn Coding Agent cho Optics Management Project"
 Cohesion: 0.18
@@ -303,6 +306,10 @@ Nodes (8): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCI
 Cohesion: 0.25
 Nodes (7): ARTICLE 1 — TECH STACK (immutable), ARTICLE 2 — CODING STANDARDS, ARTICLE 3 — SECURITY POLICIES (non-negotiable), ARTICLE 4 — DATABASE SCHEMA (MongoDB), ARTICLE 5 — API CONVENTIONS, ARTICLE 6 — OUT-OF-SCOPE (explicitly excluded), CONSTITUTION.md — Project Law
 
+### Community 51 - "OrderController"
+Cohesion: 0.43
+Nodes (4): AuthLayout(), Footer(), Header(), MainLayout()
+
 ### Community 52 - "Architecture Decisions (ADR)"
 Cohesion: 0.29
 Nodes (5): ADR-001: Chọn JWT + Google OAuth2 thay vì Session, ADR-002: Chọn Mongoose ODM thay vì MongoDB Native Driver, ADR-003: Nhúng dữ liệu Payment vào Order thay vì tách collection riêng, Architecture Decisions (ADR), graphify
@@ -363,6 +370,10 @@ Nodes (4): A. THIẾT LẬP CLIENT STATE (ZUSTAND), B. XÂY DỰNG GIAO DIỆN (
 Cohesion: 0.40
 Nodes (4): A. THIẾT KẾ CƠ SỞ DỮ LIỆU & API CORE, B. XÂY DỰNG GIAO DIỆN HIỂN THỊ CỬA HÀNG (FE), C. XÂY DỰNG BỘ CÔNG CỤ QUẢN TRỊ (ADMIN CRUD), TASK.md — Trang sản phẩm & Biến thể (Store & Products Task List)
 
+### Community 67 - "TASK.md — Trang sản phẩm & Biến thể (Store & Products Task List)"
+Cohesion: 0.36
+Nodes (5): ProductFeedback(), getDisplayImageUrl(), ProductGallery(), ProductInfo(), ProductDetailPage()
+
 ### Community 68 - "graphify reference: add a URL and watch a folder"
 Cohesion: 0.50
 Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
@@ -379,10 +390,22 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 Cohesion: 0.50
 Nodes (4): Các vai trò người dùng (Roles):, Mã trạng thái HTTP:, 📌 Quy tắc & Định dạng chung, Định dạng response chuẩn:
 
+### Community 81 - "useLoginForm.js"
+Cohesion: 0.60
+Nodes (3): LoginForm(), loginSchema, useLoginForm()
+
+### Community 82 - "RegisterForm.jsx"
+Cohesion: 0.60
+Nodes (3): RegisterForm(), registerSchema, useRegisterForm()
+
+### Community 83 - "ProductVariantManagePage.jsx"
+Cohesion: 0.50
+Nodes (3): ProductVariantManagePage(), EMPTY_FORM, VariantModal()
+
 ## Knowledge Gaps
 - **446 isolated node(s):** `registerSchema`, `loginSchema`, `googleLoginSchema`, `resendEmailSchema`, `SORT_OPTIONS` (+441 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -395,9 +418,9 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **What connects `registerSchema`, `loginSchema`, `googleLoginSchema` to the rest of the system?**
   _446 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `App.jsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.07013574660633484 - nodes in this community are weakly interconnected._
 - **Should `ProductVariant.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.12681159420289856 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.056429232192414434 - nodes in this community are weakly interconnected._
 - **Should `dependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.05405405405405406 - nodes in this community are weakly interconnected._
+- **Should `index.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.06948051948051948 - nodes in this community are weakly interconnected._
