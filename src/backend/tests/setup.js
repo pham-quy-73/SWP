@@ -1,6 +1,15 @@
 import { beforeAll, afterAll, afterEach, vi } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+
+// Ghi lại danh sách file có sẵn trong uploads/ trước khi test chạy, để chỉ dọn
+// đúng các file do test upload tạo ra (không xóa nhầm dữ liệu thật của dev).
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
+const preexistingUploads = new Set(
+  fs.existsSync(uploadsDir) ? fs.readdirSync(uploadsDir) : []
+);
 
 // --- Biến môi trường test cố định (KHÔNG dùng .env thật để tránh chạm DB/khoá thật) ---
 // Đặt trước khi bất kỳ module nào đọc process.env lúc import.
@@ -59,4 +68,13 @@ afterEach(async () => {
 afterAll(async () => {
   await mongoose.disconnect();
   if (mongoServer) await mongoServer.stop();
+
+  // Dọn các file ảnh do test upload tạo trong uploads/ (giữ lại file có sẵn từ trước).
+  if (fs.existsSync(uploadsDir)) {
+    for (const name of fs.readdirSync(uploadsDir)) {
+      if (!preexistingUploads.has(name)) {
+        try { fs.unlinkSync(path.join(uploadsDir, name)); } catch { /* ignore */ }
+      }
+    }
+  }
 });

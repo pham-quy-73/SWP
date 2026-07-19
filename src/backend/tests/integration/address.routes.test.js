@@ -61,6 +61,22 @@ describe('PUT /api/addresses/:id', () => {
     expect(res.body.result.recipient_name).toBe('Updated');
   });
 
+  it('cập nhật tất cả field + đặt làm mặc định', async () => {
+    const user = await createCustomer();
+    const old = await createAddress(user, { is_default: true });
+    const target = await createAddress(user, { is_default: false });
+    const res = await request(app).put(`/api/addresses/${target._id}`).set(authHeader(user)).send({
+      label: 'Nhà', recipientName: 'Full Name', phoneNumber: '0988888888',
+      deliveryAddress: '99 Updated St', isDefault: true
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.result.label).toBe('Nhà');
+    expect(res.body.result.phone_number).toBe('0988888888');
+    expect(res.body.result.delivery_address).toBe('99 Updated St');
+    expect(res.body.result.is_default).toBe(true);
+    expect((await Address.findById(old._id)).is_default).toBe(false);
+  });
+
   it('không phải chủ sở hữu -> 403', async () => {
     const owner = await createCustomer();
     const other = await createCustomer();

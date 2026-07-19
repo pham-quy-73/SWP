@@ -208,5 +208,44 @@ describe('Refund routes (/api/refund)', () => {
       const res = await request(app).get('/api/orders/cancelled/paid').set(authHeader(admin));
       expect(res.status).toBe(200);
     });
+
+    it('khách chỉ có username (thiếu tên) -> customerName fallback về username', async () => {
+      const manager = await createManager();
+      const customer = await createCustomer({ username: 'khachle' });
+      await customer.collection.updateOne({ _id: customer._id }, { $unset: { first_name: '', last_name: '' } });
+      await createOrder(customer, { status: 'CANCELLED', payment_status: 'PAID', total_amount: 800, recipient_name: '' });
+      const res = await request(app).get('/api/orders/cancelled/paid').set(authHeader(manager));
+      expect(res.status).toBe(200);
+      expect(res.body.result.items[0].recipientName).toBe('khachle');
+    });
+  });
+
+  describe('customerName fallback ở luồng refund', () => {
+    it('getReadyRefunds dùng username khi thiếu tên', async () => {
+      const manager = await createManager();
+      const customer = await createCustomer({ username: 'nouser' });
+      await customer.collection.updateOne({ _id: customer._id }, { $unset: { first_name: '', last_name: '' } });
+      const order = await createOrder(customer, { status: 'CANCELLED', payment_status: 'PAID', total_amount: 500, recipient_name: '' });
+      await createRefund(order, { amount: 500, status: 'PENDING' });
+      const res = await request(app).get('/api/refund/ready').set(authHeader(manager));
+      expect(res.status).toBe(200);
+      expect(res.body.result[0].order.recipientName).toBe('nouser');
+    });
+
+    it('getAffectedOrders trả đơn bị ảnh hưởng bởi biến thể ngừng bán', async () => {
+      const manager = await createManager();
+      const customer = await createCustomer({ first_name: 'An', last_name: 'Le' });
+      const product = await createProduct();
+      const variant = await createVariant(product);
+      const order = await createOrder(customer, { status: 'CANCELLED', payment_status: 'PAID', total_amount: 1000 });
+      await createOrderItem(order, { product_id: product._id, variant_id: variant._id });
+      // đơn đang xử lý cùng sản phẩm
+      const active = await createOrder(customer, { status: 'PENDING', total_amount: 1000 });
+      await createOrderItem(active, { product_id: product._id, variant_id: variant._id });
+      const res = await request(app).get(`/api/refund/affected-orders/${variant._id}`).set(authHeader(manager));
+      expect(res.status).toBe(200);
+      expect(res.body.result.length).toBeGreaterThanOrEqual(1);
+      expect(res.body.result[0].order.recipientName).toContain('An');
+    });
   });
 });

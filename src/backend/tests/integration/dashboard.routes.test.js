@@ -51,4 +51,32 @@ describe('GET /api/dashboard/revenue', () => {
     expect(res.body.result.revenue).toBe(0);
     expect(res.body.result.revenueGrowth).toBe(0);
   });
+
+  it('tính tăng trưởng doanh thu khi có đơn tháng trước', async () => {
+    const admin = await createAdmin();
+    const user = await createCustomer();
+    const thisMonth = await createOrder(user, { status: 'COMPLETED', total_amount: 2000 });
+    const lastMonth = await createOrder(user, { status: 'COMPLETED', total_amount: 1000 });
+
+    // Đẩy 1 đơn về giữa tháng trước (bypass timestamps qua native driver)
+    const d = new Date();
+    d.setUTCMonth(d.getUTCMonth() - 1, 15);
+    const OrderModel = (await import('../../models/Order.js')).default;
+    await OrderModel.collection.updateOne({ _id: lastMonth._id }, { $set: { created_at: d } });
+    void thisMonth;
+
+    const res = await request(app).get('/api/dashboard/revenue').set(authHeader(admin));
+    expect(res.status).toBe(200);
+    // tháng này 2000 so với tháng trước 1000 -> tăng 100%
+    expect(res.body.result.revenueGrowth).toBe(100);
+  });
+
+  it('chỉ có doanh thu tháng này -> tăng trưởng 100%', async () => {
+    const admin = await createAdmin();
+    const user = await createCustomer();
+    await createOrder(user, { status: 'COMPLETED', total_amount: 4000 });
+    const res = await request(app).get('/api/dashboard/revenue').set(authHeader(admin));
+    expect(res.status).toBe(200);
+    expect(res.body.result.revenueGrowth).toBe(100);
+  });
 });

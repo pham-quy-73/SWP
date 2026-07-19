@@ -174,7 +174,53 @@ describe('DELETE /api/users/:id', () => {
   });
 });
 
+describe('GET /api/users/:id', () => {
+  it('admin xem chi tiết 1 user (ẩn password)', async () => {
+    const admin = await createAdmin();
+    const target = await createCustomer();
+    const res = await request(app).get(`/api/users/${target._id}`).set(authHeader(admin));
+    expect(res.status).toBe(200);
+    expect(res.body.result._id).toBe(target._id.toString());
+    expect(res.body.result.password).toBeUndefined();
+  });
+
+  it('user không tồn tại -> 404 USER_NOT_FOUND', async () => {
+    const admin = await createAdmin();
+    const res = await request(app).get('/api/users/64b7f0000000000000000000').set(authHeader(admin));
+    expect(res.status).toBe(404);
+    expect(res.body.error_code).toBe('USER_NOT_FOUND');
+  });
+});
+
+describe('GET /api/users (lọc theo role)', () => {
+  it('lọc role=MANAGER trả đúng nhóm', async () => {
+    const admin = await createAdmin();
+    await createManager();
+    await createCustomer();
+    const res = await request(app).get('/api/users?role=manager').set(authHeader(admin));
+    expect(res.status).toBe(200);
+    expect(res.body.result.every((u) => u.role === 'MANAGER')).toBe(true);
+  });
+});
+
+describe('POST /api/users (role mặc định)', () => {
+  it('role không hợp lệ -> mặc định MANAGER', async () => {
+    const admin = await createAdmin();
+    const res = await request(app).post('/api/users').set(authHeader(admin)).send({
+      first_name: 'A', last_name: 'B', username: 'defrole', email: 'defrole@test.com', password: 'secret123', role: 'NONSENSE'
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.result.role).toBe('MANAGER');
+  });
+});
+
 describe('PUT /api/users/:id/reset-password', () => {
+  it('user không tồn tại -> 404', async () => {
+    const admin = await createAdmin();
+    const res = await request(app).put('/api/users/64b7f0000000000000000000/reset-password').set(authHeader(admin)).send({ newPassword: 'newsecret1' });
+    expect(res.status).toBe(404);
+  });
+
   it('reset thành công', async () => {
     const admin = await createAdmin();
     const target = await createCustomer();

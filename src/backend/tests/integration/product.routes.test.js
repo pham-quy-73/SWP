@@ -165,65 +165,216 @@ describe('DELETE /api/products/:id', () => {
   });
 });
 
-describe('Product Variants', () => {
-  it('GET danh sách biến thể', async () => {
-    const p = await createProduct();
-    await createVariant(p, { colorName: 'Red' });
-    const res = await request(app).get(`/api/products/${p._id}/variants`);
+describe('GET /api/products (bộ lọc nâng cao)', () => {
+  it('lọc theo brand (không phân biệt hoa thường)', async () => {
+    await createProduct({ name: 'A', brand: 'RayBan' });
+    await createProduct({ name: 'B', brand: 'Gucci' });
+    const res = await request(app).get('/api/products?brand=rayban');
     expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.result).toHaveLength(1);
+    expect(res.body.result.items).toHaveLength(1);
+    expect(res.body.result.items[0].brand).toBe('RayBan');
   });
 
-  it('POST tạo biến thể (manager)', async () => {
+  it('lọc theo gender (chuẩn hóa hoa)', async () => {
+    await createProduct({ name: 'M', gender: 'MALE' });
+    await createProduct({ name: 'F', gender: 'FEMALE' });
+    const res = await request(app).get('/api/products?gender=male');
+    expect(res.status).toBe(200);
+    expect(res.body.result.items.every((p) => p.gender === 'MALE')).toBe(true);
+  });
+
+  it('lọc theo khoảng giá minPrice/maxPrice', async () => {
+    await createProduct({ name: 'Cheap', price: 100 });
+    await createProduct({ name: 'Mid', price: 500 });
+    await createProduct({ name: 'Pricey', price: 5000 });
+    const res = await request(app).get('/api/products?minPrice=200&maxPrice=1000');
+    expect(res.status).toBe(200);
+    const names = res.body.result.items.map((p) => p.name);
+    expect(names).toEqual(['Mid']);
+  });
+
+  it('sắp xếp price-asc', async () => {
+    await createProduct({ name: 'High', price: 900 });
+    await createProduct({ name: 'Low', price: 100 });
+    const res = await request(app).get('/api/products?sortBy=price-asc');
+    expect(res.status).toBe(200);
+    expect(res.body.result.items[0].price).toBeLessThanOrEqual(res.body.result.items[1].price);
+  });
+
+  it('lọc theo shape và frameMaterial', async () => {
+    await createProduct({ name: 'RoundMetal', shape: 'ROUND', frameMaterial: 'METAL' });
+    await createProduct({ name: 'SquarePlastic', shape: 'SQUARE', frameMaterial: 'PLASTIC' });
+    const res = await request(app).get('/api/products?shape=ROUND&frameMaterial=METAL');
+    expect(res.status).toBe(200);
+    expect(res.body.result.items).toHaveLength(1);
+    expect(res.body.result.items[0].name).toBe('RoundMetal');
+  });
+
+  it('khách truy vấn category=LENS vẫn xem được tròng kính', async () => {
+    await createLens({ name: 'Progressive Lens' });
+    const res = await request(app).get('/api/products?category=LENS');
+    expect(res.status).toBe(200);
+    expect(res.body.result.items.map((p) => p.name)).toContain('Progressive Lens');
+  });
+
+  it('staff lọc theo status cụ thể (INACTIVE)', async () => {
+    const admin = await createAdmin();
+    await createProduct({ name: 'ActiveOne', status: 'ACTIVE' });
+    await createProduct({ name: 'InactiveOne', status: 'INACTIVE' });
+    const res = await request(app).get('/api/products?status=INACTIVE').set(authHeader(admin));
+    expect(res.status).toBe(200);
+    expect(res.body.result.items.map((p) => p.name)).toEqual(['InactiveOne']);
+  });
+});
+
+describe('POST /api/products (nhánh field JSON)', () => {
+  it('nhận product JSON qua field và ép kiểu số', async () => {
     const manager = await createManager();
-    const p = await createProduct();
     const res = await request(app)
-      .post(`/api/products/${p._id}/variants`)
+      .post('/api/products')
       .set(authHeader(manager))
-      .field('variant', JSON.stringify({ colorName: 'Blue', lensWidthMm: 50, bridgeWidthMm: 18, templeLengthMm: 140, price: 999, quantity: 5 }));
+      .field('product', JSON.stringify({
+        name: 'JSON Frame', brand: 'B', price: '1500', discountPrice: '1200', weightGram: '30',
+        imageUrl: ['http://img/a.jpg']
+      }));
     expect(res.status).toBe(201);
-    expect(res.body.result.colorName).toBe('Blue');
+    expect(res.body.result.price).toBe(1500);
+    expect(res.body.result.discountPrice).toBe(1200);
+    expect(res.body.result.imageUrl[0].imageUrl).toBe('http://img/a.jpg');
   });
 
-  it('POST biến thể cho sản phẩm không tồn tại -> 404', async () => {
+  it('không có ảnh -> gán ảnh mặc định', async () => {
     const manager = await createManager();
     const res = await request(app)
-      .post('/api/products/64b7f0000000000000000000/variants')
+      .post('/api/products')
       .set(authHeader(manager))
-      .field('variant', JSON.stringify({ colorName: 'Blue' }));
+      .field('product', JSON.stringify({ name: 'No Image', brand: 'B', price: 100 }));
+    expect(res.status).toBe(201);
+    expect(res.body.result.imageUrl).toHaveLength(1);
+    expect(res.body.result.imageUrl[0].imageUrl).toContain('unsplash');
+  });
+
+  it('tạo sản phẩm kèm upload ảnh', async () => {
+    const manager = await createManager();
+    const res = await request(app)
+      .post('/api/products')
+      .set(authHeader(manager))
+      .field('product', JSON.stringify({ name: 'Uploaded', brand: 'B', price: 100 }))
+      .attach('files', Buffer.from('89504e470d0a1a0a', 'hex'), { filename: 'p.png', contentType: 'image/png' });
+    expect(res.status).toBe(201);
+    expect(res.body.result.imageUrl.some((i) => i.imageUrl.includes('/uploads/'))).toBe(true);
+  });
+
+  it('gửi trực tiếp JSON (không qua field product) kèm discountPrice/weightGram', async () => {
+    const manager = await createManager();
+    const res = await request(app)
+      .post('/api/products')
+      .set(authHeader(manager))
+      .send({ name: 'Direct', brand: 'B', price: 2000, discountPrice: 1500, weightGram: 25 });
+    expect(res.status).toBe(201);
+    expect(res.body.result.discountPrice).toBe(1500);
+    expect(res.body.result.weightGram).toBe(25);
+  });
+
+  it('thiếu trường bắt buộc -> 400 VALIDATION_ERROR', async () => {
+    const manager = await createManager();
+    const res = await request(app)
+      .post('/api/products')
+      .set(authHeader(manager))
+      .send({ name: 'Chỉ có tên' });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+});
+
+describe('GET /api/products (tìm kiếm & chi tiết)', () => {
+  it('search khớp name hoặc brand (escape regex)', async () => {
+    await createProduct({ name: 'Aviator Classic', brand: 'RayBan' });
+    await createProduct({ name: 'Wayfarer', brand: 'Gucci' });
+    const res = await request(app).get('/api/products?search=aviator');
+    expect(res.status).toBe(200);
+    expect(res.body.result.items.map((p) => p.name)).toContain('Aviator Classic');
+  });
+
+  it('staff xem được sản phẩm INACTIVE theo id', async () => {
+    const manager = await createManager();
+    const product = await createProduct({ status: 'INACTIVE' });
+    const res = await request(app).get(`/api/products/${product._id}`).set(authHeader(manager));
+    expect(res.status).toBe(200);
+    expect(res.body._id).toBe(product._id.toString());
+  });
+
+  it('khách xem sản phẩm INACTIVE -> 404', async () => {
+    const product = await createProduct({ status: 'INACTIVE' });
+    const res = await request(app).get(`/api/products/${product._id}`);
     expect(res.status).toBe(404);
   });
 
-  it('PUT cập nhật biến thể', async () => {
+  it('áp dụng đầy đủ bộ lọc + sort price-asc', async () => {
+    await createProduct({ name: 'F1', brand: 'BrandZ', price: 500, gender: 'MALE', shape: 'ROUND', frameMaterial: 'METAL', frameType: 'FULL_RIM' });
+    await createProduct({ name: 'F2', brand: 'BrandZ', price: 1500, gender: 'MALE', shape: 'ROUND', frameMaterial: 'METAL', frameType: 'FULL_RIM' });
+    const res = await request(app).get('/api/products?brand=brandz&gender=MALE&shape=ROUND&frameMaterial=METAL&frameType=FULL_RIM&minPrice=100&maxPrice=1000&sortBy=price-asc');
+    expect(res.status).toBe(200);
+    expect(res.body.result.items.every((p) => p.price <= 1000)).toBe(true);
+  });
+
+  it('staff lọc theo status cụ thể', async () => {
     const manager = await createManager();
-    const p = await createProduct();
-    const v = await createVariant(p, { price: 100 });
+    await createProduct({ status: 'INACTIVE', name: 'InactiveOne' });
+    const res = await request(app).get('/api/products?status=INACTIVE').set(authHeader(manager));
+    expect(res.status).toBe(200);
+    expect(res.body.result.items.every((p) => p.status === 'INACTIVE')).toBe(true);
+  });
+});
+
+describe('DELETE /api/products/:id (dọn ảnh cục bộ)', () => {
+  it('xóa sản phẩm có ảnh /uploads/ + biến thể', async () => {
+    const manager = await createManager();
+    const product = await createProduct({ imageUrl: [{ imageUrl: '/uploads/nonexistent-local.png' }, { imageUrl: 'http://external/x.jpg' }] });
+    await createVariant(product, { imageUrl: [{ imageUrl: '/uploads/variant-local.png' }] });
+    const res = await request(app).delete(`/api/products/${product._id}`).set(authHeader(manager));
+    expect(res.status).toBe(200);
+    expect(await createProduct).toBeDefined();
+  });
+
+  it('sản phẩm không tồn tại -> 404', async () => {
+    const manager = await createManager();
+    const res = await request(app).delete('/api/products/64b7f0000000000000000000').set(authHeader(manager));
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('PUT /api/products/:id (cập nhật ảnh)', () => {
+  it('thay danh sách ảnh + upload ảnh mới, dọn ảnh cũ', async () => {
+    const manager = await createManager();
+    const product = await createProduct({ imageUrl: [{ imageUrl: '/uploads/old-local.png' }] });
     const res = await request(app)
-      .put(`/api/products/${p._id}/variants/${v._id}`)
+      .put(`/api/products/${product._id}`)
       .set(authHeader(manager))
-      .field('variant', JSON.stringify({ price: 250, quantity: 20 }));
+      .field('product', JSON.stringify({ imageUrl: ['http://keep/a.jpg'], price: '2500' }))
+      .attach('files', Buffer.from('89504e470d0a1a0a', 'hex'), { filename: 'fresh.png', contentType: 'image/png' });
     expect(res.status).toBe(200);
-    expect(res.body.result.price).toBe(250);
+    expect(res.body.result.price).toBe(2500);
+    expect(res.body.result.imageUrl).toHaveLength(2);
   });
 
-  it('DELETE biến thể', async () => {
+  it('không truyền imageUrl -> giữ nguyên ảnh cũ', async () => {
     const manager = await createManager();
-    const p = await createProduct();
-    const v = await createVariant(p);
+    const product = await createProduct({ name: 'KeepImg' });
     const res = await request(app)
-      .delete(`/api/products/${p._id}/variants/${v._id}`)
-      .set(authHeader(manager));
+      .put(`/api/products/${product._id}`)
+      .set(authHeader(manager))
+      .field('product', JSON.stringify({ name: 'KeepImg Renamed' }));
     expect(res.status).toBe(200);
-    expect(await ProductVariant.findById(v._id)).toBeNull();
+    expect(res.body.result.name).toBe('KeepImg Renamed');
   });
 
-  it('DELETE biến thể không tồn tại -> 404', async () => {
+  it('sản phẩm không tồn tại -> 404', async () => {
     const manager = await createManager();
-    const p = await createProduct();
     const res = await request(app)
-      .delete(`/api/products/${p._id}/variants/64b7f0000000000000000000`)
-      .set(authHeader(manager));
+      .put('/api/products/64b7f0000000000000000000')
+      .set(authHeader(manager))
+      .field('product', JSON.stringify({ name: 'X' }));
     expect(res.status).toBe(404);
   });
 });

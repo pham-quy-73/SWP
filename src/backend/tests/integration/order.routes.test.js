@@ -169,6 +169,166 @@ describe('GET /orders (manager)', () => {
   });
 });
 
+describe('GET /orders/me (kèm order item populate)', () => {
+  it('map đầy đủ item có product/variant/lens', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ name: 'Frame X' });
+    const variant = await createVariant(product, { colorName: 'Black' });
+    const lens = await createLens({ name: 'Blue Lens' });
+    const order = await createOrder(user, { total_amount: 1000 });
+    await createOrderItem(order, {
+      product_id: product._id, variant_id: variant._id, lens_id: lens._id,
+      quantity: 2, unit_price: 500
+    });
+    const res = await request(app).get('/orders/me').set(authHeader(user));
+    expect(res.status).toBe(200);
+    const item = res.body.result.items[0].items[0];
+    expect(item.productName).toBe('Frame X');
+    expect(item.colorName).toBe('Black');
+    expect(item.lensName).toBe('Blue Lens');
+    expect(item.totalPrice).toBe(1000);
+  });
+
+  it('phân trang qua page/size', async () => {
+    const user = await createCustomer();
+    await createOrder(user);
+    await createOrder(user);
+    const res = await request(app).get('/orders/me?page=0&size=1').set(authHeader(user));
+    expect(res.status).toBe(200);
+    expect(res.body.result.items).toHaveLength(1);
+    expect(res.body.result.totalPages).toBe(2);
+  });
+
+  it('item tham chiếu sản phẩm/biến thể/tròng đã xóa -> dùng giá trị fallback', async () => {
+    const user = await createCustomer();
+    const order = await createOrder(user, { total_amount: 0 });
+    // order item trỏ tới các id không còn tồn tại -> populate trả null
+    await createOrderItem(order, {
+      product_id: '64b7f0000000000000000000',
+      variant_id: '64b7f0000000000000000001',
+      lens_id: '64b7f0000000000000000002',
+      quantity: 1, unit_price: 0
+    });
+    const res = await request(app).get('/orders/me').set(authHeader(user));
+    expect(res.status).toBe(200);
+    const item = res.body.result.items[0].items[0];
+    expect(item.productName).toBe('Sản phẩm đã xóa');
+    expect(item.colorName).toBe('Mặc định');
+    expect(item.lensName).toBeNull();
+    expect(item.productId).toBeNull();
+  });
+
+  it('lọc đơn theo status trong myOrders', async () => {
+    const user = await createCustomer();
+    await createOrder(user, { status: 'PENDING' });
+    await createOrder(user, { status: 'COMPLETED' });
+    const res = await request(app).get('/orders/me?status=completed').set(authHeader(user));
+    expect(res.status).toBe(200);
+    expect(res.body.result.items).toHaveLength(1);
+    expect(res.body.result.items[0].orderStatus).toBe('COMPLETED');
+  });
+});
+
+describe('POST /orders/create (chuẩn hóa prescription)', () => {
+  it('cắt AXIS ngoài [0,180] và số không hợp lệ về 0', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ price: 1000 });
+    const variant = await createVariant(product, { price: 1000, quantity: 5 });
+    const lens = await createLens({ price: 200 });
+    const orderInfo = {
+      items: [{
+        variantId: variant._id.toString(), lensId: lens._id.toString(), quantity: 1,
+        prescription: { odAxis: 999, osAxis: -50, odSphere: 'abc', osSphere: -1.25, note: '  test note  ' }
+      }]
+    };
+    const res = await request(app).post('/orders/create').set(authHeader(user))
+      .field('orderInfo', JSON.stringify(orderInfo));
+    expect(res.status).toBe(201);
+    const items = await OrderItem.find({ order_id: res.body.result.orderId });
+    expect(items[0].prescription.od_axis).toBe(0); // 999 -> 0
+    expect(items[0].prescription.os_axis).toBe(0); // -50 -> 0
+    expect(items[0].prescription.od_sphere).toBe(0); // 'abc' -> 0
+    expect(items[0].prescription.os_sphere).toBe(-1.25);
+    expect(items[0].prescription.note).toBe('test note');
+  });
+});
+
+describe('POST /orders/create (biến thể input)', () => {
+  it('nhận orderInfo dạng object (JSON body, không phải string field)', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ price: 1000 });
+    const variant = await createVariant(product, { price: 1000, quantity: 5 });
+    const res = await request(app)
+      .post('/orders/create')
+      .set(authHeader(user))
+      .send({ orderInfo: { items: [{ variantId: variant._id.toString(), quantity: 1 }] } });
+    expect(res.status).toBe(201);
+  });
+
+  it('prescription snake_case + note không phải string -> chuẩn hóa', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ price: 1000 });
+    const variant = await createVariant(product, { price: 1000, quantity: 5 });
+    const lens = await createLens({ price: 200 });
+    const orderInfo = {
+      items: [{
+        variantId: variant._id.toString(), lensId: lens._id.toString(), quantity: 1,
+        prescription: { od_sphere: -2.5, os_axis: 90, od_pd: 32, note: 12345 }
+      }]
+    };
+    const res = await request(app).post('/orders/create').set(authHeader(user))
+      .field('orderInfo', JSON.stringify(orderInfo));
+    expect(res.status).toBe(201);
+    const items = await OrderItem.find({ order_id: res.body.result.orderId });
+    expect(items[0].prescription.od_sphere).toBe(-2.5);
+    expect(items[0].prescription.os_axis).toBe(90);
+    expect(items[0].prescription.note).toBe('');
+  });
+
+  it('prescription null -> bỏ qua', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ price: 1000 });
+    const variant = await createVariant(product, { price: 1000, quantity: 5 });
+    const res = await request(app).post('/orders/create').set(authHeader(user))
+      .field('orderInfo', JSON.stringify({ items: [{ variantId: variant._id.toString(), quantity: 1, prescription: 'not-an-object' }] }));
+    expect(res.status).toBe(201);
+  });
+});
+
+describe('PUT /orders/:id/status (nhánh biên)', () => {
+  it('status không hợp lệ -> 400 VALIDATION_ERROR', async () => {
+    const manager = await createManager();
+    const user = await createCustomer();
+    const order = await createOrder(user);
+    const res = await request(app).put(`/orders/${order._id}/status`).set(authHeader(manager)).send({ status: 'BLAH' });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+
+  it('đơn không tồn tại -> 404', async () => {
+    const manager = await createManager();
+    const res = await request(app).put('/orders/64b7f0000000000000000000/status').set(authHeader(manager)).send({ status: 'CONFIRMED' });
+    expect(res.status).toBe(404);
+  });
+
+  it('cùng trạng thái -> không đổi, trả 200', async () => {
+    const manager = await createManager();
+    const user = await createCustomer();
+    const order = await createOrder(user, { status: 'PENDING' });
+    const res = await request(app).put(`/orders/${order._id}/status`).set(authHeader(manager)).send({ status: 'PENDING' });
+    expect(res.status).toBe(200);
+  });
+
+  it('manager chuyển hợp lệ kèm note tùy chỉnh', async () => {
+    const manager = await createManager();
+    const user = await createCustomer();
+    const order = await createOrder(user, { status: 'CONFIRMED' });
+    const res = await request(app).put(`/orders/${order._id}/status`).set(authHeader(manager)).send({ status: 'COMPLETED', note: 'Đã giao xong' });
+    expect(res.status).toBe(200);
+    expect(res.body.result.status).toBe('COMPLETED');
+  });
+});
+
 describe('GET /orders/:id', () => {
   it('manager xem chi tiết đơn', async () => {
     const manager = await createManager();
@@ -185,6 +345,12 @@ describe('GET /orders/:id', () => {
     const order = await createOrder(owner);
     const res = await request(app).get(`/orders/${order._id}`).set(authHeader(other));
     expect(res.status).toBe(403);
+  });
+
+  it('đơn không tồn tại -> 404', async () => {
+    const manager = await createManager();
+    const res = await request(app).get('/orders/64b7f0000000000000000000').set(authHeader(manager));
+    expect(res.status).toBe(404);
   });
 });
 
