@@ -1,23 +1,23 @@
 import ProductVariant from '../models/ProductVariant.js';
 import Product from '../models/Product.js';
+import { httpError } from '../middlewares/errorMiddleware.js';
 
 class ProductVariantController {
-  async getVariants(req, res) {
+  async getVariants(req, res, next) {
     try {
       const { productId } = req.params;
       const variants = await ProductVariant.find({ productId });
       return res.status(200).json({ success: true, result: variants });
     } catch (error) {
-      console.error('Error fetching variants:', error);
-      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi lấy dữ liệu biến thể' });
+      next(error);
     }
   }
 
-  async createVariant(req, res) {
+  async createVariant(req, res, next) {
     try {
       const { productId } = req.params;
       const product = await Product.findById(productId);
-      if (!product) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
+      if (!product) return next(httpError(404, 'NOT_FOUND', 'Không tìm thấy sản phẩm'));
 
       let variantData = req.body;
       if (req.body.variant && typeof req.body.variant === 'string') {
@@ -33,7 +33,7 @@ class ProductVariantController {
 
       const variant = new ProductVariant({
         productId,
-        sku: variantData.sku || '', // Lưu SKU
+        sku: variantData.sku || '',
         colorName: variantData.colorName || '',
         frameFinish: variantData.frameFinish || '',
         lensWidthMm: Number(variantData.lensWidthMm) || 0,
@@ -41,7 +41,7 @@ class ProductVariantController {
         templeLengthMm: Number(variantData.templeLengthMm) || 0,
         sizeLabel: variantData.sizeLabel || '',
         price: Number(variantData.price) || 0,
-        discountPrice: variantData.discountPrice ? Number(variantData.discountPrice) : undefined, // Lưu discountPrice
+        discountPrice: variantData.discountPrice ? Number(variantData.discountPrice) : undefined,
         quantity: Number(variantData.quantity) || 0,
         status: variantData.status || 'ACTIVE',
         orderItemType: variantData.orderItemType || 'IN_STOCK',
@@ -51,12 +51,11 @@ class ProductVariantController {
       await variant.save();
       return res.status(201).json({ success: true, result: variant });
     } catch (error) {
-      console.error('Error creating variant:', error);
-      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi thêm biến thể' });
+      next(error);
     }
   }
 
-  async updateVariant(req, res) {
+  async updateVariant(req, res, next) {
     try {
       const { variantId } = req.params;
       let updateData = req.body;
@@ -80,7 +79,7 @@ class ProductVariantController {
       const variant = await ProductVariant.findByIdAndUpdate(
         variantId,
         {
-          sku: updateData.sku, // Cập nhật SKU
+          sku: updateData.sku,
           colorName: updateData.colorName,
           frameFinish: updateData.frameFinish,
           lensWidthMm: updateData.lensWidthMm !== undefined ? Number(updateData.lensWidthMm) : undefined,
@@ -88,7 +87,7 @@ class ProductVariantController {
           templeLengthMm: updateData.templeLengthMm !== undefined ? Number(updateData.templeLengthMm) : undefined,
           sizeLabel: updateData.sizeLabel,
           price: updateData.price !== undefined ? Number(updateData.price) : undefined,
-          discountPrice: updateData.discountPrice !== undefined ? Number(updateData.discountPrice) : undefined, // Cập nhật discountPrice
+          discountPrice: updateData.discountPrice !== undefined ? Number(updateData.discountPrice) : undefined,
           quantity: updateData.quantity !== undefined ? Number(updateData.quantity) : undefined,
           status: updateData.status,
           orderItemType: updateData.orderItemType,
@@ -97,23 +96,21 @@ class ProductVariantController {
         { new: true, runValidators: true }
       );
 
-      if (!variant) return res.status(404).json({ success: false, message: 'Không tìm thấy biến thể' });
+      if (!variant) return next(httpError(404, 'NOT_FOUND', 'Không tìm thấy biến thể'));
       return res.status(200).json({ success: true, result: variant });
     } catch (error) {
-      console.error('Error updating variant:', error);
-      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi cập nhật biến thể' });
+      next(error);
     }
   }
 
-  async deleteVariant(req, res) {
+  async deleteVariant(req, res, next) {
     try {
       const { variantId } = req.params;
       const variant = await ProductVariant.findByIdAndDelete(variantId);
-      if (!variant) return res.status(404).json({ success: false, message: 'Không tìm thấy biến thể' });
+      if (!variant) return next(httpError(404, 'NOT_FOUND', 'Không tìm thấy biến thể'));
       return res.status(200).json({ success: true, message: 'Xóa thành công' });
     } catch (error) {
-      console.error('Error deleting variant:', error);
-      return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi xóa biến thể' });
+      next(error);
     }
   }
 }

@@ -200,8 +200,9 @@ Toàn bộ dữ liệu giỏ hàng được quản lý 100% ở Client bằng Zu
 
 ### 4.1 Danh sách sản phẩm (có lọc & phân trang)
 - **Endpoint:** `GET /api/products`
-- **Quyền:** Public
-- **Query Params:** `?page=1&limit=10&search=gọng&category=FRAME&brand=Gucci&gender=UNISEX&shape=Round&frameMaterial=Titanium&frameType=Full-Rim&minPrice=100000&maxPrice=1000000&status=ACTIVE`
+- **Quyền:** Public — kèm token MANAGER/ADMIN (optional) thì `status` mới có hiệu lực (`status=ALL` xem tất cả) và thấy được `LENS` không cần chỉ định `category`. Khách luôn bị khóa ở `ACTIVE` và bị ẩn `LENS` khỏi danh mục chung.
+- **Query Params:** `?page=1&limit=10&search=gọng&category=FRAME&brand=Gucci&gender=UNISEX&shape=Round&frameMaterial=Titanium&frameType=Full-Rim&minPrice=100000&maxPrice=1000000&status=ACTIVE&sortBy=price-asc`
+  - `sortBy`: `newest` (mặc định) | `price-asc` | `price-desc` — sort server-side.
 - **Response (200):**
   ```json
   {
@@ -230,16 +231,18 @@ Toàn bộ dữ liệu giỏ hàng được quản lý 100% ở Client bằng Zu
 
 ### 4.2 Chi tiết sản phẩm
 - **Endpoint:** `GET /api/products/:id`
-- **Quyền:** Public
+- **Quyền:** Public — sản phẩm `INACTIVE` trả 404 với khách; chỉ token MANAGER/ADMIN xem được.
 - **Response (200):** Trả về **trực tiếp** đối tượng Product (không bọc qua `{ code, result }`).
+- **Lỗi:** 404 `{ "error_code": "NOT_FOUND" }`; ID sai định dạng → 400 `{ "error_code": "INVALID_ID" }`.
 
 ### 4.3 Thêm sản phẩm mới
 - **Endpoint:** `POST /api/products`
 - **Quyền:** MANAGER hoặc ADMIN
 - **Định dạng:** `multipart/form-data`
   - `product`: chuỗi JSON mô tả sản phẩm (`name`, `brand`, `price`, `category`, `frameType`, `gender`, `shape`, `frameMaterial`,...).
-  - `files`: tệp ảnh sản phẩm.
+  - `files`: tệp ảnh sản phẩm — tối đa 10 file, mỗi file ≤ 10MB, chỉ PNG/JPEG/WEBP (vi phạm → 400 `FILE_TOO_LARGE` / `INVALID_FILE_TYPE`).
 - **Response (201):** `{ "code": 0, "result": { ...product } }`
+- **Lỗi:** thiếu `name`/`brand`/`price` → 400 `{ "error_code": "VALIDATION_ERROR" }`.
 
 ### 4.4 Cập nhật sản phẩm
 - **Endpoint:** `PUT /api/products/:id`
@@ -249,6 +252,7 @@ Toàn bộ dữ liệu giỏ hàng được quản lý 100% ở Client bằng Zu
 ### 4.5 Xóa sản phẩm
 - **Endpoint:** `DELETE /api/products/:id`
 - **Quyền:** MANAGER hoặc ADMIN
+- **Hành vi:** cascade xóa toàn bộ biến thể của sản phẩm và dọn file ảnh cục bộ `/uploads/...` (best-effort).
 - **Response (200):** `{ "code": 0, "message": "Xóa sản phẩm thành công" }`
 
 ### 4.6 Biến thể sản phẩm (Product Variants)

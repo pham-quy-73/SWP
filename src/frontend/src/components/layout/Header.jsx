@@ -10,6 +10,8 @@ export default function Header() {
   const { items, openCart } = useCartStore();
   const { user, logout } = useContext(AuthContext);
 
+  const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -96,9 +98,12 @@ export default function Header() {
             className="relative p-2 text-zinc-750 hover:text-emerald-600 transition-colors duration-250 shrink-0"
           >
             <ShoppingBag size={20} />
-            {items.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[9px] min-w-[17px] h-[17px] flex items-center justify-center rounded-full font-bold px-0.5 shadow-sm border border-white">
-                {items.reduce((acc, item) => acc + item.quantity, 0)}
+            {totalQuantity > 0 && (
+              <span
+                aria-label={`${totalQuantity} sản phẩm trong giỏ hàng`}
+                className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[9px] min-w-[17px] h-[17px] flex items-center justify-center rounded-full font-bold px-0.5 shadow-sm border border-white"
+              >
+                {totalQuantity}
               </span>
             )}
           </button>

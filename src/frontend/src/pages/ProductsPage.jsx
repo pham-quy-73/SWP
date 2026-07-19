@@ -70,7 +70,7 @@ export default function ProductsPage() {
     setLoading(true);
     setError(false);
     try {
-      const params = { page, limit, status: 'ACTIVE' };
+      const params = { page, limit, status: 'ACTIVE', sortBy };
 
       if (filterQuery.search) params.search = filterQuery.search;
       if (filterQuery.category) params.category = filterQuery.category;
@@ -110,7 +110,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetchProducts();
-  }, [page, filterQuery]);
+  }, [page, filterQuery, sortBy]);
 
   const handleApplyQuickFilters = (newFilters) => {
     setPage(1);
@@ -130,34 +130,42 @@ export default function ProductsPage() {
     setShowMobileFilters(false);
   };
 
-  const getSortedProducts = () => {
-    let sortedList = [...products];
-    if (sortBy === 'price-asc') sortedList.sort((a, b) => (a.price) - (b.price));
-    else if (sortBy === 'price-desc') sortedList.sort((a, b) => (b.price) - (a.price));
-    return sortedList;
-  };
-
-  // Cập nhật hàm Add to Cart để nhận đúng hình ảnh đã được phân giải
-  const handleQuickAddToCart = (product, resolvedImage, e) => {
+  // Quick-add: fetch biến thể thật để (1) chặn hết hàng ngay tại chỗ,
+  // (2) đưa variantId + giá variant vào giỏ thay vì để server tự đoán biến thể.
+  const handleQuickAddToCart = async (product, resolvedImage, e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const variantId = product._id || product.id;
-    const price = product.discountPrice || product.price;
+    const productId = product._id || product.id;
 
-    const cartPayload = {
-      productId: variantId,
-      name: `${product.name} (Mặc định)`,
-      price: price,
-      image: resolvedImage,
-      quantity: 1,
-      lensId: null,
-      orderType: 'buy-now',
-      prescription: null,
-    };
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}/variants`);
+      const variants = res.data?.result || [];
+      const inStockVariant = variants.find((v) => v.quantity > 0 && v.status === 'ACTIVE');
 
-    addToCart(cartPayload);
-    toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
+      if (!inStockVariant) {
+        toast.error(`Rất tiếc, ${product.name} đã tạm hết hàng!`);
+        return;
+      }
+
+      addToCart({
+        productId,
+        variantId: inStockVariant._id || inStockVariant.id,
+        name: `${product.name} - ${inStockVariant.colorName || 'Mặc định'}`,
+        price: inStockVariant.price,
+        image: resolvedImage,
+        quantity: 1,
+        lensId: null,
+        lensName: null,
+        lensPrice: 0,
+        orderType: 'buy-now',
+        prescription: null,
+      });
+      toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
+    } catch (err) {
+      console.error('Lỗi khi thêm nhanh vào giỏ:', err);
+      toast.error('Không thể thêm vào giỏ, vui lòng thử lại!');
+    }
   };
 
   const breadcrumbItems = [{ label: 'Cửa hàng', link: '/products' }];
@@ -169,7 +177,7 @@ export default function ProductsPage() {
     { id: 'UNISEX', label: 'Unisex' }
   ];
 
-  const sortedProducts = getSortedProducts();
+
 
   const getGenderBadge = (g) => {
     switch (g) {
@@ -200,7 +208,7 @@ export default function ProductsPage() {
               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Sắp xếp:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
                 className="text-xs font-bold text-zinc-900 border border-zinc-200 rounded-xl px-3 py-2 bg-white cursor-pointer focus:outline-none focus:border-emerald-500 hover:border-zinc-300 transition-colors"
               >
                 <option value="newest">Mới nhất</option>
@@ -320,7 +328,7 @@ export default function ProductsPage() {
                   Thử lại ngay
                 </button>
               </div>
-            ) : sortedProducts.length === 0 ? (
+            ) : products.length === 0 ? (
               <div className="bg-white rounded-[2rem] border border-zinc-100 p-20 text-center space-y-5 shadow-[0_10px_40px_rgba(0,0,0,0.03)]">
                 <div className="w-24 h-24 bg-zinc-50 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border border-zinc-100">
                   <SlidersHorizontal className="w-10 h-10 text-zinc-300" />
@@ -335,7 +343,7 @@ export default function ProductsPage() {
               /* PRODUCT GRID */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <AnimatePresence mode="popLayout">
-                  {sortedProducts.map((p) => {
+                  {products.map((p) => {
                     // LOGIC CHỌN ẢNH THÔNG MINH MỚI
                     const displayImageObj =
                       (p.variants && p.variants.length > 0 && p.variants[0].imageUrl?.length > 0)

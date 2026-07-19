@@ -10,8 +10,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_config_db",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "db.js"
     },
     {
@@ -21,8 +21,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_backend_config_db_connectdb",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "connectdb()"
     },
     {
@@ -230,8 +230,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_controllers_dashboardcontroller",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "dashboardcontroller.js"
     },
     {
@@ -241,8 +241,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_backend_controllers_dashboardcontroller_dashboardcontroller",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "dashboardcontroller"
     },
     {
@@ -252,8 +252,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_backend_controllers_dashboardcontroller_dashboardcontroller_getdashboardstats",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".getdashboardstats()"
     },
     {
@@ -274,8 +274,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "ordercontroller"
     },
     {
@@ -285,8 +285,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_createorder",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".createorder()"
     },
     {
@@ -296,8 +296,8 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_myorders",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".myorders()"
     },
     {
@@ -307,8 +307,8 @@
       "source_location": "L281",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_cancelorder",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".cancelorder()"
     },
     {
@@ -318,8 +318,8 @@
       "source_location": "L324",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_getallorders",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".getallorders()"
     },
     {
@@ -329,8 +329,8 @@
       "source_location": "L349",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_getorderbyid",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".getorderbyid()"
     },
     {
@@ -340,8 +340,8 @@
       "source_location": "L388",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_updateorderstatus",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".updateorderstatus()"
     },
     {
@@ -351,8 +351,8 @@
       "source_location": "L478",
       "_origin": "ast",
       "id": "src_backend_controllers_ordercontroller_ordercontroller_deleteorder",
-      "community": 51,
-      "community_name": "OrderController",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".deleteorder()"
     },
     {
@@ -428,8 +428,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "productcontroller.js"
     },
     {
@@ -439,8 +439,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_escaperegex",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "escaperegex()"
     },
     {
@@ -450,8 +450,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_isstaff",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "isstaff()"
     },
     {
@@ -461,8 +461,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_sort_options",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "sort_options"
     },
     {
@@ -472,8 +472,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_removelocalimages",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "removelocalimages()"
     },
     {
@@ -483,8 +483,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_productcontroller",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "productcontroller"
     },
     {
@@ -494,8 +494,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_productcontroller_getproducts",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".getproducts()"
     },
     {
@@ -505,8 +505,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_productcontroller_getproductbyid",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".getproductbyid()"
     },
     {
@@ -516,8 +516,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_productcontroller_createproduct",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".createproduct()"
     },
     {
@@ -527,8 +527,8 @@
       "source_location": "L147",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_productcontroller_updateproduct",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".updateproduct()"
     },
     {
@@ -538,8 +538,8 @@
       "source_location": "L182",
       "_origin": "ast",
       "id": "src_backend_controllers_productcontroller_productcontroller_deleteproduct",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".deleteproduct()"
     },
     {
@@ -549,8 +549,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_controllers_productvariantcontroller",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "productvariantcontroller.js"
     },
     {
@@ -560,8 +560,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_backend_controllers_productvariantcontroller_productvariantcontroller",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "productvariantcontroller"
     },
     {
@@ -571,8 +571,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_backend_controllers_productvariantcontroller_productvariantcontroller_getvariants",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".getvariants()"
     },
     {
@@ -582,8 +582,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_backend_controllers_productvariantcontroller_productvariantcontroller_createvariant",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".createvariant()"
     },
     {
@@ -593,8 +593,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "src_backend_controllers_productvariantcontroller_productvariantcontroller_updatevariant",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".updatevariant()"
     },
     {
@@ -604,8 +604,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "src_backend_controllers_productvariantcontroller_productvariantcontroller_deletevariant",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": ".deletevariant()"
     },
     {
@@ -626,8 +626,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "refundcontroller"
     },
     {
@@ -637,8 +637,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller_getcancelledpaidorders",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".getcancelledpaidorders()"
     },
     {
@@ -648,8 +648,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller_inactivatevariant",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".inactivatevariant()"
     },
     {
@@ -659,8 +659,8 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller_getaffectedorders",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".getaffectedorders()"
     },
     {
@@ -670,8 +670,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller_createbatch",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".createbatch()"
     },
     {
@@ -681,8 +681,8 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller_getreadyrefunds",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".getreadyrefunds()"
     },
     {
@@ -692,8 +692,8 @@
       "source_location": "L266",
       "_origin": "ast",
       "id": "src_backend_controllers_refundcontroller_refundcontroller_checkoutrefund",
-      "community": 67,
-      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": ".checkoutrefund()"
     },
     {
@@ -868,8 +868,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_middlewares_errormiddleware",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "errormiddleware.js"
     },
     {
@@ -879,8 +879,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_middlewares_errormiddleware_notfound",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "notfound()"
     },
     {
@@ -890,8 +890,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_backend_middlewares_errormiddleware_httperror",
-      "community": 11,
-      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "httperror()"
     },
     {
@@ -901,8 +901,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_backend_middlewares_errormiddleware_errorhandler",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "errorhandler()"
     },
     {
@@ -1011,8 +1011,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_models_product",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "product.js"
     },
     {
@@ -1022,8 +1022,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_backend_models_product_imageschema",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "imageschema"
     },
     {
@@ -1033,8 +1033,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_backend_models_product_productschema",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "productschema"
     },
     {
@@ -1583,8 +1583,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_routes_auth_routes",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "auth.routes.js"
     },
     {
@@ -1594,8 +1594,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_backend_routes_auth_routes_router",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "router"
     },
     {
@@ -1638,8 +1638,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_backend_routes_index_router",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "router"
     },
     {
@@ -1792,8 +1792,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_seed_data",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "seed_data.js"
     },
     {
@@ -1803,8 +1803,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_backend_seed_data_filename",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "__filename"
     },
     {
@@ -1814,8 +1814,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_backend_seed_data_dirname",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "__dirname"
     },
     {
@@ -1825,8 +1825,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_backend_seed_data_filterrawitemtoschema",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "filterrawitemtoschema()"
     },
     {
@@ -1836,8 +1836,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "src_backend_seed_data_seedproducts",
-      "community": 31,
-      "community_name": "RefundController.js",
+      "community": 1,
+      "community_name": "ProductVariant.js",
       "norm_label": "seedproducts()"
     },
     {
@@ -1902,8 +1902,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_backend_server",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "server.js"
     },
     {
@@ -1913,8 +1913,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_backend_server_filename",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "__filename"
     },
     {
@@ -1924,8 +1924,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_backend_server_dirname",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "__dirname"
     },
     {
@@ -1935,8 +1935,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "src_backend_server_startorderstatuscleanupjob",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "startorderstatuscleanupjob()"
     },
     {
@@ -1946,8 +1946,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "src_backend_server_app",
-      "community": 30,
-      "community_name": "server.js",
+      "community": 4,
+      "community_name": "index.js",
       "norm_label": "app"
     },
     {
@@ -2771,8 +2771,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_authlayout",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "authlayout.jsx"
     },
     {
@@ -2782,8 +2782,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_authlayout_authlayout",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "authlayout()"
     },
     {
@@ -2793,8 +2793,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_footer",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "footer.jsx"
     },
     {
@@ -2804,8 +2804,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_footer_footer",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "footer()"
     },
     {
@@ -2815,8 +2815,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_header",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "header.jsx"
     },
     {
@@ -2826,8 +2826,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_header_header",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "header()"
     },
     {
@@ -2837,8 +2837,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_mainlayout",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "mainlayout.jsx"
     },
     {
@@ -2848,8 +2848,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_components_layout_mainlayout_mainlayout",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 51,
+      "community_name": "OrderController",
       "norm_label": "mainlayout()"
     },
     {
@@ -3035,8 +3035,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_components_loginform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 81,
+      "community_name": "useLoginForm.js",
       "norm_label": "loginform.jsx"
     },
     {
@@ -3046,8 +3046,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_components_loginform_loginform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 81,
+      "community_name": "useLoginForm.js",
       "norm_label": "loginform()"
     },
     {
@@ -3057,8 +3057,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_components_registerform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 82,
+      "community_name": "RegisterForm.jsx",
       "norm_label": "registerform.jsx"
     },
     {
@@ -3068,8 +3068,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_components_registerform_registerform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 82,
+      "community_name": "RegisterForm.jsx",
       "norm_label": "registerform()"
     },
     {
@@ -3079,8 +3079,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_hooks_useloginform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 81,
+      "community_name": "useLoginForm.js",
       "norm_label": "useloginform.js"
     },
     {
@@ -3090,8 +3090,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_hooks_useloginform_loginschema",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 81,
+      "community_name": "useLoginForm.js",
       "norm_label": "loginschema"
     },
     {
@@ -3101,8 +3101,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_hooks_useloginform_useloginform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 81,
+      "community_name": "useLoginForm.js",
       "norm_label": "useloginform()"
     },
     {
@@ -3112,8 +3112,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_hooks_useregisterform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 82,
+      "community_name": "RegisterForm.jsx",
       "norm_label": "useregisterform.js"
     },
     {
@@ -3123,8 +3123,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_hooks_useregisterform_registerschema",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 82,
+      "community_name": "RegisterForm.jsx",
       "norm_label": "registerschema"
     },
     {
@@ -3134,8 +3134,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_frontend_src_feature_auth_hooks_useregisterform_useregisterform",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 82,
+      "community_name": "RegisterForm.jsx",
       "norm_label": "useregisterform()"
     },
     {
@@ -3431,8 +3431,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_api_policy_api",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "policy-api.js"
     },
     {
@@ -3442,8 +3442,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_api_policy_api_policyapi",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "policyapi"
     },
     {
@@ -3453,8 +3453,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_api_refund_api",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 5,
+      "community_name": "useRefunds.js",
       "norm_label": "refund-api.js"
     },
     {
@@ -3464,8 +3464,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_api_refund_api_refundapi",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 5,
+      "community_name": "useRefunds.js",
       "norm_label": "refundapi"
     },
     {
@@ -3651,8 +3651,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usemanagerdashboard",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "usemanagerdashboard.js"
     },
     {
@@ -3662,8 +3662,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usemanagerdashboard_usedashboardrevenue",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "usedashboardrevenue()"
     },
     {
@@ -3728,8 +3728,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usepolicies",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "usepolicies.js"
     },
     {
@@ -3739,8 +3739,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usepolicies_usepolicies",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "usepolicies()"
     },
     {
@@ -3750,8 +3750,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usepolicies_usecreatepolicy",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "usecreatepolicy()"
     },
     {
@@ -3761,8 +3761,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usepolicies_useupdatepolicy",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "useupdatepolicy()"
     },
     {
@@ -3772,8 +3772,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_hooks_usepolicies_usedeletepolicy",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "usedeletepolicy()"
     },
     {
@@ -3882,8 +3882,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_dashboard_managerdashboardpage",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "managerdashboardpage.jsx"
     },
     {
@@ -3893,8 +3893,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_dashboard_managerdashboardpage_managerdashboardpage",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "managerdashboardpage()"
     },
     {
@@ -4025,8 +4025,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_products_productvariantmanagepage",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 83,
+      "community_name": "ProductVariantManagePage.jsx",
       "norm_label": "productvariantmanagepage.jsx"
     },
     {
@@ -4036,8 +4036,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_products_productvariantmanagepage_productvariantmanagepage",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 83,
+      "community_name": "ProductVariantManagePage.jsx",
       "norm_label": "productvariantmanagepage()"
     },
     {
@@ -4047,8 +4047,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_products_variantmodal",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 83,
+      "community_name": "ProductVariantManagePage.jsx",
       "norm_label": "variantmodal.jsx"
     },
     {
@@ -4058,8 +4058,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_products_variantmodal_empty_form",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 83,
+      "community_name": "ProductVariantManagePage.jsx",
       "norm_label": "empty_form"
     },
     {
@@ -4069,8 +4069,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_frontend_src_feature_manager_page_products_variantmodal_variantmodal",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 83,
+      "community_name": "ProductVariantManagePage.jsx",
       "norm_label": "variantmodal()"
     },
     {
@@ -4179,8 +4179,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_components_productfeedback_productfeedback",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productfeedback()"
     },
     {
@@ -4223,8 +4223,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_components_productgallery",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productgallery.jsx"
     },
     {
@@ -4234,8 +4234,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_components_productgallery_getdisplayimageurl",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "getdisplayimageurl()"
     },
     {
@@ -4245,8 +4245,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_components_productgallery_productgallery",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productgallery()"
     },
     {
@@ -4256,8 +4256,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_components_productinfo",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productinfo.jsx"
     },
     {
@@ -4267,8 +4267,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_components_productinfo_productinfo",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productinfo()"
     },
     {
@@ -4283,21 +4283,10 @@
       "norm_label": "usecartstore.js"
     },
     {
-      "label": "buildItemId()",
-      "file_type": "code",
-      "source_file": "src/frontend/src/feature/product/store/useCartStore.js",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "src_frontend_src_feature_product_store_usecartstore_builditemid",
-      "community": 7,
-      "community_name": "useCartStore",
-      "norm_label": "builditemid()"
-    },
-    {
       "label": "useCartStore",
       "file_type": "code",
       "source_file": "src/frontend/src/feature/product/store/useCartStore.js",
-      "source_location": "L13",
+      "source_location": "L4",
       "_origin": "ast",
       "id": "src_frontend_src_feature_product_store_usecartstore_usecartstore",
       "community": 7,
@@ -4344,8 +4333,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_api_api",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "api.js"
     },
     {
@@ -4355,8 +4344,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_api_api_profileapi",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "profileapi"
     },
     {
@@ -4366,8 +4355,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_api_order_api",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "order-api.js"
     },
     {
@@ -4377,8 +4366,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_api_order_api_orderapi",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "orderapi"
     },
     {
@@ -4388,8 +4377,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_components_profilesidebar",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "profilesidebar.jsx"
     },
     {
@@ -4399,8 +4388,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_components_profilesidebar_sidebaritems",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "sidebaritems"
     },
     {
@@ -4410,8 +4399,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_components_profilesidebar_profilesidebar",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "profilesidebar()"
     },
     {
@@ -4498,8 +4487,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_hooks_useprofilequery",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "useprofilequery.js"
     },
     {
@@ -4509,8 +4498,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_hooks_useprofilequery_useprofilequery",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "useprofilequery()"
     },
     {
@@ -4520,8 +4509,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_layout_profilelayout",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "profilelayout.jsx"
     },
     {
@@ -4531,8 +4520,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_layout_profilelayout_profilelayout",
-      "community": 0,
-      "community_name": "App.jsx",
+      "community": 31,
+      "community_name": "RefundController.js",
       "norm_label": "profilelayout()"
     },
     {
@@ -4542,8 +4531,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_myaddresses",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "myaddresses.jsx"
     },
     {
@@ -4553,8 +4542,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_myaddresses_emptyform",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "emptyform"
     },
     {
@@ -4564,8 +4553,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_myaddresses_addressformdialog",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "addressformdialog()"
     },
     {
@@ -4575,8 +4564,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_myaddresses_myaddresses",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "myaddresses()"
     },
     {
@@ -4685,8 +4674,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_profilepage",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "profilepage.jsx"
     },
     {
@@ -4696,8 +4685,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_profilepage_sectiontitle",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "sectiontitle()"
     },
     {
@@ -4707,8 +4696,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "src_frontend_src_feature_profile_page_profilepage_profilepage",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 30,
+      "community_name": "server.js",
       "norm_label": "profilepage()"
     },
     {
@@ -4718,8 +4707,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_lib_httpclient",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "httpclient.js"
     },
     {
@@ -4729,8 +4718,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_frontend_src_lib_httpclient_httpclient",
-      "community": 3,
-      "community_name": "MyOrder.jsx",
+      "community": 11,
+      "community_name": "Feature: Gi\u1ecf h\u00e0ng (Cart) \u2014 SPECIFICATION",
       "norm_label": "httpclient"
     },
     {
@@ -4839,8 +4828,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_frontend_src_pages_productdetailpage",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productdetailpage.jsx"
     },
     {
@@ -4850,8 +4839,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_frontend_src_pages_productdetailpage_productdetailpage",
-      "community": 7,
-      "community_name": "useCartStore",
+      "community": 67,
+      "community_name": "TASK.md \u2014 Trang s\u1ea3n ph\u1ea9m & Bi\u1ebfn th\u1ec3 (Store & Products Task List)",
       "norm_label": "productdetailpage()"
     },
     {
@@ -7454,7 +7443,7 @@
       "label": "1. Context & Goal (B\u1ed1i c\u1ea3nh & M\u1ee5c ti\u00eau)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L20",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_1_context_goal_b\u1ed1i_c\u1ea3nh_m\u1ee5c_ti\u00eau",
       "community": 10,
@@ -7465,7 +7454,7 @@
       "label": "2. Actors & Roles (T\u00e1c nh\u00e2n & Vai tr\u00f2)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L34",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_2_actors_roles_t\u00e1c_nh\u00e2n_vai_tr\u00f2",
       "community": 10,
@@ -7476,7 +7465,7 @@
       "label": "3. Functional Requirements (Y\u00eau c\u1ea7u ch\u1ee9c n\u0103ng \u2014 EARS)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L46",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
       "community": 10,
@@ -7487,7 +7476,7 @@
       "label": "3.1 Ubiquitous (Lu\u00f4n lu\u00f4n \u0111\u00fang)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L53",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_3_1_ubiquitous_lu\u00f4n_lu\u00f4n_\u0111\u00fang",
       "community": 10,
@@ -7498,7 +7487,7 @@
       "label": "3.2 Event-driven (K\u00edch ho\u1ea1t b\u1eb1ng s\u1ef1 ki\u1ec7n)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L59",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_3_2_event_driven_k\u00edch_ho\u1ea1t_b\u1eb1ng_s\u1ef1_ki\u1ec7n",
       "community": 10,
@@ -7509,7 +7498,7 @@
       "label": "3.3 State-driven (Khi \u1edf tr\u1ea1ng th\u00e1i)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L76",
+      "source_location": "L73",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_3_3_state_driven_khi_\u1edf_tr\u1ea1ng_th\u00e1i",
       "community": 10,
@@ -7520,7 +7509,7 @@
       "label": "3.4 Optional / Where (T\u00f9y ch\u1ecdn)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L83",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_3_4_optional_where_t\u00f9y_ch\u1ecdn",
       "community": 10,
@@ -7531,7 +7520,7 @@
       "label": "3.5 Unwanted (L\u1ed7i / Edge Case)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L87",
+      "source_location": "L83",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_3_5_unwanted_l\u1ed7i_edge_case",
       "community": 10,
@@ -7542,7 +7531,7 @@
       "label": "4. Non-functional Requirements (Y\u00eau c\u1ea7u phi ch\u1ee9c n\u0103ng)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L94",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_4_non_functional_requirements_y\u00eau_c\u1ea7u_phi_ch\u1ee9c_n\u0103ng",
       "community": 10,
@@ -7553,7 +7542,7 @@
       "label": "4.1 Performance",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L96",
+      "source_location": "L92",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_4_1_performance",
       "community": 10,
@@ -7564,7 +7553,7 @@
       "label": "4.2 Security",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L102",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_4_2_security",
       "community": 10,
@@ -7575,7 +7564,7 @@
       "label": "4.3 Scalability & Availability",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L108",
+      "source_location": "L104",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_4_3_scalability_availability",
       "community": 10,
@@ -7586,7 +7575,7 @@
       "label": "4.4 Accessibility & UX",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L112",
+      "source_location": "L108",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_4_4_accessibility_ux",
       "community": 10,
@@ -7597,7 +7586,7 @@
       "label": "5. Data Model (M\u00f4 h\u00ecnh d\u1eef li\u1ec7u)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L119",
+      "source_location": "L115",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_5_data_model_m\u00f4_h\u00ecnh_d\u1eef_li\u1ec7u",
       "community": 10,
@@ -7608,7 +7597,7 @@
       "label": "5.1 Client-only state \u2014 Zustand Store `useCartStore`",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L125",
+      "source_location": "L121",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_5_1_client_only_state_zustand_store_usecartstore",
       "community": 10,
@@ -7619,7 +7608,7 @@
       "label": "5.2 Contract v\u1edbi Checkout API (Backend)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L167",
+      "source_location": "L162",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_5_2_contract_v\u1edbi_checkout_api_backend",
       "community": 10,
@@ -7630,7 +7619,7 @@
       "label": "6. Error Handling (X\u1eed l\u00fd l\u1ed7i)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L197",
+      "source_location": "L192",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_6_error_handling_x\u1eed_l\u00fd_l\u1ed7i",
       "community": 10,
@@ -7641,7 +7630,7 @@
       "label": "6.1 Edge Cases & Corner Cases",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L212",
+      "source_location": "L207",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_6_1_edge_cases_corner_cases",
       "community": 10,
@@ -7652,7 +7641,7 @@
       "label": "7. Acceptance Criteria (Ti\u00eau ch\u00ed nghi\u1ec7m thu \u2014 Given/When/Then)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L228",
+      "source_location": "L223",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_7_acceptance_criteria_ti\u00eau_ch\u00ed_nghi\u1ec7m_thu_given_when_then",
       "community": 10,
@@ -7663,7 +7652,7 @@
       "label": "7.1 Testing Requirements",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L248",
+      "source_location": "L241",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_7_1_testing_requirements",
       "community": 10,
@@ -7674,7 +7663,7 @@
       "label": "8. Out of Scope (Ph\u1ea1m vi ngo\u00e0i)",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L257",
+      "source_location": "L250",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_8_out_of_scope_ph\u1ea1m_vi_ngo\u00e0i",
       "community": 10,
@@ -7685,7 +7674,7 @@
       "label": "Ph\u1ee5 l\u1ee5c \u2014 Dependencies & Open Questions",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L273",
+      "source_location": "L267",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_ph\u1ee5_l\u1ee5c_dependencies_open_questions",
       "community": 10,
@@ -7696,7 +7685,7 @@
       "label": "A. Dependencies & Integration Points",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L275",
+      "source_location": "L269",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_a_dependencies_integration_points",
       "community": 10,
@@ -7707,7 +7696,7 @@
       "label": "B. Rollout",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L286",
+      "source_location": "L280",
       "_origin": "ast",
       "id": "sdd_specs_feature_cart_cart_spec_b_rollout",
       "community": 10,
@@ -7715,15 +7704,15 @@
       "norm_label": "b. rollout"
     },
     {
-      "label": "C. Open Questions \u2014 tr\u1ea1ng th\u00e1i 2026-07-19",
+      "label": "C. Open Questions",
       "file_type": "document",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L289",
+      "source_location": "L283",
       "_origin": "ast",
-      "id": "sdd_specs_feature_cart_cart_spec_c_open_questions_tr\u1ea1ng_th\u00e1i_2026_07_19",
+      "id": "sdd_specs_feature_cart_cart_spec_c_open_questions",
       "community": 10,
       "community_name": "Product.js",
-      "norm_label": "c. open questions \u2014 trang thai 2026-07-19"
+      "norm_label": "c. open questions"
     },
     {
       "label": "CONTEXT.md",
@@ -17541,17 +17530,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/frontend/src/feature/product/store/useCartStore.js",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "src_frontend_src_feature_product_store_usecartstore",
-      "target": "src_frontend_src_feature_product_store_usecartstore_builditemid",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/frontend/src/feature/product/store/useCartStore.js",
-      "source_location": "L13",
+      "source_location": "L4",
       "weight": 1.0,
       "source": "src_frontend_src_feature_product_store_usecartstore",
       "target": "src_frontend_src_feature_product_store_usecartstore_usecartstore",
@@ -18266,7 +18245,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/frontend/src/pages/ProductsPage.jsx",
-      "source_location": "L357",
+      "source_location": "L342",
       "weight": 1.0,
       "source": "src_frontend_src_pages_productspage_productspage",
       "target": "src_frontend_src_pages_productspage_getdisplayimageurl",
@@ -20286,7 +20265,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L20",
+      "source_location": "L18",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_1_context_goal_b\u1ed1i_c\u1ea3nh_m\u1ee5c_ti\u00eau",
@@ -20296,7 +20275,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L34",
+      "source_location": "L32",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_2_actors_roles_t\u00e1c_nh\u00e2n_vai_tr\u00f2",
@@ -20306,7 +20285,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L46",
+      "source_location": "L44",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
@@ -20316,7 +20295,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L94",
+      "source_location": "L90",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_4_non_functional_requirements_y\u00eau_c\u1ea7u_phi_ch\u1ee9c_n\u0103ng",
@@ -20326,7 +20305,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L119",
+      "source_location": "L115",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_5_data_model_m\u00f4_h\u00ecnh_d\u1eef_li\u1ec7u",
@@ -20336,7 +20315,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L197",
+      "source_location": "L192",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_6_error_handling_x\u1eed_l\u00fd_l\u1ed7i",
@@ -20346,7 +20325,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L228",
+      "source_location": "L223",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_7_acceptance_criteria_ti\u00eau_ch\u00ed_nghi\u1ec7m_thu_given_when_then",
@@ -20356,7 +20335,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L257",
+      "source_location": "L250",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_8_out_of_scope_ph\u1ea1m_vi_ngo\u00e0i",
@@ -20366,7 +20345,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L273",
+      "source_location": "L267",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_feature_gi\u1ecf_h\u00e0ng_cart_specification",
       "target": "sdd_specs_feature_cart_cart_spec_ph\u1ee5_l\u1ee5c_dependencies_open_questions",
@@ -20376,7 +20355,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L53",
+      "source_location": "L51",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
       "target": "sdd_specs_feature_cart_cart_spec_3_1_ubiquitous_lu\u00f4n_lu\u00f4n_\u0111\u00fang",
@@ -20386,7 +20365,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L59",
+      "source_location": "L56",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
       "target": "sdd_specs_feature_cart_cart_spec_3_2_event_driven_k\u00edch_ho\u1ea1t_b\u1eb1ng_s\u1ef1_ki\u1ec7n",
@@ -20396,7 +20375,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L76",
+      "source_location": "L73",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
       "target": "sdd_specs_feature_cart_cart_spec_3_3_state_driven_khi_\u1edf_tr\u1ea1ng_th\u00e1i",
@@ -20406,7 +20385,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L83",
+      "source_location": "L80",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
       "target": "sdd_specs_feature_cart_cart_spec_3_4_optional_where_t\u00f9y_ch\u1ecdn",
@@ -20416,7 +20395,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L87",
+      "source_location": "L83",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_3_functional_requirements_y\u00eau_c\u1ea7u_ch\u1ee9c_n\u0103ng_ears",
       "target": "sdd_specs_feature_cart_cart_spec_3_5_unwanted_l\u1ed7i_edge_case",
@@ -20426,7 +20405,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L96",
+      "source_location": "L92",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_4_non_functional_requirements_y\u00eau_c\u1ea7u_phi_ch\u1ee9c_n\u0103ng",
       "target": "sdd_specs_feature_cart_cart_spec_4_1_performance",
@@ -20436,7 +20415,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L102",
+      "source_location": "L98",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_4_non_functional_requirements_y\u00eau_c\u1ea7u_phi_ch\u1ee9c_n\u0103ng",
       "target": "sdd_specs_feature_cart_cart_spec_4_2_security",
@@ -20446,7 +20425,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L108",
+      "source_location": "L104",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_4_non_functional_requirements_y\u00eau_c\u1ea7u_phi_ch\u1ee9c_n\u0103ng",
       "target": "sdd_specs_feature_cart_cart_spec_4_3_scalability_availability",
@@ -20456,7 +20435,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L112",
+      "source_location": "L108",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_4_non_functional_requirements_y\u00eau_c\u1ea7u_phi_ch\u1ee9c_n\u0103ng",
       "target": "sdd_specs_feature_cart_cart_spec_4_4_accessibility_ux",
@@ -20466,7 +20445,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L125",
+      "source_location": "L121",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_5_data_model_m\u00f4_h\u00ecnh_d\u1eef_li\u1ec7u",
       "target": "sdd_specs_feature_cart_cart_spec_5_1_client_only_state_zustand_store_usecartstore",
@@ -20476,7 +20455,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L167",
+      "source_location": "L162",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_5_data_model_m\u00f4_h\u00ecnh_d\u1eef_li\u1ec7u",
       "target": "sdd_specs_feature_cart_cart_spec_5_2_contract_v\u1edbi_checkout_api_backend",
@@ -20486,7 +20465,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L212",
+      "source_location": "L207",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_6_error_handling_x\u1eed_l\u00fd_l\u1ed7i",
       "target": "sdd_specs_feature_cart_cart_spec_6_1_edge_cases_corner_cases",
@@ -20496,7 +20475,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L248",
+      "source_location": "L241",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_7_acceptance_criteria_ti\u00eau_ch\u00ed_nghi\u1ec7m_thu_given_when_then",
       "target": "sdd_specs_feature_cart_cart_spec_7_1_testing_requirements",
@@ -20506,7 +20485,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L275",
+      "source_location": "L269",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_ph\u1ee5_l\u1ee5c_dependencies_open_questions",
       "target": "sdd_specs_feature_cart_cart_spec_a_dependencies_integration_points",
@@ -20516,7 +20495,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L286",
+      "source_location": "L280",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_ph\u1ee5_l\u1ee5c_dependencies_open_questions",
       "target": "sdd_specs_feature_cart_cart_spec_b_rollout",
@@ -20526,10 +20505,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".sdd/specs/feature-cart/cart.spec.md",
-      "source_location": "L289",
+      "source_location": "L283",
       "weight": 1.0,
       "source": "sdd_specs_feature_cart_cart_spec_ph\u1ee5_l\u1ee5c_dependencies_open_questions",
-      "target": "sdd_specs_feature_cart_cart_spec_c_open_questions_tr\u1ea1ng_th\u00e1i_2026_07_19",
+      "target": "sdd_specs_feature_cart_cart_spec_c_open_questions",
       "confidence_score": 1.0
     },
     {

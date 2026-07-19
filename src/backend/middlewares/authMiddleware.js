@@ -27,6 +27,26 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
+// Xác thực "mềm" cho các route đọc công khai: có token hợp lệ thì gán req.user
+// để controller phân biệt Khách/Staff, không có (hoặc token hỏng) thì vẫn cho qua.
+export const optionalAuthenticate = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return next();
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (user && user.deleted_at === null) {
+      req.user = user;
+    }
+  } catch (error) {
+    // Token không hợp lệ → coi như khách vãng lai
+  }
+  next();
+};
+
 export const requireRole = (allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
