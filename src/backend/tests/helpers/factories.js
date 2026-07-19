@@ -29,7 +29,7 @@ export async function createUser(overrides = {}) {
   const u = uniq();
   const data = {
     username: overrides.username || `user_${u}`,
-    email: overrides.email || `user_${u}@test.local`,
+    email: overrides.email || `user_${u}@example.com`,
     password: overrides.password !== undefined ? overrides.password : 'password123',
     first_name: overrides.first_name || 'Test',
     last_name: overrides.last_name || 'User',
