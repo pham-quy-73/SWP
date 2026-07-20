@@ -1,5 +1,6 @@
 import express from 'express';
 import RefundController from '../controllers/RefundController.js';
+import OrderController from '../controllers/OrderController.js';
 import { authenticate, requireRole } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -13,5 +14,6 @@ router.get('/affected-orders/:variantId', RefundController.getAffectedOrders);
 router.post('/create-batch', RefundController.createBatch);
 router.get('/ready', RefundController.getReadyRefunds);
 router.post('/:refundId/refund-checkout', RefundController.checkoutRefund);
+router.put('/reject-cancel/:orderId', OrderController.rejectCancellation);
 
 export default router;

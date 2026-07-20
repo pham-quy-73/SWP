@@ -75,7 +75,8 @@ export default function FeedbackModal({ isOpen, onClose, orderId, productId, exi
             });
 
             if (existingFeedback) {
-                await profileApi.updateFeedback(existingFeedback.feedbackId, formData);
+                const targetFeedbackId = existingFeedback.feedbackId || existingFeedback._id;
+                await profileApi.updateFeedback(targetFeedbackId, formData);
                 setSuccess('Cập nhật đánh giá thành công!');
             } else {
                 await profileApi.createFeedback(formData);

@@ -16,8 +16,10 @@ import {
   AlertCircle,
   Copy,
   Check,
+  FileSpreadsheet,
 } from 'lucide-react';
 import VariantModal from './VariantModal';
+import ImportVariantModal from './ImportVariantModal';
 
 export default function ProductVariantManagePage() {
   const { productId } = useParams();
@@ -28,6 +30,7 @@ export default function ProductVariantManagePage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [openActionId, setOpenActionId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [variants, setVariants] = useState([]);
@@ -252,13 +255,20 @@ export default function ProductVariantManagePage() {
             />
           </div>
 
-          <div className="flex items-center gap-6 w-full sm:w-auto">
-            <div className="text-sm text-zinc-500 font-medium hidden md:block">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="text-sm text-zinc-500 font-medium hidden md:block mr-3">
               Tổng cộng: <span className="text-zinc-900 font-black text-lg">{filteredVariants.length}</span>
             </div>
             <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-2xl text-sm font-bold tracking-wide hover:bg-emerald-100 transition-all shadow-xs active:scale-95 shrink-0 cursor-pointer"
+            >
+              <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+              <span>Nhập Excel</span>
+            </button>
+            <button
               onClick={handleOpenAdd}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-zinc-900 text-white rounded-2xl text-sm font-bold tracking-wide hover:bg-emerald-600 transition-all shadow-xl hover:shadow-emerald-500/20 active:scale-95 shrink-0"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-zinc-900 text-white rounded-2xl text-sm font-bold tracking-wide hover:bg-emerald-600 transition-all shadow-xl hover:shadow-emerald-500/20 active:scale-95 shrink-0 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>Thêm Phiên Bản</span>
@@ -509,6 +519,15 @@ export default function ProductVariantManagePage() {
         onSubmit={handleSubmit}
         variant={editingVariant}
         isSubmitting={isSubmitting}
+      />
+
+      <ImportVariantModal
+        open={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        productId={productId}
+        onSuccess={() => {
+          fetchVariants();
+        }}
       />
     </div>
   );

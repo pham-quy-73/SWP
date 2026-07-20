@@ -201,14 +201,31 @@ class PaymentController {
       // 4. Kiểm tra ResponseCode ('00' là thành công)
       if (responseCode === '00') {
         const prevStatus = order.status;
-        order.status = 'CONFIRMED';
+
+        // Kiểm tra xem đơn hàng có chứa tròng kính / đơn thuốc hay không
+        const items = await OrderItem.find({ order_id: order._id });
+        const hasPrescription = items.some(item =>
+          item.lens_id ||
+          (item.prescription && (
+            item.prescription.od_sphere || item.prescription.od_cylinder ||
+            item.prescription.os_sphere || item.prescription.os_cylinder ||
+            item.prescription.note
+          ))
+        ) || !!order.prescription_image;
+
+        const nextStatus = hasPrescription ? 'AWAITING_VERIFICATION' : 'CONFIRMED';
+        const statusNote = hasPrescription
+          ? `Thanh toán thành công qua VNPay (Chờ kỹ thuật viên xác minh đơn kính - Mã GD: ${order.transaction_id || vnp_Params['vnp_TransactionNo'] || ''})`
+          : `Thanh toán thành công qua VNPay (Mã GD: ${order.transaction_id || vnp_Params['vnp_TransactionNo'] || ''})`;
+
+        order.status = nextStatus;
         order.payment_status = 'PAID';
         order.transaction_id = vnp_Params['vnp_TransactionNo'] || '';
         order.paid_at = new Date();
         order.status_history.push({
           from_status: prevStatus,
-          to_status: 'CONFIRMED',
-          note: `Thanh toán thành công qua VNPay (Mã GD: ${order.transaction_id})`
+          to_status: nextStatus,
+          note: statusNote
         });
         await order.save();
         return res.redirect(`${clientUrl}/checkout/success?orderId=${orderId}&email=${userEmail}`);
@@ -250,22 +267,39 @@ class PaymentController {
         return res.status(404).json({ error_code: 'ORDER_NOT_FOUND', message: 'Không tìm thấy đơn hàng' });
       }
 
-      if (order.status === 'COMPLETED' || order.status === 'CONFIRMED') {
-        return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Đơn hàng này đã được thanh toán hoặc hoàn thành.' });
+      if (order.status === 'COMPLETED' || order.status === 'CONFIRMED' || order.status === 'AWAITING_VERIFICATION') {
+        return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Đơn hàng này đã được thanh toán hoặc đang xử lý.' });
       }
 
       const userEmail = order.user_id?.email || '';
 
       if (simulateStatus === 'SUCCESS') {
         const prevStatus = order.status;
-        order.status = 'CONFIRMED';
+
+        // Kiểm tra xem đơn hàng có chứa tròng kính / đơn thuốc hay không
+        const items = await OrderItem.find({ order_id: order._id });
+        const hasPrescription = items.some(item =>
+          item.lens_id ||
+          (item.prescription && (
+            item.prescription.od_sphere || item.prescription.od_cylinder ||
+            item.prescription.os_sphere || item.prescription.os_cylinder ||
+            item.prescription.note
+          ))
+        ) || !!order.prescription_image;
+
+        const nextStatus = hasPrescription ? 'AWAITING_VERIFICATION' : 'CONFIRMED';
+        const statusNote = hasPrescription
+          ? `Giả lập giao dịch thanh toán thành công (Chờ kỹ thuật viên xác minh đơn kính)`
+          : `Giả lập giao dịch thanh toán thành công`;
+
+        order.status = nextStatus;
         order.payment_status = 'PAID';
         order.transaction_id = 'MOCK_TXN_' + Date.now();
         order.paid_at = new Date();
         order.status_history.push({
           from_status: prevStatus,
-          to_status: 'CONFIRMED',
-          note: `Giả lập giao dịch thanh toán thành công (Mã GD: ${order.transaction_id})`
+          to_status: nextStatus,
+          note: statusNote
         });
         await order.save();
         return res.status(200).json({

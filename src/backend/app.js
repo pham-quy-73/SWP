@@ -6,6 +6,9 @@ import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
 import authRoutes from './routes/auth.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import feedbackRoutes from './routes/feedback.routes.js';
+import userRoutes from './routes/user.routes.js';
+import productRoutes from './routes/product.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -56,9 +59,12 @@ export function createApp() {
   // Auth & feature routes
   app.use('/api', apiRoutes);
 
-  // Rẽ nhánh các route root cho checkout
+  // Rẽ nhánh các route root cho checkout, feedbacks, users & products
   app.use('/orders', orderRoutes);
   app.use('/payment', paymentRoutes);
+  app.use('/feedbacks', feedbackRoutes);
+  app.use('/users', userRoutes);
+  app.use('/products', productRoutes);
 
   // 404 + centralized error handling
   app.use(notFound);

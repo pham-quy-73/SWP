@@ -1,15 +1,24 @@
+import { useEffect } from 'react';
 import { CheckoutStepper } from '../feature/checkout/components/CheckoutStepper';
 import { PaymentForm } from '../feature/checkout/components/PaymentForm';
 import { ShippingForm } from '../feature/checkout/components/ShippingForm';
 import { ReviewOrder } from '../feature/checkout/components/ReviewOrder';
 import { OrderSummary } from '../feature/checkout/components/OrderSummary';
 import { useCheckoutFlow } from '../feature/checkout/store/useCheckoutFlow';
+import { useCheckoutStore } from '../feature/checkout/store/useCheckoutStore';
 import { useCartStore } from '../feature/product/store/useCartStore';
 import { Navigate } from 'react-router-dom';
 
 export default function CheckoutPage() {
   const { items } = useCartStore();
   const { step, setStep, handleContinue, handleBack, isSubmitting } = useCheckoutFlow();
+  const resetCheckout = useCheckoutStore((state) => state.resetCheckout);
+
+  useEffect(() => {
+    if (items.length === 0) {
+      resetCheckout();
+    }
+  }, [items.length, resetCheckout]);
 
   if (items.length === 0) {
     return <Navigate to="/products" replace />;

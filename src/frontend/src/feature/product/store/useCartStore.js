@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useCheckoutStore } from '../../checkout/store/useCheckoutStore';
 
 // Giỏ không được đụng tới quá 30 ngày sẽ tự làm trống khi khôi phục,
 // tránh khách quay lại thấy giá hiển thị đã quá cũ (server vẫn là source of truth về giá).
@@ -42,13 +43,22 @@ export const useCartStore = create()(
           };
         }),
 
-      clearCart: () => set({ items: [], isOpen: false, updatedAt: Date.now() }),
+      clearCart: () => {
+        useCheckoutStore.getState().resetCheckout();
+        return set({ items: [], isOpen: false, updatedAt: Date.now() });
+      },
 
       removeFromCart: (id) =>
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== id),
-          updatedAt: Date.now(),
-        })),
+        set((state) => {
+          const newItems = state.items.filter((item) => item.id !== id);
+          if (newItems.length === 0) {
+            useCheckoutStore.getState().resetCheckout();
+          }
+          return {
+            items: newItems,
+            updatedAt: Date.now(),
+          };
+        }),
 
       updateQuantity: (id, quantity) =>
         set((state) => ({

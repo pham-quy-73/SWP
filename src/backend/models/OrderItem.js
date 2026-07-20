@@ -13,7 +13,8 @@ const PrescriptionSchema = new mongoose.Schema({
   os_axis:     { type: Number, default: 0 }, // Trục mắt trái
   os_add:      { type: Number, default: 0 }, // ADD mắt trái
   os_pd:       { type: Number, default: 0 }, // PD mắt trái
-  note:        { type: String, default: '' }
+  note:        { type: String, default: '' },
+  imageUrl:    { type: String, default: '' } // Đường dẫn ảnh đơn kính
 }, { _id: false });
 
 const OrderItemSchema = new mongoose.Schema({

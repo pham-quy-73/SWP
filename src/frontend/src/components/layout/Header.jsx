@@ -26,7 +26,7 @@ export default function Header() {
           : "bg-transparent py-6"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 flex items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center group-hover:bg-emerald-600 transition-colors duration-300">
@@ -41,16 +41,18 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-8">
           <Link
             to="/products"
-            className="text-sm font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-900 transition-colors"
+            className="ml-8 text-sm font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-900 transition-colors"
           >
             Cửa hàng
           </Link>
-          {/* <a href="#" className="text-sm font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-900 transition-colors">
-                        Bộ sưu tập
-                    </a>
-                    <a href="#" className="text-sm font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-900 transition-colors">
-                        Về chúng tôi
-                    </a> */}
+          {/* <a
+            href="#"
+            className="text-sm font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-900 transition-colors"
+          ></a>
+          <a
+            href="#"
+            className="text-sm font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-900 transition-colors"
+          ></a> */}
           {user && user.role && user.role.toUpperCase() === "ADMIN" && (
             <Link
               to="/admin"
@@ -73,7 +75,7 @@ export default function Header() {
         </div>
 
         {/* Icons & Auth */}
-        <div className="flex items-center gap-5">
+        <div className="ml-auto flex items-center gap-5">
           <div className="group relative flex items-center">
             <div className="relative">
               {" "}

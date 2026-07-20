@@ -9,16 +9,12 @@ export const profileApi = {
 
   // 2. Cập nhật thông tin cá nhân
   updateProfile: (data) => {
-    return httpClient.put('/profile', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    return httpClient.put('/api/users/me', data);
   },
 
   // 3. Thay đổi mật khẩu
   changePassword: (data) => {
-    return httpClient.post('/profile/change-password', data);
+    return httpClient.put('/api/users/me/change-password', data);
   },
 
   // 4. Lấy đơn hàng của người dùng
@@ -29,9 +25,10 @@ export const profileApi = {
     return response.data.result;
   },
 
-  // 5. Hủy đơn hàng (chỉ áp dụng cho PRE_ORDER chưa xử lý)
-  cancelOrder: (orderId) => {
-    return httpClient.put(`/orders/${orderId}/cancel`);
+  // 5. Hủy đơn hàng (chấp nhận lý do hủy từ khách)
+  cancelOrder: (orderId, reason) => {
+    const payload = typeof reason === 'string' ? { reason } : (reason || {});
+    return httpClient.put(`/orders/${orderId}/cancel`, payload);
   },
 
   // 6. Address Book — CRUD địa chỉ đã lưu (persistent)
