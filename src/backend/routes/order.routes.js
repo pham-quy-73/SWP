@@ -14,6 +14,7 @@ router.put('/:id/cancel', authenticate, OrderController.cancelOrder);
 
 // Tuyến đường xử lý cho Manager liên quan đơn hàng bị huỷ đã thanh toán
 router.get('/cancelled/paid', authenticate, requireRole(['MANAGER', 'ADMIN']), RefundController.getCancelledPaidOrders);
+router.put('/:id/reject-cancel', authenticate, requireRole(['MANAGER', 'ADMIN']), OrderController.rejectCancellation);
 
 // Yêu cầu đăng nhập tối thiểu là MANAGER hoặc ADMIN
 router.get('/', authenticate, requireRole(['MANAGER', 'ADMIN']), OrderController.getAllOrders);

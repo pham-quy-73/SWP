@@ -6,30 +6,30 @@ export const useProfileQuery = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
+  const fetchProfile = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setIsLoading(false);
+      setIsError(true);
+      return;
+    }
+
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const result = await profileApi.getProfile();
+      setData(result);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setIsLoading(false);
-        setIsError(true);
-        return;
-      }
-
-      setIsLoading(true);
-      setIsError(false);
-      try {
-        const result = await profileApi.getProfile();
-        setData(result);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProfile();
   }, []);
 
-  return { data, isLoading, isError };
+  return { data, isLoading, isError, refetch: fetchProfile };
 };

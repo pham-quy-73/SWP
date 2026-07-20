@@ -35,4 +35,10 @@ export const refundApi = {
     const res = await httpClient.post(`/api/refund/${refundId}/refund-checkout`);
     return res.data?.result || null;
   },
+
+  // Từ chối yêu cầu hủy đơn hàng
+  rejectCancellation: async (orderId, reason) => {
+    const res = await httpClient.put(`/api/refund/reject-cancel/${orderId}`, { reason });
+    return res.data?.result || null;
+  },
 };

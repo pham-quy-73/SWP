@@ -60,6 +60,77 @@ class DashboardController {
         quantity: { $lt: 10 }
       });
 
+      // 6. THỐNG KÊ SẢN PHẨM BÁN CHẠY (BEST SELLERS)
+      const validOrders = await Order.find({ status: { $ne: 'CANCELLED' } }).select('_id');
+      const validOrderIds = validOrders.map(o => o._id);
+
+      // Top Gọng kính bán chạy
+      const topProductAgg = await OrderItem.aggregate([
+        { $match: { order_id: { $in: validOrderIds } } },
+        {
+          $group: {
+            _id: '$product_id',
+            totalSold: { $sum: '$quantity' },
+            totalRevenue: { $sum: { $multiply: ['$unit_price', '$quantity'] } }
+          }
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 5 }
+      ]);
+
+      const topProducts = await Product.populate(topProductAgg, {
+        path: '_id',
+        select: 'name brand imageUrl category'
+      });
+
+      const formattedTopProducts = topProducts.map(p => {
+        const prodObj = p._id || {};
+        const rawImg = Array.isArray(prodObj.imageUrl) ? prodObj.imageUrl[0] : (prodObj.imageUrl || '');
+        return {
+          productId: prodObj._id || null,
+          name: prodObj.name || 'Sản phẩm đã xóa',
+          brand: prodObj.brand || '',
+          imageUrl: rawImg,
+          category: prodObj.category || 'FRAME',
+          totalSold: p.totalSold,
+          totalRevenue: p.totalRevenue
+        };
+      });
+
+      // Top Tròng kính được chọn nhiều nhất
+      const topLensAgg = await OrderItem.aggregate([
+        { $match: { order_id: { $in: validOrderIds }, lens_id: { $ne: null } } },
+        {
+          $group: {
+            _id: '$lens_id',
+            totalSold: { $sum: '$quantity' }
+          }
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 3 }
+      ]);
+
+      const topLenses = await Product.populate(topLensAgg, {
+        path: '_id',
+        select: 'name brand price'
+      });
+
+      const formattedTopLenses = topLenses.map(l => {
+        const lensObj = l._id || {};
+        return {
+          lensId: lensObj._id || null,
+          name: lensObj.name || 'Tròng kính mặc định',
+          brand: lensObj.brand || '',
+          price: lensObj.price || 0,
+          totalSold: l.totalSold
+        };
+      });
+
+      // Tỷ lệ đơn có cắt tròng kính thuốc vs chỉ mua gọng
+      const totalItemsCount = await OrderItem.countDocuments({ order_id: { $in: validOrderIds } });
+      const lensItemsCount = await OrderItem.countDocuments({ order_id: { $in: validOrderIds }, lens_id: { $ne: null } });
+      const prescriptionRatio = totalItemsCount > 0 ? parseFloat(((lensItemsCount / totalItemsCount) * 100).toFixed(1)) : 0;
+
       return res.status(200).json({
         code: 1000,
         message: 'Success',
@@ -69,7 +140,13 @@ class DashboardController {
           activeOrders,
           ordersToday,
           returnPending: 0,
-          lowStockItems
+          lowStockItems,
+          bestSellers: {
+            topProducts: formattedTopProducts,
+            topLenses: formattedTopLenses,
+            prescriptionRatio,
+            totalItemsSold: totalItemsCount
+          }
         }
       });
     } catch (error) {

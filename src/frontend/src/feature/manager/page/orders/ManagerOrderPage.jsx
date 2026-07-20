@@ -60,6 +60,16 @@ const fmt = (num) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
 };
 
+const getDisplayImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${apiBase}${cleanPath}`;
+};
+
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] ?? {
     label: status,
@@ -139,8 +149,8 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
   };
 
   const userObj = order.user_id || {};
-  const customerName = userObj.first_name || userObj.last_name 
-    ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() 
+  const customerName = userObj.first_name || userObj.last_name
+    ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
     : userObj.username || 'N/A';
 
   return (
@@ -183,7 +193,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                     <Phone size={14} className="text-slate-400" /> {userObj.phone || 'Chưa cung cấp SĐT'}
                   </p>
                   <p className="text-sm flex items-start gap-2 text-slate-500 font-medium leading-relaxed">
-                    <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" /> 
+                    <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
                     {userObj.email || 'N/A'}
                   </p>
                 </div>
@@ -200,7 +210,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                   <span className="text-xs text-slate-500 font-bold">Tổng doanh thu:</span>
                   <span className="font-extrabold text-lg text-slate-900">{fmt(order.total_amount)}</span>
                 </div>
-                
+
                 <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-xs text-slate-405 font-bold uppercase tracking-wider">Chọn Trạng Thái Mới</label>
                   <div className="relative">
@@ -240,7 +250,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
           </div>
 
           {/* Đơn thuốc mắt kính nếu có */}
-          {false && (order.prescription_text || order.prescription_image) && (
+          {(order.prescription_text || order.prescription_image) && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-[11px]">
                 <FileText size={16} className="text-indigo-650" /> Thông tin đơn thuốc mắt kính
@@ -254,6 +264,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                 {order.prescription_image && (
                   <div>
                     <button
+                      type="button"
                       onClick={() => setShowImagePreview(!showImagePreview)}
                       className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-805 bg-indigo-50/50 hover:bg-indigo-50 px-3 py-2 rounded-xl transition-all"
                     >
@@ -262,7 +273,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                     {showImagePreview && (
                       <div className="mt-3 border rounded-2xl overflow-hidden bg-slate-900/5 max-w-md p-1 shadow-sm">
                         <img
-                          src={order.prescription_image}
+                          src={getDisplayImageUrl(order.prescription_image)}
                           alt="Đơn thuốc kính gốc"
                           className="w-full h-auto object-contain max-h-[300px] rounded-xl bg-white"
                         />
@@ -284,7 +295,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                 <p className="text-sm text-slate-400 italic font-medium">Chưa có lịch sử cập nhật cho đơn hàng này.</p>
               ) : (
                 <div className="relative border-l border-slate-200 ml-3 pl-6 space-y-6">
-                  {order.status_history.slice().sort((a,b) => new Date(a.updated_at) - new Date(b.updated_at)).map((log, idx) => {
+                  {order.status_history.slice().sort((a, b) => new Date(a.updated_at) - new Date(b.updated_at)).map((log, idx) => {
                     const updater = log.updated_by || {};
                     const updaterName = updater.first_name || updater.last_name
                       ? `${updater.first_name || ''} ${updater.last_name || ''}`.trim()
@@ -294,7 +305,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
                       <div key={idx} className="relative">
                         {/* Checkpoint Dot */}
                         <span className="absolute -left-[30px] top-1.5 w-3.5 h-3.5 rounded-full bg-indigo-600 border-4 border-white shadow-sm" />
-                        
+
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                           <span className="text-sm font-bold text-slate-800">
                             Trạng thái: {STATUS_CONFIG[log.to_status]?.label || log.to_status}
@@ -334,30 +345,105 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
             <div className="space-y-3">
               {items.map((item) => {
                 const prod = item.product_id || {};
-                const imageUrl = Array.isArray(prod.imageUrl) && prod.imageUrl[0]
-                  ? prod.imageUrl[0]
-                  : (typeof prod.imageUrl === 'string' ? prod.imageUrl : '');
+                const variant = item.variant_id || {};
+                const lens = item.lens_id || {};
+                const p = item.prescription;
+
+                const rawUrl = Array.isArray(variant.imageUrl) && variant.imageUrl[0]
+                  ? variant.imageUrl[0]
+                  : (Array.isArray(prod.imageUrl) && prod.imageUrl[0]
+                    ? prod.imageUrl[0]
+                    : (typeof prod.imageUrl === 'string' ? prod.imageUrl : (prod.image || '')));
+                const imageUrl = getDisplayImageUrl(rawUrl);
 
                 return (
-                  <div key={item._id} className="group bg-white border border-slate-200/80 rounded-2xl p-4 hover:border-indigo-200 transition-all flex items-center justify-between gap-4 shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border overflow-hidden">
+                  <div key={item._id} className="group bg-white border border-slate-200/80 rounded-2xl p-4 hover:border-indigo-200 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border overflow-hidden mt-0.5">
                         {imageUrl ? (
                           <img src={imageUrl} alt={prod.name} className="w-full h-full object-cover" />
                         ) : (
                           <Glasses className="text-slate-350 w-6 h-6" />
                         )}
                       </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-sm leading-tight">
+                      <div className="space-y-1">
+                        <h4 className="font-extrabold text-slate-900 text-sm leading-tight flex items-center gap-2">
                           {prod.name || 'Sản phẩm mẫu'}
+                          {prod.brand && (
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              {prod.brand}
+                            </span>
+                          )}
                         </h4>
-                        <p className="text-xs text-slate-450 mt-1 font-medium">Thương hiệu: {prod.brand || '---'}</p>
+
+                        {/* Phiên bản gọng kính (Màu sắc, Size, SKU) */}
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          {variant.colorName && (
+                            <span className="font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-100/80">
+                              Màu: {variant.colorName}
+                            </span>
+                          )}
+                          {(variant.sizeLabel || (variant.lensWidthMm && variant.bridgeWidthMm && variant.templeLengthMm)) && (
+                            <span className="text-slate-600 font-medium bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200/60">
+                              Size: {variant.sizeLabel || `${variant.lensWidthMm}-${variant.bridgeWidthMm}-${variant.templeLengthMm}`}
+                            </span>
+                          )}
+                          {variant.sku && (
+                            <span className="text-slate-400 text-[10px] font-mono">
+                              SKU: {variant.sku}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Thấu kính / Tròng kính mua kèm */}
+                        {lens._id || lens.name ? (
+                          <div className="flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50/80 px-2.5 py-1 rounded-xl border border-emerald-200/60 inline-flex mt-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Tròng kính: {lens.name} {lens.brand ? `(${lens.brand})` : ''}
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-slate-400 italic font-medium">
+                            Chỉ mua gọng (không kèm tròng)
+                          </div>
+                        )}
+
+                        {/* Thông số đơn kính thuốc nếu có */}
+                        {p && (p.od_sphere || p.od_cylinder || p.os_sphere || p.os_cylinder || p.note || p.imageUrl) && (
+                          <div className="mt-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 space-y-1.5">
+                            <div className="font-extrabold text-slate-700 text-[11px] uppercase tracking-wider flex items-center gap-1">
+                              📋 Thông số kính thuốc:
+                            </div>
+
+                            {/* Trường hợp 1: Nhập số độ (OD / OS) */}
+                            {(p.od_sphere !== 0 || p.od_cylinder !== 0 || p.os_sphere !== 0 || p.os_cylinder !== 0) && (
+                              <div className="grid grid-cols-2 gap-x-4 text-[11px] font-mono text-slate-800">
+                                <div><span className="font-bold text-blue-700">OD (Phải):</span> SPH {p.od_sphere > 0 ? `+${p.od_sphere}` : p.od_sphere} | CYL {p.od_cylinder} | AX {p.od_axis}°</div>
+                                <div><span className="font-bold text-indigo-700">OS (Trái):</span> SPH {p.os_sphere > 0 ? `+${p.os_sphere}` : p.os_sphere} | CYL {p.os_cylinder} | AX {p.os_axis}°</div>
+                              </div>
+                            )}
+
+                            {/* Trường hợp 2: Tải ảnh đơn thuốc cho sản phẩm này */}
+                            {p.imageUrl && (
+                              <div className="pt-1">
+                                <a
+                                  href={getDisplayImageUrl(p.imageUrl)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 transition-colors"
+                                >
+                                  <ImageIcon size={13} /> Xem ảnh đơn kính của sản phẩm này ↗
+                                </a>
+                              </div>
+                            )}
+
+                            {p.note && <div className="text-[10px] text-amber-800 font-medium italic mt-0.5">Ghi chú: {p.note}</div>}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-slate-900">{fmt(item.unit_price * item.quantity)}</p>
-                      <p className="text-xs font-bold text-slate-450 mt-0.5 uppercase tracking-wide">
+                    <div className="text-right shrink-0">
+                      <p className="text-base font-black text-slate-900">{fmt(item.unit_price * item.quantity)}</p>
+                      <p className="text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-wide">
                         {fmt(item.unit_price)} × SL {item.quantity}
                       </p>
                     </div>
@@ -394,7 +480,7 @@ export default function ManagerOrderPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [showReadyModal, setShowReadyModal] = useState(false);
-  
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role && user.role.toUpperCase() === 'ADMIN';
 
@@ -573,8 +659,8 @@ export default function ManagerOrderPage() {
                 ) : (
                   orders.map((o) => {
                     const userObj = o.user_id || {};
-                    const customerName = userObj.first_name || userObj.last_name 
-                      ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() 
+                    const customerName = userObj.first_name || userObj.last_name
+                      ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim()
                       : userObj.username || 'Ẩn danh';
 
                     return (

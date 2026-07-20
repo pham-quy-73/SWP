@@ -23,6 +23,8 @@ class OrderController {
       // Helper: chuẩn hóa & validate prescription payload từ Client.
       // Chỉ chấp nhận đơn kính khi item có gắn tròng (lensId). Nếu không có lens,
       // prescription bị bỏ qua để tránh dữ liệu rác cho các đơn gọng-only.
+      const uploadedFileUrl = req.file ? `/uploads/${req.file.filename}` : '';
+
       const normalizePrescription = (p) => {
         if (!p || typeof p !== 'object') return null;
         const num = (v) => {
@@ -35,6 +37,10 @@ class OrderController {
           if (n < 0 || n > 180) return 0; // AXIS chỉ hợp lệ trong [0..180]
           return n;
         };
+
+        const isThisItemUsingImage = p.hasImage || (typeof p.imageUrl === 'string' && p.imageUrl.startsWith('data:'));
+        const itemImageUrl = isThisItemUsingImage ? uploadedFileUrl : '';
+
         return {
           od_sphere:   num(p.odSphere ?? p.od_sphere),
           od_cylinder: num(p.odCylinder ?? p.od_cylinder),
@@ -46,7 +52,8 @@ class OrderController {
           os_axis:     axis(p.osAxis ?? p.os_axis),
           os_add:      num(p.osAdd ?? p.os_add),
           os_pd:       num(p.osPd ?? p.os_pd),
-          note:        typeof p.note === 'string' ? p.note.trim().slice(0, 500) : ''
+          note:        typeof p.note === 'string' ? p.note.trim().slice(0, 500) : '',
+          imageUrl:    itemImageUrl
         };
       };
 
@@ -210,20 +217,44 @@ class OrderController {
             .populate('lens_id');
 
           const mappedItems = items.map(item => {
-            // SIÊU AN TOÀN: Kiểm tra kỹ từng lớp trước khi lấy dữ liệu
-            const productName = item.product_id ? item.product_id.name : 'Sản phẩm đã xóa';
-            const colorName = item.variant_id ? item.variant_id.colorName : 'Mặc định';
-            const lensName = item.lens_id ? item.lens_id.name : null;
+            const prod = item.product_id || {};
+            const variant = item.variant_id || {};
+            const lens = item.lens_id || {};
+
+            const productName = prod.name || 'Sản phẩm đã xóa';
+            const colorName = variant.colorName || 'Mặc định';
+            const sizeLabel = variant.sizeLabel || (variant.lensWidthMm ? `${variant.lensWidthMm}-${variant.bridgeWidthMm}-${variant.templeLengthMm}` : '');
+            const rawImg = (variant.imageUrl && variant.imageUrl[0]) 
+              ? variant.imageUrl[0] 
+              : (Array.isArray(prod.imageUrl) ? prod.imageUrl[0] : (prod.imageUrl || prod.image || ''));
+
+            let prescription = item.prescription ? (item.prescription.toObject ? item.prescription.toObject() : item.prescription) : null;
+            if (prescription) {
+              const odSph = prescription.od_sphere ?? prescription.odSphere ?? 0;
+              const odCyl = prescription.od_cylinder ?? prescription.odCylinder ?? 0;
+              const osSph = prescription.os_sphere ?? prescription.osSphere ?? 0;
+              const osCyl = prescription.os_cylinder ?? prescription.osCylinder ?? 0;
+              if (!prescription.imageUrl && order.prescription_image && odSph === 0 && odCyl === 0 && osSph === 0 && osCyl === 0) {
+                prescription.imageUrl = order.prescription_image;
+              }
+            }
 
             return {
               orderItemId: item._id,
-              productId: item.product_id ? item.product_id._id : null,
+              productId: prod._id || null,
               productName: productName,
+              brand: prod.brand || '',
               colorName: colorName,
-              lensId: item.lens_id ? item.lens_id._id : null,
-              lensName,
-              prescription: item.prescription || null,
-              quantity: item.quantity || 1, // Mặc định là 1 nếu lỗi
+              variantName: colorName !== 'Mặc định' ? colorName : '',
+              sizeLabel,
+              sku: variant.sku || '',
+              imageUrl: rawImg,
+              lensId: lens._id || null,
+              lensName: lens.name || null,
+              lensBrand: lens.brand || '',
+              lensPrice: lens.price || 0,
+              prescription,
+              quantity: item.quantity || 1,
               unitPrice: item.unit_price || 0,
               totalPrice: (item.unit_price || 0) * (item.quantity || 1),
               orderItemType: 'IN_STOCK'
@@ -239,6 +270,8 @@ class OrderController {
             orderName: `Đơn hàng #${shortId}`,
             orderStatus: order.status || 'PENDING',
             deliveryAddress: order.delivery_address || 'Chưa cập nhật',
+            prescription_text: order.prescription_text || '',
+            prescription_image: order.prescription_image || '',
             totalAmount: order.total_amount || 0,
             finalTotalAfterRefund: order.total_amount || 0,
             remainingAmount: order.status === 'PENDING' ? (order.total_amount || 0) : 0,
@@ -281,6 +314,7 @@ class OrderController {
   async cancelOrder(req, res, next) {
     try {
       const { id } = req.params;
+      const { reason } = req.body || {};
       const order = await Order.findById(id);
 
       if (!order) {
@@ -305,12 +339,75 @@ class OrderController {
         }
       }
 
+      const prevStatus = order.status;
       order.status = 'CANCELLED';
+      const cancelNote = reason ? `Khách hàng hủy đơn. Lý do: ${reason}` : 'Khách hàng chủ động hủy đơn hàng';
+      order.status_history.push({
+        from_status: prevStatus,
+        to_status: 'CANCELLED',
+        updated_by: req.user._id,
+        note: cancelNote
+      });
+
       await order.save();
 
       return res.status(200).json({
         code: 0,
         message: 'Hủy đơn hàng thành công',
+        result: order
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Manager / Admin từ chối yêu cầu hủy đơn hàng và phục hồi trạng thái cũ
+   */
+  async rejectCancellation(req, res, next) {
+    try {
+      const { id, orderId } = req.params;
+      const targetId = id || orderId;
+      const { reason } = req.body || {};
+      const order = await Order.findById(targetId);
+
+      if (!order) {
+        return res.status(404).json({ error_code: 'ORDER_NOT_FOUND', message: 'Không tìm thấy đơn hàng' });
+      }
+
+      if (order.status !== 'CANCELLED') {
+        return res.status(400).json({ error_code: 'INVALID_STATUS', message: 'Đơn hàng không ở trạng thái bị hủy' });
+      }
+
+      // Tìm trạng thái hợp lệ gần nhất trước khi CANCELLED (hoặc mặc định CONFIRMED)
+      const validPreviousHist = [...(order.status_history || [])].reverse().find(h => h.to_status && h.to_status !== 'CANCELLED');
+      const targetStatus = validPreviousHist ? validPreviousHist.to_status : 'CONFIRMED';
+
+      // Trừ lại kho sản phẩm do trước đó đã + kho khi cancel
+      const items = await OrderItem.find({ order_id: order._id });
+      for (const item of items) {
+        if (item.variant_id) {
+          await ProductVariant.findByIdAndUpdate(item.variant_id, {
+            $inc: { quantity: -item.quantity }
+          });
+        }
+      }
+
+      const prevStatus = order.status;
+      order.status = targetStatus;
+      const rejectNote = reason ? `Manager từ chối hủy. Lý do: ${reason}` : 'Manager từ chối yêu cầu hủy đơn';
+      order.status_history.push({
+        from_status: prevStatus,
+        to_status: targetStatus,
+        updated_by: req.user._id,
+        note: rejectNote
+      });
+
+      await order.save();
+
+      return res.status(200).json({
+        code: 0,
+        message: 'Từ chối yêu cầu hủy đơn hàng thành công',
         result: order
       });
     } catch (error) {
@@ -363,6 +460,24 @@ class OrderController {
 
       const items = await OrderItem.find({ order_id: id }).populate('product_id').populate('variant_id').populate('lens_id');
 
+      const mappedItems = items.map(item => {
+        const itemObj = item.toObject ? item.toObject() : item;
+        let p = itemObj.prescription;
+        if (p) {
+          const odSph = p.od_sphere ?? p.odSphere ?? 0;
+          const odCyl = p.od_cylinder ?? p.odCylinder ?? 0;
+          const osSph = p.os_sphere ?? p.osSphere ?? 0;
+          const osCyl = p.os_cylinder ?? p.osCylinder ?? 0;
+          if (!p.imageUrl && order.prescription_image && odSph === 0 && odCyl === 0 && osSph === 0 && osCyl === 0) {
+            p.imageUrl = order.prescription_image;
+          }
+        }
+        return {
+          ...itemObj,
+          prescription: p
+        };
+      });
+
       return res.status(200).json({
         code: 0,
         result: {
@@ -374,7 +489,7 @@ class OrderController {
           totalAmount: order.total_amount,
           orderStatus: order.status,
           order,
-          items
+          items: mappedItems
         }
       });
     } catch (error) {

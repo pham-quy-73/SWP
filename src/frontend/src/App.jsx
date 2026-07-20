@@ -12,6 +12,7 @@ import { ProfileLayout } from './feature/profile/layout/ProfileLayout';
 import ProfilePage from './feature/profile/page/ProfilePage';
 import MyOrders from './feature/profile/page/MyOrder';
 import MyAddresses from './feature/profile/page/MyAddresses';
+import MyFeedbacks from './feature/profile/page/MyFeedbacks';
 import LoginForm from './feature/auth/components/LoginForm';
 import RegisterForm from './feature/auth/components/RegisterForm';
 import { Toaster } from 'sonner';
@@ -51,6 +52,7 @@ export default function App() {
             <Route index element={<ProfilePage />} />
             <Route path="orders" element={<MyOrders />} />
             <Route path="addresses" element={<MyAddresses />} />
+            <Route path="feedbacks" element={<MyFeedbacks />} />
           </Route>
         </Route>
 

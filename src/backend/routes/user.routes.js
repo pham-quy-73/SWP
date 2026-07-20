@@ -4,8 +4,10 @@ import { authenticate, requireRole } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// Lấy thông tin cá nhân của người dùng hiện tại
+// Lấy và cập nhật thông tin cá nhân của người dùng hiện tại
 router.get('/me', authenticate, UserController.getMe);
+router.put('/me', authenticate, UserController.updateMe);
+router.put('/me/change-password', authenticate, UserController.changePassword);
 
 // Tất cả các tuyến đường phía dưới đều yêu cầu đăng nhập với vai trò ADMIN
 router.use(authenticate, requireRole(['ADMIN']));

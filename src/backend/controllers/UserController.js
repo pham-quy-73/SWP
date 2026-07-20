@@ -256,6 +256,75 @@ class UserController {
       next(error);
     }
   }
+
+  /**
+   * Cập nhật thông tin cá nhân của người dùng hiện tại
+   */
+  async updateMe(req, res, next) {
+    try {
+      const { first_name, last_name, phone, dob } = req.body;
+      const user = await User.findById(req.user._id);
+
+      if (!user) {
+        return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy người dùng' });
+      }
+
+      if (first_name !== undefined) user.first_name = first_name;
+      if (last_name !== undefined) user.last_name = last_name;
+      if (phone !== undefined) user.phone = phone;
+      if (dob !== undefined) user.dob = dob ? new Date(dob) : null;
+
+      await user.save();
+
+      const updatedUser = await User.findById(user._id).select('-password');
+      return res.status(200).json({
+        code: 0,
+        message: 'Cập nhật thông tin thành công',
+        result: updatedUser
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Thay đổi mật khẩu của người dùng hiện tại
+   */
+  async changePassword(req, res, next) {
+    try {
+      const { oldPassword, newPassword } = req.body;
+
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Vui lòng nhập đầy đủ mật khẩu cũ và mật khẩu mới' });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+      }
+
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({ error_code: 'USER_NOT_FOUND', message: 'Không tìm thấy người dùng' });
+      }
+
+      if (user.password) {
+        const isMatch = await user.comparePassword(oldPassword);
+        if (!isMatch) {
+          return res.status(400).json({ error_code: 'INVALID_PASSWORD', message: 'Mật khẩu cũ không chính xác' });
+        }
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      return res.status(200).json({
+        code: 0,
+        message: 'Đổi mật khẩu thành công'
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new UserController();

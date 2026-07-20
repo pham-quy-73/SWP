@@ -38,6 +38,9 @@ class RefundController {
         // Lấy số tiền đã thanh toán trực tiếp từ tổng giá trị đơn hàng
         const paidAmount = o.total_amount;
 
+        const cancelHistory = [...(o.status_history || [])].reverse().find(h => h.to_status === 'CANCELLED');
+        const cancelReason = cancelHistory?.note || 'Khách hàng yêu cầu hủy đơn';
+
         return {
           orderId: o._id,
           _id: o._id,
@@ -48,7 +51,8 @@ class RefundController {
           orderStatus: o.status,
           deliveryAddress: o.delivery_address,
           user_id: userObj,
-          createdAt: o.created_at
+          createdAt: o.created_at,
+          cancelReason: cancelReason
         };
       });
 

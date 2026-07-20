@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
-import { useCartStore } from '../../product/store/useCartStore'; // Đảm bảo đường dẫn import chính xác
+import { useCartStore } from '../../product/store/useCartStore';
+import { usePrescriptionStore } from '../store/usePrescriptionStore';
+import PrescriptionWidget from './PrescriptionModal';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -15,6 +17,7 @@ const getDisplayImageUrl = (imgObj) => {
 
 export default function ProductForm({ product, isLoading, onVariantChange }) {
   const { addToCart } = useCartStore();
+  const { prescription, resetPrescription } = usePrescriptionStore();
 
   const [variants, setVariants] = useState([]);
   const [selectedVariantId, setSelectedVariantId] = useState(null);
@@ -23,6 +26,7 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
   const [lenses, setLenses] = useState([]);
   const [selectedLensId, setSelectedLensId] = useState('none');
   const [isLoadingLenses, setIsLoadingLenses] = useState(false);
+  const [showManualPrescription, setShowManualPrescription] = useState(false);
 
   // Fetch Biến thể của Gọng
   useEffect(() => {
@@ -58,6 +62,15 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
 
     fetchVariants();
   }, [product]);
+
+  // Reset đơn kính thuốc khi chuyển sản phẩm
+  useEffect(() => {
+    if (typeof resetPrescription === 'function') {
+      resetPrescription();
+    }
+    setSelectedLensId('none');
+    setShowManualPrescription(false);
+  }, [product, resetPrescription]);
 
   // Fetch danh sách Tròng kính
   useEffect(() => {
@@ -129,9 +142,18 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
 
     const safeProductImage = getDisplayImageUrl(displayImageObj);
 
+    const hasPrescriptionData = selectedLens && (
+      prescription.imageUrl ||
+      prescription.od?.sphere ||
+      prescription.od?.cylinder ||
+      prescription.os?.sphere ||
+      prescription.os?.cylinder ||
+      prescription.notes
+    );
+
     const cartPayload = {
       productId: product._id || product.id,
-      variantId: selectedVariant._id || selectedVariant.id, // Đã bổ sung Variant ID
+      variantId: selectedVariant._id || selectedVariant.id,
       name: `${product.name} - ${selectedVariant.colorName}`,
       price: basePrice,
       image: safeProductImage,
@@ -140,10 +162,18 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
       lensId: selectedLens ? (selectedLens._id || selectedLens.id) : null,
       lensName: selectedLens ? selectedLens.name : null,
       lensPrice: lensPrice,
-      prescription: null,
+      prescription: hasPrescriptionData ? { ...prescription } : null,
     };
 
     addToCart(cartPayload);
+
+    // Reset store đơn kính thuốc và tròng kính về mặc định
+    if (typeof resetPrescription === 'function') {
+      resetPrescription();
+    }
+    setSelectedLensId('none');
+    setShowManualPrescription(false);
+
     toast.success('Đã thêm sản phẩm vào giỏ hàng!');
   };
 
@@ -284,6 +314,17 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
               );
             })}
           </div>
+
+          {/* 2.1 THÔNG TIN ĐƠN KÍNH THUỐC (Chỉ hiện khi khách chọn mua kèm Tròng kính) */}
+          {selectedLensId !== 'none' && (
+            <div className="mt-6 pt-4 border-t border-zinc-100 animate-in fade-in duration-300">
+              <h4 className="text-[11px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Thông tin đơn kính thuốc (Độ cận / Loạn / Ảnh đơn bác sĩ)
+              </h4>
+              <PrescriptionWidget />
+            </div>
+          )}
         </div>
       )}
 

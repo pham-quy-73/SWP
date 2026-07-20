@@ -6,6 +6,7 @@ import paymentRoutes from './payment.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 import refundRoutes from './refund.routes.js';
 import addressRoutes from './address.routes.js';
+import feedbackRoutes from './feedback.routes.js';
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.use('/payment', paymentRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/refund', refundRoutes);
 router.use('/addresses', addressRoutes);
+router.use('/feedbacks', feedbackRoutes);
 
 export default router;
 

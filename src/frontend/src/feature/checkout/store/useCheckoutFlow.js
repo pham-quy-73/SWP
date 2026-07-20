@@ -60,6 +60,7 @@ export const useCheckoutFlow = () => {
             osAxis: parseFloat(p.os?.axis) || 0,
             osAdd: parseFloat(p.os?.add) || 0,
             osPd: parseFloat(p.os?.pd) || 0,
+            hasImage: !!p.imageUrl,
             note: p.notes || '',
           };
         }

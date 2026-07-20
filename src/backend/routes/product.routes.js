@@ -44,9 +44,23 @@ router.put('/:id', authenticate, requireRole(['MANAGER', 'ADMIN']), upload.array
 // Route xóa sản phẩm (cho manager/admin) — cascade xóa variants + dọn file ảnh
 router.delete('/:id', authenticate, requireRole(['MANAGER', 'ADMIN']), ProductController.deleteProduct);
 
+const uploadExcel = multer({
+  storage: multer.diskStorage({
+    destination: 'uploads/',
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `excel-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
 // --- CÁC ROUTE CHO BIẾN THỂ SẢN PHẨM (PRODUCT VARIANTS) ---
 // Lấy danh sách biến thể
 router.get('/:productId/variants', ProductVariantController.getVariants);
+
+// Import biến thể từ Excel
+router.post('/:productId/variants/import-excel', authenticate, requireRole(['MANAGER', 'ADMIN']), uploadExcel.single('file'), ProductVariantController.importVariantsFromExcel);
 
 // Thêm mới biến thể
 router.post('/:productId/variants', authenticate, requireRole(['MANAGER', 'ADMIN']), upload.array('files'), ProductVariantController.createVariant);

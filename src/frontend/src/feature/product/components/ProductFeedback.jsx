@@ -31,8 +31,10 @@ export default function ProductFeedback({ productId }) {
                 setFeedbacks([]);
             }
         } catch (error) {
-            console.error("Error fetching product feedbacks:", error);
-            // Non-critical endpoint error (e.g. backend routes not yet deployed) - fallback gracefully
+            // Non-critical endpoint error (e.g. backend feedback routes not yet deployed) - fallback gracefully
+            if (error?.response?.status !== 404) {
+                console.error("Error fetching product feedbacks:", error);
+            }
             setFeedbacks([]);
         } finally {
             setIsLoading(false);

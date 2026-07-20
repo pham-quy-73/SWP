@@ -177,6 +177,116 @@ export default function ManagerDashboardPage() {
 
       </div>
 
+      {/* BEST-SELLER ANALYTICS SECTION (Sản Phẩm & Tròng Kính Bán Chạy) */}
+      {stats.bestSellers && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-end">
+            <div>
+              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1 rounded-full border border-amber-200/60 inline-block mb-2">
+                🔥 Top Bán Chạy & Xu Hướng
+              </span>
+              <h2 className="text-2xl font-black tracking-tight text-zinc-900">
+                Thống Kê Kính Bán Chạy Most-Popular
+              </h2>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 px-3.5 py-1.5 rounded-2xl text-xs font-bold text-emerald-800">
+              <span>👓 {stats.bestSellers.prescriptionRatio}% đơn hàng chọn cắt tròng kính</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Top 5 Gọng kính bán chạy */}
+            <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-6 md:p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] space-y-4">
+              <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900 flex items-center justify-between">
+                <span>🏆 Top 5 Gọng Kính Bán Chạy Nhất</span>
+                <span className="text-xs font-medium text-zinc-400 normal-case">Tổng sản phẩm đã bán</span>
+              </h3>
+
+              {stats.bestSellers.topProducts && stats.bestSellers.topProducts.length > 0 ? (
+                <div className="divide-y divide-zinc-100">
+                  {stats.bestSellers.topProducts.map((p, idx) => {
+                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                    const imgUrl = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : `${apiBase}${p.imageUrl.startsWith('/') ? '' : '/'}${p.imageUrl}`) : null;
+                    return (
+                      <div key={p.productId || idx} className="py-3.5 flex items-center justify-between gap-4 first:pt-0 last:pb-0 hover:bg-zinc-50/50 p-2 rounded-2xl transition-colors">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <span className={`w-7 h-7 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${
+                            idx === 0 ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                            idx === 1 ? 'bg-zinc-200 text-zinc-700' :
+                            idx === 2 ? 'bg-amber-800/10 text-amber-900' : 'bg-zinc-100 text-zinc-500'
+                          }`}>
+                            #{idx + 1}
+                          </span>
+                          {imgUrl ? (
+                            <img src={imgUrl} alt={p.name} className="w-12 h-12 rounded-xl object-cover border border-zinc-100 bg-white shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 font-bold text-xs shrink-0">Optic</div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-zinc-900 truncate">{p.name}</p>
+                            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-0.5">
+                              {p.brand || 'Thương hiệu'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-black text-zinc-900">{p.totalSold} <span className="text-xs font-medium text-zinc-400">cái</span></p>
+                          <p className="text-xs font-bold text-emerald-600">
+                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.totalRevenue)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-zinc-400 italic py-6 text-center">Chưa có dữ liệu bán hàng</p>
+              )}
+            </div>
+
+            {/* Top Tròng kính phổ biến */}
+            <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] flex flex-col justify-between space-y-6">
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900 mb-4 flex items-center gap-1.5">
+                  <span>👓 Tròng Kính Được Chuộng Nhất</span>
+                </h3>
+
+                {stats.bestSellers.topLenses && stats.bestSellers.topLenses.length > 0 ? (
+                  <div className="space-y-3">
+                    {stats.bestSellers.topLenses.map((l, idx) => (
+                      <div key={l.lensId || idx} className="p-3.5 bg-zinc-50 rounded-2xl border border-zinc-100/80 space-y-1">
+                        <div className="flex justify-between items-start">
+                          <p className="text-xs font-bold text-zinc-900 leading-snug">{l.name}</p>
+                          <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full shrink-0 ml-2">
+                            {l.totalSold} lượt
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-[11px] text-zinc-500 font-medium">
+                          <span>{l.brand || 'Chính hãng'}</span>
+                          <span className="font-bold text-zinc-700">
+                            +{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(l.price)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-400 italic py-6 text-center">Chưa có tròng kính bán ra</p>
+                )}
+              </div>
+
+              <div className="bg-indigo-50/70 p-4 rounded-2xl border border-indigo-100 space-y-1">
+                <p className="text-xs font-bold text-indigo-900">💡 Thống kê Kính Thuốc</p>
+                <p className="text-[11px] text-indigo-700 font-medium">
+                  {stats.bestSellers.prescriptionRatio}% đơn hàng có yêu cầu cắt tròng mắt kính y khoa (OD/OS).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* QUICK ACTIONS SECTION (2 Cột, thiết kế chuẩn Lookbook) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
 
