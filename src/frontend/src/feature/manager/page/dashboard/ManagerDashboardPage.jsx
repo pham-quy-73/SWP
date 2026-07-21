@@ -14,6 +14,17 @@ import {
 
 import { useDashboardRevenue } from '../../hooks/useManagerDashboard';
 
+const getDashboardImageUrl = (imgInput) => {
+  if (!imgInput) return null;
+  const url = typeof imgInput === 'string'
+    ? imgInput
+    : (Array.isArray(imgInput) ? (typeof imgInput[0] === 'string' ? imgInput[0] : imgInput[0]?.imageUrl) : (imgInput.imageUrl || imgInput.url));
+  if (!url || typeof url !== 'string') return null;
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 export default function ManagerDashboardPage() {
   const navigate = useNavigate();
   const { data: stats, isLoading, isError, refetch, isFetching } = useDashboardRevenue();
@@ -205,8 +216,7 @@ export default function ManagerDashboardPage() {
               {stats.bestSellers.topProducts && stats.bestSellers.topProducts.length > 0 ? (
                 <div className="divide-y divide-zinc-100">
                   {stats.bestSellers.topProducts.map((p, idx) => {
-                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-                    const imgUrl = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : `${apiBase}${p.imageUrl.startsWith('/') ? '' : '/'}${p.imageUrl}`) : null;
+                    const imgUrl = getDashboardImageUrl(p.imageUrl);
                     return (
                       <div key={p.productId || idx} className="py-3.5 flex items-center justify-between gap-4 first:pt-0 last:pb-0 hover:bg-zinc-50/50 p-2 rounded-2xl transition-colors">
                         <div className="flex items-center gap-3.5 min-w-0">

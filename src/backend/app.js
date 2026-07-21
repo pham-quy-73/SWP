@@ -56,15 +56,8 @@ export function createApp() {
 
   app.use('/api/auth', authRoutes);
 
-  // Auth & feature routes
+  // Auth & feature routes (all API routes unified under /api)
   app.use('/api', apiRoutes);
-
-  // Rẽ nhánh các route root cho checkout, feedbacks, users & products
-  app.use('/orders', orderRoutes);
-  app.use('/payment', paymentRoutes);
-  app.use('/feedbacks', feedbackRoutes);
-  app.use('/users', userRoutes);
-  app.use('/products', productRoutes);
 
   // 404 + centralized error handling
   app.use(notFound);

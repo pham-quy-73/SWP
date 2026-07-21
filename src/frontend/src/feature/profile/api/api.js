@@ -9,12 +9,12 @@ export const profileApi = {
 
   // 2. Cập nhật thông tin cá nhân
   updateProfile: (data) => {
-    return httpClient.put('/api/users/me', data);
+    return httpClient.put('/users/me', data);
   },
 
   // 3. Thay đổi mật khẩu
   changePassword: (data) => {
-    return httpClient.put('/api/users/me/change-password', data);
+    return httpClient.put('/users/me/change-password', data);
   },
 
   // 4. Lấy đơn hàng của người dùng
@@ -33,27 +33,27 @@ export const profileApi = {
 
   // 6. Address Book — CRUD địa chỉ đã lưu (persistent)
   getAddresses: async () => {
-    const response = await httpClient.get('/api/addresses');
+    const response = await httpClient.get('/addresses');
     return response.data.result || [];
   },
 
   createAddress: async (payload) => {
-    const response = await httpClient.post('/api/addresses', payload);
+    const response = await httpClient.post('/addresses', payload);
     return response.data.result;
   },
 
   updateAddress: async (id, payload) => {
-    const response = await httpClient.put(`/api/addresses/${id}`, payload);
+    const response = await httpClient.put(`/addresses/${id}`, payload);
     return response.data.result;
   },
 
   setDefaultAddress: async (id) => {
-    const response = await httpClient.put(`/api/addresses/${id}/default`);
+    const response = await httpClient.put(`/addresses/${id}/default`);
     return response.data.result;
   },
 
   deleteAddress: async (id) => {
-    const response = await httpClient.delete(`/api/addresses/${id}`);
+    const response = await httpClient.delete(`/addresses/${id}`);
     return response.data;
   },
 

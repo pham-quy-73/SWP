@@ -14,7 +14,10 @@ import axios from 'axios';
  *   import { httpClient } from '../lib/httpClient';
  *   const res = await httpClient.get('/api/users/me');
  */
-const baseURL = import.meta.env.VITE_API_URL || '';
+const rawBaseURL = import.meta.env.VITE_API_URL || '';
+const baseURL = rawBaseURL.endsWith('/api')
+  ? rawBaseURL
+  : `${rawBaseURL.replace(/\/+$/, '')}/api`;
 
 export const httpClient = axios.create({ baseURL, timeout: 30000 });
 

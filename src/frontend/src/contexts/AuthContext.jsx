@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
             }
 
             try {
-                const response = await httpClient.get('/api/users/me');
+                const response = await httpClient.get('/users/me');
 
                 // getMe trả { code:0, result: <user object> }
                 const serverUser = response.data?.result;
