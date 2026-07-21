@@ -203,7 +203,7 @@ export default function UserManagePage() {
                     const isAdmin = user.role === 'ADMIN';
 
                     return (
-                      <tr key={user._id} className="group hover:bg-zinc-50/80 transition-all duration-300">
+                      <tr key={user._id || user.id || `user-${index}`} className="group hover:bg-zinc-50/80 transition-all duration-300">
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-400 border border-zinc-200/60 shrink-0">

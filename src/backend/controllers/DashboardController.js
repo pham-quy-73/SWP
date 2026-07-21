@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import OrderItem from '../models/OrderItem.js';
 import Product from '../models/Product.js';
 import ProductVariant from '../models/ProductVariant.js';
 
