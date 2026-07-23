@@ -317,7 +317,7 @@ export default function UserManagePage() {
       {/* MODAL RESET PASSWORD */}
       {resetModal.isOpen && (
         <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setResetModal({ isOpen: false, userId: null, userName: '' })} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900">
               <X className="w-5 h-5" />
             </button>
@@ -347,7 +347,7 @@ export default function UserManagePage() {
       {/* MODAL TẠO TÀI KHOẢN MỚI */}
       {createModal && (
         <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setCreateModal(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900">
               <X className="w-5 h-5" />
             </button>
@@ -360,7 +360,7 @@ export default function UserManagePage() {
             <p className="text-sm text-zinc-500 mb-6">Tạo mới tài khoản nội bộ và phân quyền truy cập.</p>
 
             <div className="space-y-4 mb-6">
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text"
                   placeholder="Họ"

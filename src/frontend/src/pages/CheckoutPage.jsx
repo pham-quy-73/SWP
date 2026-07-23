@@ -25,11 +25,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] py-12 px-4 sm:px-6 lg:px-8 font-sans pt-24">
+    <div className="min-h-screen bg-[#F9FAFB] py-6 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans pt-20 sm:pt-24">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">Thanh toán</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 sm:mb-8 tracking-tight">Thanh toán</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
           {/* Cột trái */}
           <div className="lg:col-span-7 xl:col-span-8">
             <CheckoutStepper currentStep={step} />

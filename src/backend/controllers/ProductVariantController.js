@@ -120,6 +120,7 @@ class ProductVariantController {
    */
   async importVariantsFromExcel(req, res, next) {
     try {
+      const errors = [];
       const { productId } = req.params;
       const product = await Product.findById(productId);
       if (!product) return next(httpError(404, 'NOT_FOUND', 'Không tìm thấy sản phẩm'));

@@ -289,7 +289,7 @@ export default function ProductVariantManagePage() {
               <p className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Đang đồng bộ dữ liệu...</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[1000px] text-left border-collapse">
               <thead>
                 <tr className="border-b border-zinc-100 bg-zinc-50/50">
                   <th className="px-8 py-5 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">

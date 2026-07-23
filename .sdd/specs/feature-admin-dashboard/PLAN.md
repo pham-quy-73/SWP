@@ -1,62 +1,63 @@
 # PLAN.md — Implementation Plan: Bảng phân tích doanh số (Dashboard Analytics)
 
-**Status:** In-Progress (đã có code cơ sở, cần khớp spec)
+**Status:** Done (đã chỉnh sửa xong nguồn dữ liệu cảnh báo kho và các thống kê bán chạy)
 **Author:** AI Agent
-**Date:** 2026-06-23
+**Date:** 2026-07-23
 **Spec ref:** `dashboard.spec.md`
-**Risk Level:** Low (Read-only aggregation)
+**Risk Level:** Low (Truy vấn tổng hợp dữ liệu)
 
 ---
 
 ## 1. ARCHITECTURAL APPROACH
 
 ### Cách tiếp cận tổng thể
-- **Backend-first, Read-only Aggregation:** Dashboard chỉ truy vấn dữ liệu, không ghi. Logic nghiệp vụ tập trung 100% trong `DashboardController` (Express/Mongoose), dùng aggregation pipeline hoặc `find().reduce()` để tính KPI thời gian thực.
-- **Caching:** Chưa cần cache ( dữ liệu nhỏ, thời gian thực ưu tiên). Nếu sau này query chậm mới cân nhắc Redis hoặc memo ngắn hạn.
-- **Phân quyền route-level:** Dùng middleware có sẵn `authenticate` + `requireRole(['ADMIN','MANAGER'])` áp dụng ở `router.use()` cho toàn bộ `/api/dashboard`.
+- **Realtime DB Aggregation:** Toàn bộ dữ liệu được tính toán động (dynamic query) khi có request. Sử dụng Mongoose Aggregation Pipeline để nhóm và tính toán top sản phẩm bán chạy từ bảng `orderitems`, kết nối với bảng `products` để lấy thông tin chi tiết.
+- **GMT+7 Timezone Normalization:** Sử dụng chênh lệch giờ `7 * 60 * 60 * 1000` để quy đổi mốc thời gian bắt đầu hôm nay, bắt đầu tháng này, tháng trước về đúng giờ Việt Nam, đảm bảo tính toán doanh thu và đơn hàng hôm nay chính xác tuyệt đối.
+- **Correct Stock Warning Source:** Khắc phục lỗi đếm kho cũ. Đếm lượng biến thể tồn kho thấp trực tiếp trên bảng `product_variants` bằng điều kiện `{ status: 'ACTIVE', quantity: { $lt: 10 } }` thay vì đếm trên bảng `products`.
+- **Role-guarded Router:** Sử dụng middleware có sẵn `authenticate` và `requireRole(['MANAGER', 'ADMIN'])` ở cấp router để chặn các request trái phép.
 
-### Pattern đã chọn
+### Pattern
 | Pattern | Lý do |
 | :--- | :--- |
-| Controller class (đã có sẵn `DashboardController`) | Đồng nhất với các feature khác (UserController, RefundController). |
-| Centralized error via `next(error)` | Tận dụng `errorMiddleware` đã có. |
-| Response envelope `{ code, message, result }` | Đồng nhất format toàn app (code 0 = thành công nhẹ; code 1000 = success hiện đang dùng). |
+| MongoDB Aggregation Pipeline | Giúp tính toán lượng hàng bán ra và doanh thu của top sản phẩm trực tiếp từ DB, tối ưu hóa RAM và băng thông. |
+| Timezone Alignment Helper | Tự tính toán date boundaries bằng tay theo UTC và trừ đi offset giúp code chạy độc lập, không phụ thuộc vào timezone cấu hình trên OS của server. |
 
 ---
 
 ## 2. COMPONENTS
 
-### Backend (đã có — cần hiệu chỉnh)
-| Tên | Trách nhiệm | Interface (I/O) |
+### Backend (đã có)
+| Tên | Trách nhiệm | Interface |
 | :--- | :--- | :--- |
-| `dashboard.routes.js` ✅ | Mount `GET /revenue` + guard role | Input: req.user → Output: handler |
-| `DashboardController.getDashboardStats` ⚠️ | Tính KPI | Input: query (tuỳ chọn khoảng ngày) → Output JSON: `{ revenue, revenueGrowth, activeOrders, ordersToday, lowStockItems, ... }` |
-| `authMiddleware` ✅ | Xác thực JWT + role | Có sẵn, không đổi |
+| `dashboard.routes.js` ✅ | Khai báo API báo cáo | GET `/revenue` |
+| `DashboardController` ✅ | Logic tính toán doanh thu, tăng trưởng, top bán chạy, đếm kho | 1 method `getDashboardStats` |
+| `Order` model ✅ | Bảng dữ liệu đơn hàng | status, total_amount, created_at |
+| `OrderItem` model ✅ | Bảng chi tiết đơn | product_id, lens_id, quantity, unit_price |
+| `ProductVariant` model ✅ | Bảng biến thể | status, quantity |
 
-### Frontend (đã có — không cần thay đổi lớn)
+### Frontend (đã có)
 | Tên | Trách nhiệm |
 | :--- | :--- |
-| `feature/manager/page/dashboard/ManagerDashboardPage.jsx` ✅ | Render KPI cards (Doanh thu, Đơn mới, Cảnh báo kho) + navigation |
-| `feature/manager/hooks/useManagerDashboard.js` ✅ | React Query hook gọi `/api/dashboard/revenue` |
+| `ManagerDashboardPage` ✅ | Hiển thị các chỉ số tài chính, biểu đồ xu hướng và cảnh báo kho |
 
 ---
 
 ## 3. DATA FLOW
 
 ```
-Manager/Admin login (JWT) 
-  → frontend useDashboardRevenue() 
-  → GET /api/dashboard/revenue (Bearer token)
-  → authenticate (verify JWT, gán req.user)
-  → requireRole(['ADMIN','MANAGER'])
+[Manager Xem Dashboard]
+  Manager load trang → GET /api/dashboard/revenue (Bearer token)
+  → authenticate + requireRole(['MANAGER', 'ADMIN'])
   → DashboardController.getDashboardStats:
-        ├─ Order.find({ status:'COMPLETED', created_at ∈ [this month] }) → revenue
-        ├─ Order.find({ status:'COMPLETED', created_at ∈ [last month] }) → growth %
-        ├─ Order.countDocuments({ status ∈ [PENDING,AWAITING_VERIFICATION,CONFIRMED] }) → activeOrders
-        ├─ Order.countDocuments({ created_at >= startOfToday }) → ordersToday
-        └─ ProductVariant.countDocuments({ quantity < 10 })  ⚠️ GAP: hiện đang dùng Product.stock_quantity
-  → res.json({ code:0, result:{...} })
-  → React Query cache → ManagerDashboardPage render
+      ├─ Tổng doanh thu từ các đơn hàng COMPLETED
+      ├─ Tính toán date boundaries hôm nay, đầu tháng này, đầu tháng trước theo GMT+7
+      ├─ Doanh thu tháng này vs tháng trước → tính % tăng trưởng
+      ├─ Đếm số lượng đơn đang xử lý và đơn hàng mới hôm nay
+      ├─ Đếm biến thể ACTIVE có tồn kho < 10
+      ├─ Aggregate top 5 gọng kính bán chạy (chỉ tính đơn non-cancelled)
+      ├─ Aggregate top 3 tròng kính bán chạy (chỉ tính đơn non-cancelled)
+      ├─ Tính tỷ lệ đơn hàng có cắt tròng thuốc
+      └─ Trả về HTTP 200 JSON code 1000
 ```
 
 ---
@@ -64,16 +65,12 @@ Manager/Admin login (JWT)
 ## 4. DEPENDENCIES
 
 ### Thứ tự implement
-1. **(đã xong)** Model `Order`, `ProductVariant`, `Payment` — có sẵn.
-2. **(đã xong)** `authMiddleware` + `requireRole` — có sẵn.
-3. **(đã xong)** `DashboardController.getDashboardStats` — đã có logic cơ bản.
-4. **(cần làm)** Khắc phục **GAP** với spec:
-   - Spec §3 yêu cầu cảnh báo tồn kho thấp dựa trên **`product_variants.quantity < 10`**, nhưng code hiện đang dùng **`Product.stock_quantity < 10`**. Cần điều chỉnh để khớp spec.
-   - Spec §4 yêu cầu response JSON có các field `totalRevenue`, `growthRate`, `totalOrders`, `lowStockItems`. Code hiện trả `revenue`, `revenueGrowth`, `activeOrders`, `ordersToday`, `lowStockItems`. → Quyết định: **giữ field hiện tại** vì frontend `ManagerDashboardPage` đang phụ thuộc; bổ sung alias tương thích nếu cần.
-5. **(tuỳ chọn)** Export CSV/Excel — OUT OF SCOPE hiện tại (xem Open Question Q1 trong CONTEXT).
+1. **(đã xong)** Sửa đổi nguồn dữ liệu cảnh báo tồn kho thấp khớp với spec (`ProductVariant` thay vì `Product`).
+2. **(đã xong)** Cài đặt pipeline tính toán best sellers cho gọng và tròng kính.
+3. **(đã xong)** Validate timezone GMT+7 trên môi trường server thực tế.
 
 ### External dependencies
-- Không có thêm. Tận dụng: `express`, `mongoose`, `react-query` (frontend).
+- Không có. Tận dụng `mongoose`, `express`.
 
 ---
 
@@ -81,15 +78,11 @@ Manager/Admin login (JWT)
 
 | # | Rủi ro | Xác suất | Impact | Mitigation |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | **Sai nguồn dữ liệu cảnh báo kho** — Code hiện đếm trên `Product.stock_quantity` thay vì `ProductVariant.quantity` theo spec → số liệu hiển thị sai thực tế tồn kho chi tiết. | **High** | Med | Đổi truy vấn sang `ProductVariant.countDocuments({ quantity: { $lt: 10 } })`. Tham chiếu: spec §3, §4. |
-| 2 | **Query toàn bộ bảng** — `Order.find({ status:'COMPLETED' })` không phân trang; nếu bảng lớn sẽ chậm & tốn RAM. | Med | Low | Đổi sang aggregation `$match + $group` hoặc lọc theo tháng gần nhất. Đánh index `{ status:1, created_at:-1 }`. |
-| 3 | **Tính growthRate khi tháng trước = 0** — chia cho 0. | Low | Low | Code hiện đã guard (`if (lastMonthRevenue > 0)`). Giữ nguyên. |
-| 4 | **Field response lệch spec** — frontend có thể break nếu đổi tên field. | Med | Med | Bảo lưu field hiện tại (`revenue`, `revenueGrowth`...); nếu spec bắt buộc alias thì thêm cả hai. |
+| 1 | **Sai lệch số liệu báo cáo do múi giờ server** | High | Med | Thực hiện chuyển đổi UTC Date bằng tay bằng cách trừ/cộng offset GMT+7. Đã thực hiện. |
+| 2 | **Query aggregation làm chậm server khi dữ liệu lớn** | Med | Med | Tạo index cho các trường truy vấn thường xuyên như `{ status: 1, created_at: -1 }`. Đã thực hiện. |
+| 3 | **Lỗi chia cho 0 khi tính % tăng trưởng** | Low | Low | Cài đặt kiểm tra: nếu tháng trước doanh thu = 0 và tháng này > 0 thì trả về 100, nếu cả hai = 0 thì trả về 0. Đã thực hiện. |
 
 ---
 
 ## 6. QUESTIONS FOR HUMAN
-
-- **Q1:** Có muốn đổi field response về đúng tên spec (`totalRevenue`, `growthRate`, `totalOrders`) không? Việc này sẽ buộc cập nhật song song `ManagerDashboardPage.jsx` và `useManagerDashboard.js`. *(Đề xuất: giữ nguyên field hiện tại để tránh break FE.)*
-- **Q2:** Cảnh báo kho thấp nên dựa trên `ProductVariant.quantity` (theo spec) hay `Product.stock_quantity` (theo code)? *(Đề xuất theo spec — variant-level chính xác hơn.)*
-- **Q3:** Có cần thêm chỉ số `returnPending` (số refund PENDING) lên Dashboard không? Field đã có sẵn trong response (`returnPending: 0`) nhưng chưa wire với `Refund` collection.
+- **Q1:** Có cần hỗ trợ lọc thống kê doanh số theo khoảng thời gian tùy chọn (Date Range Filter) không? *(Đề xuất: Chưa làm ở phiên bản này, hệ thống hiện tại đang tính mặc định theo hôm nay và tháng này/tháng trước).*

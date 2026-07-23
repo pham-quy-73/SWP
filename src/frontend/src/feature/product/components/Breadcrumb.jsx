@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function Breadcrumb({ items }) {
   return (
-    <nav className="flex items-center text-sm text-gray-500 mb-8 overflow-hidden whitespace-nowrap">
+    <nav className="flex items-center text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap">
       <Link to="/" className="hover:text-gray-900 flex items-center gap-1">
         <Home className="w-4 h-4" /> Trang chủ
       </Link>

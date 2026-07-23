@@ -630,7 +630,7 @@ export default function ManagerOrderPage() {
 
         <div className="bg-white rounded-[32px] shadow-sm border border-slate-200/60 overflow-hidden relative">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[640px] text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
                   <th className="pl-8 pr-4 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
