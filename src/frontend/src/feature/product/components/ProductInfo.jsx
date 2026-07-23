@@ -32,7 +32,7 @@ export default function ProductInfo({ product, isLoading, isError }) {
             {product.category || 'Mắt Kính'}
           </span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-2">{product.name}</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-2">{product.name}</h1>
         <p className="text-gray-500 italic">
           {product.brand} — {product.frameMaterial || 'Chất liệu cao cấp'} và {product.shape || 'Kiểu dáng thời trang'}
         </p>

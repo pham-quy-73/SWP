@@ -128,7 +128,7 @@ export default function ProductModal({
         </div>
 
         <div className="overflow-y-auto px-8 py-8 flex-1 custom-scrollbar">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
 
             {/* CÁC TRƯỜNG CƠ BẢN (LUÔN HIỂN THỊ) */}
             <div className="col-span-2">

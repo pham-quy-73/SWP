@@ -30,7 +30,7 @@ export default function HomePage() {
                 {/* Glow Background */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-emerald-200/20 blur-3xl rounded-full pointer-events-none"></div>
 
-                <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="relative z-10 max-w-7xl mx-auto px-6 py-12 sm:py-24 grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-16 items-center">
 
                     {/* TEXT */}
                     <motion.div
@@ -43,7 +43,7 @@ export default function HomePage() {
                             SWP391 - Group4
                         </span>
 
-                        <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black leading-[0.9] tracking-[-0.06em] text-zinc-900 mb-8">
+                        <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black leading-[0.9] tracking-[-0.06em] text-zinc-900 mb-8">
                             Dẫn Đầu <br />
                             <span className="text-zinc-300">
                                 Xu Hướng.
@@ -100,12 +100,12 @@ export default function HomePage() {
             </section>
 
             {/* CATEGORY SECTION */}
-            <section className="py-32 bg-zinc-50 border-t border-zinc-100">
+            <section className="py-16 sm:py-32 bg-zinc-50 border-t border-zinc-100">
 
                 <div className="max-w-7xl mx-auto px-6">
 
                     {/* Heading */}
-                    <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
+                    <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 sm:mb-16">
 
                         <div>
                             <span className="text-xs uppercase tracking-[0.3em] text-zinc-400 font-bold">

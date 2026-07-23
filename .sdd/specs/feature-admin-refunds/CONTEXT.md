@@ -1,38 +1,41 @@
 # CONTEXT.md — Quản lý Hoàn tiền (Refunds Management Feature)
-# Người viết: @antigravity | Ngày: 2026-06-23
+# Người viết: @antigravity | Ngày: 2026-07-23
 
 ## 1. PROBLEM STATEMENT
-*   **Thiếu quy trình hoàn tất dòng tiền minh bạch:** Khi đơn hàng thanh toán qua VNPay bị hủy, nếu không kiểm soát chặt chẽ trạng thái và giá trị cần hoàn lại, hệ thống dễ rơi vào tình trạng mất mát tài chính hoặc chậm trễ trả tiền cho khách gây phản ứng xấu.
-*   **Gặp khó khăn khi dừng bán mặt hàng kính:** Khi vô hiệu hóa một biến thể không còn sản xuất, cửa hàng còn tồn đọng nhiều đơn hàng đặt trước (pre-order) hoặc đơn chờ duyệt liên quan đến nó. Nếu không có cơ chế hoàn tiền tự động theo lô (Batch), nhân viên sẽ phải thao tác hủy/sửa từng đơn một cực kỳ cực khổ.
+*   **Thất thoát doanh thu và mâu thuẫn dòng tiền:** Khi một đơn hàng đã được thanh toán bị hủy, nếu không kiểm soát chặt chẽ quy trình hoàn tiền, cửa hàng có thể quên không trả tiền cho khách hoặc trả nhầm số tiền cần hoàn, gây khiếu nại xấu.
+*   **Thao tác hủy/sửa đơn thủ công tẻ nhạt khi dừng bán sản phẩm:** Khi một biến thể sản phẩm bị ngừng kinh doanh (ngưng sản xuất, lỗi kỹ thuật), cửa hàng cần hủy hàng loạt các đơn hàng đang chờ xử lý có chứa biến thể đó. Việc đi từng đơn để hủy và tạo yêu cầu hoàn tiền cực kỳ mất thời gian và dễ sai sót.
+*   **Sai lệch trạng thái tồn kho:** Khi hủy đơn hàng phục vụ cho quy trình hoàn tiền, nếu không tự động cộng lại tồn kho cho các biến thể trong đơn, cửa hàng sẽ bị sai lệch số lượng hàng thực tế có thể bán.
 
 ---
 
 ## 2. DOMAIN KNOWLEDGE
-*   **Yêu cầu hoàn tiền (Refund request):** Bản ghi nghiệp vụ lưu trữ số tiền (`amount`), lý do (`reason`), mã đơn hàng mục tiêu (`order_id`) và trạng thái giải ngân (`status`).
-*   **Lô hoàn tiền (Batch refund):** Quy gom nhiều đơn hàng bị hủy do cùng một nguyên do (ví dụ: dừng bán variant kính mắt) thành một tập danh sách để xử lý hoàn tiền một lượt, tránh thao tác nhiều lần.
-*   **Trạng thái hoàn tiền (`Refund.status`):**
-    - `PENDING`: Mới lập yêu cầu, cần đối soát ngân hàng.
-    - `COMPLETED`: Đã thanh toán hoàn xong cho khách hàng.
-    - `FAILED`: Lỗi giao dịch.
+*   **Quy trình Hoàn tiền 5 bước (5-step refund workflow):**
+    1. Vô hiệu hóa biến thể (`ProductVariant.status = 'INACTIVE'`).
+    2. Xem danh sách đơn hàng bị ảnh hưởng (chứa sản phẩm cha của biến thể đó).
+    3. Gom đơn và tạo lô hoàn tiền hàng loạt (`createBatch`). Các đơn này chuyển sang `CANCELLED`.
+    4. Xem danh sách hoàn tiền chờ duyệt (`status = 'PENDING'`).
+    5. Manager kiểm tra tài khoản thực tế và bấm duyệt (`checkoutRefund`), chuyển Refund sang `COMPLETED`, Order sang `REFUNDED`, Payment sang `UNPAID`.
+*   **Lô hoàn tiền (Batch Refund):** Gom nhiều đơn hàng cần hoàn lại tiền vì cùng một nguyên do thành một lô để xử lý một lần, tối ưu thao tác cho Manager.
 
 ---
 
 ## 3. STAKEHOLDERS
-*   **Manager / Admin:** Gom đơn lập lô hoàn tiền, kiểm tra tài khoản VNPay Merchant/Ngân hàng để gửi tiền hoàn và phê duyệt.
-*   **Customer (Khách hàng):** Chờ nhận lại khoản tiền hoàn về tài khoản.
+*   **Manager/Admin:** Người trực tiếp thực hiện quy trình vô hiệu hóa biến thể, tạo lô hoàn tiền và phê duyệt hoàn tiền sau khi đối soát ngân hàng.
+*   **Customer:** Người nhận lại khoản tiền hoàn vào tài khoản ngân hàng của họ.
 
 ---
 
 ## 4. CONSTRAINTS (ràng buộc không thể thay đổi)
-*   **Tech:** Chỉ những người dùng có quyền `MANAGER` hoặc `ADMIN` mới có thể gọi tiếp cận API xử lý hoàn tiền.
-*   **Vòng đời đơn:** Khi một yêu cầu hoàn tiền chuyển sang `COMPLETED`, đơn hàng tương ứng phải tự động chuyển sang trạng thái `REFUNDED` để khóa quy trình xử lý đơn.
+*   **Tech:** Chỉ những tài khoản gán quyền `MANAGER` hoặc `ADMIN` mới có thể sử dụng các API hoàn tiền.
+*   **Business:** Khi một yêu cầu hoàn tiền chuyển sang `COMPLETED`, đơn hàng tương ứng phải tự động chuyển sang trạng thái `REFUNDED` và trạng thái thanh toán chuyển sang `UNPAID` để chấm dứt vòng đời đơn.
+*   **Security:** Chỉ tạo yêu cầu hoàn tiền cho các đơn hàng đã thanh toán thành công thực tế (`payment_status = 'PAID'`).
 
 ---
 
 ## 5. ASSUMPTIONS (giả định — cần confirm)
-*   Giả định rằng việc chuyển khoản hoàn tiền thực tế cho khách hàng được thực hiện thủ công hoặc qua panel Merchant VNPay, sau đó nhân viên sẽ nhấn nút Duyệt để đồng bộ trạng thái trên DB nội bộ.
+*   Giả định rằng việc chuyển tiền thực tế cho khách được thực hiện thủ công bằng chuyển khoản ngân hàng hoặc panel VNPay Merchant, hệ thống chỉ ghi nhận trạng thái DB sau khi Manager xác nhận đã chuyển tiền thành công.
 
 ---
 
 ## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)
-*   *Q1:* Có cần tích hợp trực tiếp API hoàn tiền của VNPay (VNPay Refund API) để thực hiện hoàn tiền tự động 100% tự động hay không? (Hiện tại: Xử lý mock/xác nhận đối soát thủ công).
+*   *Q1:* Có cần tích hợp trực tiếp API hoàn tiền tự động của VNPay để thực hiện chuyển khoản tự động không? (Hiện tại: Manager đối soát và bấm duyệt thủ công).

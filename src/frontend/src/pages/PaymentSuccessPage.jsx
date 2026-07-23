@@ -36,7 +36,7 @@ export const PaymentSuccessPage = () => {
             <span className="font-extrabold text-gray-800">{email}</span>.
           </p>
 
-          <div className="bg-gray-50/80 border border-gray-100 rounded-2xl p-6 mb-8 text-left grid grid-cols-2 gap-6">
+          <div className="bg-gray-50/80 border border-gray-100 rounded-2xl p-6 mb-8 text-left grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                 Mã đơn hàng
@@ -51,7 +51,7 @@ export const PaymentSuccessPage = () => {
             </div>
 
             {orderData?.totalAmount !== undefined && (
-              <div className="col-span-2 pt-4 border-t border-gray-200 flex justify-between items-center">
+              <div className="sm:col-span-2 pt-4 border-t border-gray-200 flex justify-between items-center">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                   Tổng thanh toán
                 </span>

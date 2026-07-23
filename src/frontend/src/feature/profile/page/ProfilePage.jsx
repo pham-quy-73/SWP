@@ -134,7 +134,7 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in duration-500 font-sans">
-      <div className="p-8 space-y-10">
+      <div className="p-4 sm:p-8 space-y-8 sm:space-y-10">
         {/* --- 1. PHẦN ĐẦU & ẢNH ĐẠI DIỆN --- */}
         <div className="flex flex-col md:flex-row gap-8 items-start justify-between">
           <div className="flex gap-6 items-center">
@@ -320,7 +320,7 @@ export default function ProfilePage() {
       {/* MODAL ĐỔI MẬT KHẨU */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-200 font-sans">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-6 animate-in zoom-in-95 duration-200 font-sans max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">

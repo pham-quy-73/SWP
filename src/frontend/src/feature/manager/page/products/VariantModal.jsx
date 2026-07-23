@@ -104,7 +104,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
 
         {/* BODY */}
         <div className="overflow-y-auto px-8 py-8 flex-1 custom-scrollbar">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
 
             {/* Hàng 1: Mã SKU & Tên màu */}
             <div className="col-span-2 sm:col-span-1">
@@ -145,7 +145,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
             {/* Thông số kính */}
             <div className="col-span-2 mt-2 border-t border-zinc-100 pt-6">
               <h3 className="text-sm font-bold text-zinc-900 mb-4">Thông số kỹ thuật</h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className={labelClass}>Tròng (mm)</label>
                   <input type="number" name="lensWidthMm" value={form.lensWidthMm !== undefined ? form.lensWidthMm : ''} onChange={handleChange} className={inputClass} min={0} />

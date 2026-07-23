@@ -4,7 +4,7 @@ export const CheckoutStepper = ({ currentStep }) => {
   const steps = ['1. Giao hàng', '2. Thanh toán', '3. Xem lại'];
 
   return (
-    <div className="flex border-b border-gray-100 mb-8 sm:mb-10">
+    <div className="flex border-b border-gray-100 mb-8 sm:mb-10 overflow-x-auto">
       {steps.map((step, index) => {
         const isActive = index + 1 === currentStep;
         const isCompleted = index + 1 < currentStep;

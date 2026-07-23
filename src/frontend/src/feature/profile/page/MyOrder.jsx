@@ -594,7 +594,7 @@ export default function MyOrders() {
 
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto p-6 space-y-4 font-sans">
+      <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-4 font-sans">
         <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse mb-6"></div>
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-32 bg-gray-100 rounded-2xl animate-pulse"></div>
@@ -605,7 +605,7 @@ export default function MyOrders() {
 
   if (isError) {
     return (
-      <div className="max-w-3xl mx-auto p-12 flex flex-col items-center justify-center text-center bg-gray-50 rounded-3xl mt-6 border border-gray-100 font-sans">
+      <div className="max-w-3xl mx-auto p-6 sm:p-12 flex flex-col items-center justify-center text-center bg-gray-50 rounded-3xl mt-6 border border-gray-100 font-sans">
         <AlertCircle className="w-12 h-12 text-rose-400 mb-4" />
         <h3 className="text-lg font-bold text-gray-800">Không thể tải đơn hàng</h3>
         <p className="text-sm text-gray-500 mt-1 mb-6 font-semibold">Đã có lỗi xảy ra trong quá trình lấy dữ liệu.</p>
@@ -621,7 +621,7 @@ export default function MyOrders() {
 
   if (allOrders.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto p-12 flex flex-col items-center justify-center text-center bg-gray-50/50 rounded-3xl mt-6 border border-dashed border-gray-200 font-sans">
+      <div className="max-w-3xl mx-auto p-6 sm:p-12 flex flex-col items-center justify-center text-center bg-gray-50/50 rounded-3xl mt-6 border border-dashed border-gray-200 font-sans">
         <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
           <ShoppingBag className="w-10 h-10" />
         </div>
@@ -652,7 +652,7 @@ export default function MyOrders() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 font-sans min-h-[500px]">
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 font-sans min-h-[500px]">
 
       {/* Header & Filter Dropdown */}
       <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-150 pb-4">

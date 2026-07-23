@@ -429,7 +429,7 @@ export default function ProductsPage() {
 
             {/* PAGINATION */}
             {!loading && totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-10 mt-10 border-t border-zinc-200/60">
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-10 mt-10 border-t border-zinc-200/60">
                 <button
                   type="button"
                   onClick={() => setPage(p => Math.max(1, p - 1))}

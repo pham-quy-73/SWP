@@ -27,14 +27,14 @@ const sidebarItems = [
 
 export function ProfileSidebar() {
   return (
-    <nav className="flex flex-col space-y-1 bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
+    <nav className="flex flex-row md:flex-col gap-1 md:space-y-1 overflow-x-auto md:overflow-visible bg-white p-2 md:p-4 rounded-2xl border border-gray-100 shadow-xs">
       {sidebarItems.map((item) => (
         <NavLink
           key={item.href}
           to={item.href}
           end={item.end}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all active:scale-[0.98]
+            `flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all active:scale-[0.98] whitespace-nowrap shrink-0
              ${isActive
               ? 'bg-[#1e2575]/10 text-[#1e2575] font-bold shadow-xs'
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'

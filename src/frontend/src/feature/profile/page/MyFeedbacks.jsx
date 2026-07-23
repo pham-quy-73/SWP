@@ -48,7 +48,7 @@ export default function MyFeedbacks() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6 font-sans animate-in fade-in duration-500 min-h-[450px]">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-8 space-y-6 font-sans animate-in fade-in duration-500 min-h-[450px]">
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
@@ -100,7 +100,7 @@ export default function MyFeedbacks() {
               className="p-5 border border-gray-100 bg-gray-50/40 rounded-2xl hover:border-gray-200 transition-all space-y-3"
             >
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0 flex-1">
                   <h4 className="font-bold text-gray-800 text-sm">
                     {fb.product_id?.name || fb.productName || 'Sản phẩm đã đánh giá'}
                   </h4>
@@ -109,13 +109,13 @@ export default function MyFeedbacks() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => handleEdit(fb)}
                     className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors text-xs font-bold flex items-center gap-1 cursor-pointer"
                     title="Chỉnh sửa"
                   >
-                    <Edit3 className="w-3.5 h-3.5" /> Chỉnh sửa
+                    <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Chỉnh sửa</span>
                   </button>
                   <button
                     onClick={() => handleDelete(fb._id || fb.feedbackId)}

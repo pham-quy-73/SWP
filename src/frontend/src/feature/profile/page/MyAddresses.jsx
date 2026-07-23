@@ -206,8 +206,8 @@ export default function MyAddresses() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <MapPin className="w-5 h-5 text-[#4A8795]" /> Sổ địa chỉ
@@ -218,7 +218,7 @@ export default function MyAddresses() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#4A8795] text-white text-sm font-semibold hover:bg-[#3a6b76]"
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#4A8795] text-white text-sm font-semibold hover:bg-[#3a6b76] shrink-0"
         >
           <Plus className="w-4 h-4" /> Thêm địa chỉ
         </button>
