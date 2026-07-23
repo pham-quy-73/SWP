@@ -11,9 +11,10 @@ import {
 const app = createApp();
 
 describe('GET /api/products', () => {
-  it('khách chỉ thấy sản phẩm ACTIVE, không thấy LENS', async () => {
+  it('khách chỉ thấy sản phẩm ACTIVE; tròng kính (model Lens riêng) không lẫn vào', async () => {
     await createProduct({ name: 'Active Frame', status: 'ACTIVE', category: 'FRAME' });
     await createProduct({ name: 'Inactive Frame', status: 'INACTIVE', category: 'FRAME' });
+    // Lens nằm ở collection riêng, phục vụ qua /api/lenses — không bao giờ xuất hiện ở đây
     await createLens({ name: 'Some Lens', status: 'ACTIVE' });
 
     const res = await request(app).get('/api/products');
@@ -210,11 +211,18 @@ describe('GET /api/products (bộ lọc nâng cao)', () => {
     expect(res.body.result.items[0].name).toBe('RoundMetal');
   });
 
-  it('khách truy vấn category=LENS vẫn xem được tròng kính', async () => {
+  it('tròng kính phục vụ qua /api/lenses, không qua /api/products', async () => {
     await createLens({ name: 'Progressive Lens' });
-    const res = await request(app).get('/api/products?category=LENS');
-    expect(res.status).toBe(200);
-    expect(res.body.result.items.map((p) => p.name)).toContain('Progressive Lens');
+
+    // API lens riêng trả về tròng kính (shape: { success, count, data })
+    const lensRes = await request(app).get('/api/lenses');
+    expect(lensRes.status).toBe(200);
+    expect(lensRes.body.data.map((l) => l.name)).toContain('Progressive Lens');
+
+    // API products không biết đến LENS
+    const prodRes = await request(app).get('/api/products?category=LENS');
+    expect(prodRes.status).toBe(200);
+    expect(prodRes.body.result.items).toHaveLength(0);
   });
 
   it('staff lọc theo status cụ thể (INACTIVE)', async () => {

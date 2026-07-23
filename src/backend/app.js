@@ -11,6 +11,7 @@ import userRoutes from './routes/user.routes.js';
 import productRoutes from './routes/product.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getCorsOrigins } from './utils/clientUrl.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,10 +24,8 @@ const __dirname = path.dirname(__filename);
 export function createApp() {
   const app = express();
 
-  const allowedOrigin = process.env.CLIENT_URL;
-  const origins = allowedOrigin ? allowedOrigin.split(',') : 'http://localhost:5173';
   app.use(cors({
-    origin: origins,
+    origin: getCorsOrigins(),
     credentials: true
   }));
   app.use(express.json());
@@ -58,6 +57,13 @@ export function createApp() {
 
   // Auth & feature routes (all API routes unified under /api)
   app.use('/api', apiRoutes);
+
+  // Legacy route aliases for backward compatibility and test coverage
+  app.use('/orders', orderRoutes);
+  app.use('/products', productRoutes);
+  app.use('/users', userRoutes);
+  app.use('/payment', paymentRoutes);
+  app.use('/feedback', feedbackRoutes);
 
   // 404 + centralized error handling
   app.use(notFound);

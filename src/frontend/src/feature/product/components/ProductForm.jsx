@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { ShoppingBag, CheckCircle2, Circle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCartStore } from '../../product/store/useCartStore';
 import { usePrescriptionStore } from '../store/usePrescriptionStore';
 import PrescriptionWidget from './PrescriptionModal';
@@ -27,6 +27,10 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
   const [selectedLensId, setSelectedLensId] = useState('none');
   const [isLoadingLenses, setIsLoadingLenses] = useState(false);
   const [showManualPrescription, setShowManualPrescription] = useState(false);
+
+  // NÂNG CẤP: Phân trang danh sách Tròng kính (4 tròng / trang)
+  const [lensPage, setLensPage] = useState(1);
+  const LENSES_PER_PAGE = 4;
 
   // Fetch Biến thể của Gọng
   useEffect(() => {
@@ -70,9 +74,10 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
     }
     setSelectedLensId('none');
     setShowManualPrescription(false);
+    setLensPage(1);
   }, [product, resetPrescription]);
 
-  // Fetch danh sách Tròng kính
+  // Fetch danh sách Tròng kính từ API /api/lenses mới
   useEffect(() => {
     const fetchLenses = async () => {
       if (!product || product.category === 'LENS') return;
@@ -80,12 +85,14 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
       setIsLoadingLenses(true);
       try {
         const apiURL = import.meta.env.VITE_API_URL || '';
-        const res = await axios.get(`${apiURL}/api/products`, {
-          params: { category: 'LENS', limit: 100 }
-        });
+        const res = await axios.get(`${apiURL}/api/lenses`);
 
-        if (res.data?.result?.items) {
+        if (res.data?.data) {
+          setLenses(res.data.data);
+        } else if (res.data?.result?.items) {
           setLenses(res.data.result.items);
+        } else if (Array.isArray(res.data)) {
+          setLenses(res.data);
         }
       } catch (err) {
         console.error('Error fetching lenses:', err);
@@ -102,6 +109,10 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
 
   // KIỂM TRA TỒN KHO
   const isOutOfStock = selectedVariant ? selectedVariant.quantity <= 0 : true;
+
+  // PHÂN TRANG TRÒNG KÍNH
+  const totalLensPages = Math.ceil(lenses.length / LENSES_PER_PAGE) || 1;
+  const paginatedLenses = lenses.slice((lensPage - 1) * LENSES_PER_PAGE, lensPage * LENSES_PER_PAGE);
 
   useEffect(() => {
     if (onVariantChange && selectedVariant) {
@@ -250,12 +261,39 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
       </div>
 
       {/* 2. CHỌN TRÒNG KÍNH */}
-      {(product.category === 'FRAME' || product.category === 'SUNGLASSES') && lenses.length > 0 && (
+      {(product.category === 'FRAME' || product.category === 'SUNGLASSES') && (
         <div className="space-y-4 pt-6 border-t border-zinc-100">
-          <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            2. Lựa chọn Thấu kính
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              2. Lựa chọn Thấu kính
+            </h3>
+            {totalLensPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={lensPage === 1}
+                  onClick={() => setLensPage((prev) => Math.max(prev - 1, 1))}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <span className="text-xs font-bold text-zinc-500 px-1">
+                  {lensPage}/{totalLensPages}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={lensPage === totalLensPages}
+                  onClick={() => setLensPage((prev) => Math.min(prev + 1, totalLensPages))}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col gap-3">
             <button
@@ -279,7 +317,11 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
               </div>
             </button>
 
-            {lenses.map((lens) => {
+            {isLoadingLenses ? (
+              <div className="p-6 text-center text-xs text-zinc-400 font-bold uppercase tracking-widest">
+                Đang tải danh sách tròng kính...
+              </div>
+            ) : paginatedLenses.map((lens) => {
               const lensId = lens._id || lens.id;
               const isSelected = selectedLensId === lensId;
               const currentLensPrice = lens.discountPrice || lens.price;
@@ -302,8 +344,17 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-zinc-900 text-sm">{lens.name}</p>
-                    {lens.brand && <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-1">{lens.brand}</p>}
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-zinc-900 text-sm">{lens.name}</p>
+                      {lens.material && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded border border-zinc-200">
+                          {lens.material}
+                        </span>
+                      )}
+                    </div>
+                    {lens.description && (
+                      <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{lens.description}</p>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-black text-zinc-900 text-sm">

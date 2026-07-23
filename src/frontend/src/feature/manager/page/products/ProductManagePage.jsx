@@ -8,6 +8,9 @@ import ProductModal from './ProductModal';
 import {
   useManagerProducts, useCreateManagerProduct, useUpdateManagerProduct, useDeleteManagerProduct,
 } from '../../hooks/useManagerProducts';
+import {
+  useManagerLenses, useCreateManagerLens, useUpdateManagerLens, useDeleteManagerLens
+} from '../../hooks/useManagerLenses';
 
 const ProductManagePage = () => {
   const navigate = useNavigate();
@@ -18,7 +21,7 @@ const ProductManagePage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [page, setPage] = useState(1);
-  const size = 20; // Tải 50 sản phẩm để tránh bị khuất ở trang sau
+  const size = 20;
 
   const [openActionId, setOpenActionId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,7 +49,7 @@ const ProductManagePage = () => {
     setPage(1);
   }, [activeTab, filterStatus]);
 
-  // 2. QUERY PARAMETERS ĐỂ GỌI API
+  // 2. QUERY PARAMETERS ĐỂ GỌI API GỌNG KÍNH (PRODUCTS)
   const queryParams = useMemo(() => {
     const params = {
       page: page - 1,
@@ -57,9 +60,25 @@ const ProductManagePage = () => {
     return params;
   }, [debouncedSearch, page, size, filterStatus]);
 
-  const { data, isLoading, isError, refetch } = useManagerProducts(queryParams);
+  // Fetch Gọng kính từ /api/products
+  const { data, isLoading: isLoadingProducts, isError: isErrorProducts, refetch: refetchProducts } = useManagerProducts(queryParams);
 
-  // 3. BỘ TRÍCH XUẤT DỮ LIỆU SIÊU CẤP (Quét mọi kiểu bọc dữ liệu của Backend)
+  // Fetch Tròng kính từ /api/lenses mới
+  const { lenses, isLoading: isLoadingLenses, isError: isErrorLenses, refetch: refetchLenses } = useManagerLenses({
+    search: debouncedSearch,
+    status: filterStatus
+  });
+
+  // 3. MUTATIONS CHO GỌNG KÍNH VA TRÒNG KÍNH
+  const deleteProductMutation = useDeleteManagerProduct();
+  const createProductMutation = useCreateManagerProduct();
+  const updateProductMutation = useUpdateManagerProduct();
+
+  const deleteLensMutation = useDeleteManagerLens();
+  const createLensMutation = useCreateManagerLens();
+  const updateLensMutation = useUpdateManagerLens();
+
+  // Trích xuất danh sách gọng kính
   const rawProducts = useMemo(() => {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -72,24 +91,16 @@ const ProductManagePage = () => {
     return [];
   }, [data]);
 
-  // 4. LỌC THEO TAB Ở FRONTEND
-  const products = useMemo(() => {
-    return rawProducts.filter(p => {
-      const cat = String(p.category || '').trim().toUpperCase();
-      if (activeTab === 'LENS') {
-        return cat === 'LENS';
-      }
-      return cat !== 'LENS';
-    });
-  }, [rawProducts, activeTab]);
+  // Chọn danh sách hiển thị theo Tab active
+  const displayedItems = useMemo(() => {
+    if (activeTab === 'LENS') {
+      return lenses;
+    }
+    return rawProducts.filter(p => String(p.category || '').toUpperCase() !== 'LENS');
+  }, [rawProducts, lenses, activeTab]);
 
-  // 5. CÁC HÀM XỬ LÝ (MUTATIONS)
-  const deleteMutation = useDeleteManagerProduct();
-  const createMutation = useCreateManagerProduct();
-  const updateMutation = useUpdateManagerProduct();
-
-  // Kiểm tra trạng thái loading tổng thể của các API thay đổi dữ liệu
-  const isMutating = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  const isLoading = activeTab === 'LENS' ? isLoadingLenses : isLoadingProducts;
+  const isError = activeTab === 'LENS' ? isErrorLenses : isErrorProducts;
 
   const handleClearFilters = () => {
     setSearchTerm('');
@@ -97,9 +108,17 @@ const ProductManagePage = () => {
     setPage(1);
   };
 
-  const handleDeleteProduct = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
-      deleteMutation.mutate(id, { onSuccess: () => { setOpenActionId(null); refetch(); } });
+  const handleDeleteItem = (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa mục này không?')) {
+      if (activeTab === 'LENS') {
+        deleteLensMutation.mutate(id, {
+          onSuccess: () => { setOpenActionId(null); refetchLenses(); }
+        });
+      } else {
+        deleteProductMutation.mutate(id, {
+          onSuccess: () => { setOpenActionId(null); refetchProducts(); }
+        });
+      }
     }
   };
 
@@ -115,9 +134,9 @@ const ProductManagePage = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (product) => {
-    setEditingProduct(product);
-    setModalType(product.category === 'LENS' ? 'LENS' : 'FRAME');
+  const handleOpenEdit = (item) => {
+    setEditingProduct(item);
+    setModalType(activeTab === 'LENS' || item.category === 'LENS' ? 'LENS' : 'FRAME');
     setIsModalOpen(true);
     setOpenActionId(null);
   };
@@ -129,17 +148,41 @@ const ProductManagePage = () => {
 
   const handleSubmit = (form) => {
     const finalProductData = { ...form.productData };
-    if (modalType === 'LENS') finalProductData.category = 'LENS';
 
+    // XỬ LÝ RIÊNG CHO TRÒNG KÍNH -> LƯU VÀO COLLECTION LENSES
+    if (modalType === 'LENS' || finalProductData.category === 'LENS') {
+      const lensPayload = {
+        name: finalProductData.name,
+        material: finalProductData.material || 'CR-39',
+        price: Number(finalProductData.price) || 0,
+        description: finalProductData.description || '',
+        status: finalProductData.status || 'ACTIVE'
+      };
+
+      if (editingProduct) {
+        updateLensMutation.mutate(
+          { id: editingProduct._id || editingProduct.id, payload: lensPayload },
+          { onSuccess: () => { handleCloseModal(); refetchLenses(); } }
+        );
+      } else {
+        createLensMutation.mutate(
+          lensPayload,
+          { onSuccess: () => { handleCloseModal(); refetchLenses(); } }
+        );
+      }
+      return;
+    }
+
+    // XỬ LÝ CHO GỌNG KÍNH / KÍNH MÁT -> LƯU VÀO COLLECTION PRODUCTS
     if (editingProduct) {
-      updateMutation.mutate(
+      updateProductMutation.mutate(
         { id: editingProduct._id || editingProduct.id, payload: { productData: finalProductData, files: form.files } },
-        { onSuccess: () => { handleCloseModal(); refetch(); } }
+        { onSuccess: () => { handleCloseModal(); refetchProducts(); } }
       );
     } else {
-      createMutation.mutate(
+      createProductMutation.mutate(
         { productData: finalProductData, files: form.files },
-        { onSuccess: () => { handleCloseModal(); refetch(); } }
+        { onSuccess: () => { handleCloseModal(); refetchProducts(); } }
       );
     }
   };
@@ -279,92 +322,108 @@ const ProductManagePage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-50 bg-white">
-                {products.length > 0
-                  ? products.map((product, index) => (
-                    <tr key={product._id || product.id} className="group hover:bg-zinc-50/80 transition-all duration-300">
+                {displayedItems.length > 0
+                  ? displayedItems.map((item, index) => {
+                    const itemId = item._id || item.id;
+                    const isLens = activeTab === 'LENS' || item.category === 'LENS';
 
-                      {activeTab !== 'LENS' && (
-                        <td className="px-8 py-6 align-middle">
-                          <div className="w-16 h-16 rounded-2xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                            {product.imageUrl && product.imageUrl.length > 0 ? (
-                              <img src={getDisplayImageUrl(product.imageUrl[0])} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                            ) : <ImageIcon className="w-6 h-6 text-zinc-300" />}
+                    return (
+                      <tr key={itemId} className="group hover:bg-zinc-50/80 transition-all duration-300">
+
+                        {activeTab !== 'LENS' && (
+                          <td className="px-8 py-6 align-middle">
+                            <div className="w-16 h-16 rounded-2xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                              {item.imageUrl && item.imageUrl.length > 0 ? (
+                                <img src={getDisplayImageUrl(item.imageUrl[0])} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                              ) : <ImageIcon className="w-6 h-6 text-zinc-300" />}
+                            </div>
+                          </td>
+                        )}
+
+                        <td className="px-6 py-6 align-middle">
+                          <div className="flex flex-col gap-1.5">
+                            <span
+                              onClick={() => !isLens && navigate(`/manager/products/${itemId}/variants`)}
+                              className={`font-black text-zinc-900 text-base tracking-tight ${!isLens ? 'hover:text-emerald-600 cursor-pointer' : ''}`}
+                            >
+                              {item.name}
+                            </span>
+                            {isLens ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded border border-zinc-200">
+                                  {item.material || 'CR-39'}
+                                </span>
+                                {item.description && (
+                                  <span className="text-xs text-zinc-400 line-clamp-1">{item.description}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
+                                Thương hiệu: {item.brand}
+                              </span>
+                            )}
                           </div>
                         </td>
-                      )}
 
-                      <td className="px-6 py-6 align-middle">
-                        <div className="flex flex-col gap-2">
-                          <span
-                            onClick={() => activeTab === 'GLASSES' && navigate(`/manager/products/${product._id || product.id}/variants`)}
-                            className={`font-black text-zinc-900 text-base tracking-tight ${activeTab === 'GLASSES' ? 'hover:text-emerald-600 cursor-pointer' : ''}`}
-                          >
-                            {product.name}
+                        <td className="px-6 py-6 align-middle">
+                          <span className="font-bold text-zinc-900 text-sm">{(item.price || 0).toLocaleString('vi-VN')} ₫</span>
+                        </td>
+
+                        <td className="px-6 py-6 align-middle text-center">
+                          <span className={`inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border ${getCategoryBadge(isLens ? 'LENS' : item.category)}`}>
+                            {categoryMap[isLens ? 'LENS' : item.category?.toUpperCase()] || 'Khác'}
                           </span>
-                          <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
-                            Thương hiệu: {product.brand}
+                        </td>
+
+                        <td className="px-6 py-6 align-middle text-center">
+                          <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase border gap-1.5 ${getStatusBadge(item.status)}`}>
+                            {item.status === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>}
+                            {item.status === 'ACTIVE' ? 'Hiển thị' : 'Đã ẩn'}
                           </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td className="px-6 py-6 align-middle">
-                        <span className="font-bold text-zinc-900 text-sm">{(product.price || 0).toLocaleString('vi-VN')} ₫</span>
-                      </td>
+                        <td className="px-6 py-6 align-middle text-center">
+                          <div className="flex items-center justify-center relative" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setOpenActionId(openActionId === itemId ? null : itemId)}
+                              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${openActionId === itemId ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'}`}
+                            >
+                              <MoreHorizontal className="w-5 h-5" />
+                            </button>
 
-                      <td className="px-6 py-6 align-middle text-center">
-                        <span className={`inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border ${getCategoryBadge(product.category)}`}>
-                          {categoryMap[product.category?.toUpperCase()] || 'Khác'}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-6 align-middle text-center">
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase border gap-1.5 ${getStatusBadge(product.status)}`}>
-                          {product.status === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>}
-                          {product.status === 'ACTIVE' ? 'Hiển thị' : 'Đã ẩn'}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-6 align-middle text-center">
-                        <div className="flex items-center justify-center relative" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => setOpenActionId(openActionId === (product._id || product.id) ? null : (product._id || product.id))}
-                            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${openActionId === (product._id || product.id) ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'}`}
-                          >
-                            <MoreHorizontal className="w-5 h-5" />
-                          </button>
-
-                          {openActionId === (product._id || product.id) && (
-                            <div className={`absolute right-0 w-52 bg-white border border-zinc-100 rounded-2xl shadow-xl z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${index >= products.length - 2 && index > 1 ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right'}`}>
-                              <div className="px-5 py-2 border-b border-zinc-50 mb-1">
-                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Thao tác</p>
-                              </div>
-                              {product.category !== 'LENS' && (
+                            {openActionId === itemId && (
+                              <div className={`absolute right-0 w-52 bg-white border border-zinc-100 rounded-2xl shadow-xl z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${index >= displayedItems.length - 2 && index > 1 ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right'}`}>
+                                <div className="px-5 py-2 border-b border-zinc-50 mb-1">
+                                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Thao tác</p>
+                                </div>
+                                {!isLens && (
+                                  <button
+                                    onClick={() => navigate(`/manager/products/${itemId}/variants`)}
+                                    className="w-full px-5 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-emerald-600 flex items-center gap-3 font-semibold"
+                                  >
+                                    <Eye className="w-4 h-4" /> Quản lý Biến thể
+                                  </button>
+                                )}
                                 <button
-                                  onClick={() => navigate(`/manager/products/${product._id || product.id}/variants`)}
-                                  className="w-full px-5 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-emerald-600 flex items-center gap-3 font-semibold"
+                                  onClick={() => handleOpenEdit(item)}
+                                  className="w-full px-5 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 flex items-center gap-3 font-semibold"
                                 >
-                                  <Eye className="w-4 h-4" /> Quản lý Biến thể
+                                  <Edit className="w-4 h-4" /> Chỉnh sửa
                                 </button>
-                              )}
-                              <button
-                                onClick={() => handleOpenEdit(product)}
-                                className="w-full px-5 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 flex items-center gap-3 font-semibold"
-                              >
-                                <Edit className="w-4 h-4" /> Chỉnh sửa
-                              </button>
-                              <div className="h-px bg-zinc-100 my-1 mx-3"></div>
-                              <button
-                                onClick={() => handleDeleteProduct(product._id || product.id)}
-                                className="w-full px-5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 font-semibold"
-                              >
-                                <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                                <div className="h-px bg-zinc-100 my-1 mx-3"></div>
+                                <button
+                                  onClick={() => handleDeleteItem(itemId)}
+                                  className="w-full px-5 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 font-semibold"
+                                >
+                                  <Trash2 className="w-4 h-4" /> Xóa vĩnh viễn
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                   : !isError && (
                     <tr>
                       <td colSpan={activeTab === 'LENS' ? 5 : 6} className="px-6 py-32 text-center">

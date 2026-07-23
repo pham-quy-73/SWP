@@ -44,6 +44,7 @@ Follow these structured steps when conducting a code review or auditing producti
 ## Step 7: Sub-Agent Execution & Verification Task Breakdown
 
 When running a production review across large projects:
+
 - **Browser Sub-Agent**: Use browser sub-agents to verify UI workflows (e.g. checkout, prescription image view, manager dashboard widgets).
 - **Backend Route Review Sub-Agent**: Parallelize inspection of backend API controllers (`OrderController.js`, `DashboardController.js`, `RefundController.js`).
 - **Frontend State Review Sub-Agent**: Parallelize inspection of frontend store hooks (`useCheckoutFlow.js`, `usePrescriptionStore.js`, `useCartStore.js`).
@@ -55,11 +56,9 @@ When running a production review across large projects:
 - [ ] **Auth**: JWT verification present on protected routes (`auth.js`).
 - [ ] **RBAC**: Customer vs Manager vs Admin permission validation present.
 - [ ] **Transactions**: Multi-document operations (Order creation + stock update) use MongoDB session transactions.
-- [ ] **File Upload**: Multer MIME filter, file size limit (5MB), and filename sanitization enforced.
+- [ ] **File Upload**: Multer MIME filter, file size limit (5MB), and filename sanitization , only accept PNG/JPEG/WEBP,.
 - [ ] **Static Assets**: Helper `getDisplayImageUrl` properly resolves relative and absolute server URLs without 404s.
 - [ ] **Error Handling**: Standardized JSON error response (`code`, `message`) returned without sensitive stack trace leaks in production.
 - [ ] **Prescription Flow**: Single and multi-item orders properly separate image uploads vs manual OD/OS diopter inputs.
 - [ ] **State Cleanup**: Zustand stores (`usePrescriptionStore`) reset form data when changing products or submitting orders.
 - [ ] **Dashboard Metrics**: Analytics endpoints filter out cancelled orders and compute top products & lenses accurately.
-
-

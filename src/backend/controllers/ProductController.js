@@ -53,12 +53,11 @@ class ProductController {
         query.status = 'ACTIVE';
       }
 
-      // 2. Ẩn tròng kính (LENS) khỏi danh mục chung với khách hàng.
-      // Truyền đích danh category=LENS (popup chọn tròng) vẫn lấy được.
+      // 2. Lọc theo danh mục nếu client chỉ định.
+      // Tròng kính (Lens) là model riêng, phục vụ qua /api/lenses — API sản phẩm
+      // chỉ trả về gọng/kính râm, không còn dính dáng gì tới LENS.
       if (category) {
         query.category = category;
-      } else if (!staff) {
-        query.category = { $ne: 'LENS' };
       }
 
       // 3. Các bộ lọc khác

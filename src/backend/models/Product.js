@@ -38,11 +38,12 @@ const ProductSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['FRAME', 'SUNGLASSES', 'LENS'],
+    // Tròng kính (Lens) là model riêng (models/Lens.js) — Product chỉ còn gọng/kính râm.
+    enum: ['FRAME', 'SUNGLASSES'],
     required: true,
     default: 'FRAME'
   },
-  // Các trường của Gọng kính được thả lỏng, tự do nhận chuỗi rỗng khi tạo Tròng kính
+  // Các trường của Gọng kính được thả lỏng, tự do nhận chuỗi rỗng
   frameType: { type: String, default: '' },
   gender: { type: String, default: '' },
   shape: { type: String, default: '' },

@@ -35,7 +35,7 @@ const OrderItemSchema = new mongoose.Schema({
   },
   lens_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
+    ref: 'Lens',
     default: null
   },
   quantity: {

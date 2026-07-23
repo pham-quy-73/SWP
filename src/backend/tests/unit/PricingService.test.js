@@ -105,7 +105,7 @@ describe('PricingService.priceOrderItem', () => {
       });
     });
 
-    it('throws INVALID_LENS when lensId is not a LENS category', async () => {
+    it('throws INVALID_LENS when lensId points to a non-Lens document', async () => {
       const product = await createProduct();
       const variant = await createVariant(product, { price: 1000 });
       const notLens = await createProduct({ category: 'FRAME' });

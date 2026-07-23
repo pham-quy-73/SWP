@@ -7,6 +7,7 @@ import dashboardRoutes from './dashboard.routes.js';
 import refundRoutes from './refund.routes.js';
 import addressRoutes from './address.routes.js';
 import feedbackRoutes from './feedback.routes.js';
+import lensRoutes from './lens.routes.js';
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/products', productRoutes);
+router.use('/lenses', lensRoutes);
 router.use('/users', userRoutes);
 router.use('/orders', orderRoutes);
 router.use('/management/orders', orderRoutes);

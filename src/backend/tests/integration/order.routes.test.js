@@ -429,3 +429,119 @@ describe('DELETE /orders/:id', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('PUT /orders/:id/items/:itemId/prescription (KTV sửa đơn kính)', () => {
+  const rx = {
+    odSphere: -2.25, odCylinder: -0.5, odAxis: 90, odAdd: 0, odPd: 31,
+    osSphere: -2.0, osCylinder: -0.75, osAxis: 85, osAdd: 0, osPd: 31,
+    note: 'KTV đã đối chiếu lại với khách'
+  };
+
+  async function setupLensOrder(status = 'AWAITING_VERIFICATION') {
+    const user = await createCustomer();
+    const product = await createProduct();
+    const variant = await createVariant(product);
+    const lens = await createLens();
+    const order = await createOrder(user, { status, payment_status: 'PAID' });
+    const item = await createOrderItem(order, {
+      product_id: product._id,
+      variant_id: variant._id,
+      lens_id: lens._id,
+      prescription: { od_sphere: -1, os_sphere: -1 }
+    });
+    return { user, order, item };
+  }
+
+  it('customer không được sửa -> 403', async () => {
+    const { user, order, item } = await setupLensOrder();
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${item._id}/prescription`)
+      .set(authHeader(user))
+      .send({ prescription: rx });
+    expect(res.status).toBe(403);
+  });
+
+  it('manager sửa thành công khi đơn AWAITING_VERIFICATION + ghi audit history', async () => {
+    const manager = await createManager();
+    const { order, item } = await setupLensOrder();
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${item._id}/prescription`)
+      .set(authHeader(manager))
+      .send({ prescription: rx, note: 'Khách đọc nhầm SPH' });
+
+    expect(res.status).toBe(200);
+    const reloadedItem = await OrderItem.findById(item._id);
+    expect(reloadedItem.prescription.od_sphere).toBe(-2.25);
+    expect(reloadedItem.prescription.od_axis).toBe(90);
+    expect(reloadedItem.prescription.note).toBe('KTV đã đối chiếu lại với khách');
+
+    const reloadedOrder = await Order.findById(order._id);
+    // Trạng thái không đổi, nhưng có audit entry mới
+    expect(reloadedOrder.status).toBe('AWAITING_VERIFICATION');
+    const lastHist = reloadedOrder.status_history[reloadedOrder.status_history.length - 1];
+    expect(lastHist.note).toContain('KTV cập nhật đơn kính');
+    expect(lastHist.note).toContain('Khách đọc nhầm SPH');
+  });
+
+  it('chuẩn hóa thông số: AXIS ngoài [0..180] -> 0, số hỏng -> 0', async () => {
+    const manager = await createManager();
+    const { order, item } = await setupLensOrder();
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${item._id}/prescription`)
+      .set(authHeader(manager))
+      .send({ prescription: { ...rx, odAxis: 250, osSphere: 'abc' } });
+
+    expect(res.status).toBe(200);
+    const reloaded = await OrderItem.findById(item._id);
+    expect(reloaded.prescription.od_axis).toBe(0);
+    expect(reloaded.prescription.os_sphere).toBe(0);
+  });
+
+  it('đơn không ở AWAITING_VERIFICATION -> 400 INVALID_STATUS', async () => {
+    const manager = await createManager();
+    const { order, item } = await setupLensOrder('CONFIRMED');
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${item._id}/prescription`)
+      .set(authHeader(manager))
+      .send({ prescription: rx });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('INVALID_STATUS');
+  });
+
+  it('item không gắn tròng -> 400 NO_LENS', async () => {
+    const manager = await createManager();
+    const user = await createCustomer();
+    const product = await createProduct();
+    const order = await createOrder(user, { status: 'AWAITING_VERIFICATION', payment_status: 'PAID' });
+    const frameOnlyItem = await createOrderItem(order, { product_id: product._id });
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${frameOnlyItem._id}/prescription`)
+      .set(authHeader(manager))
+      .send({ prescription: rx });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('NO_LENS');
+  });
+
+  it('item không thuộc đơn -> 404 ITEM_NOT_FOUND', async () => {
+    const manager = await createManager();
+    const { order } = await setupLensOrder();
+    const { item: otherItem } = await setupLensOrder();
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${otherItem._id}/prescription`)
+      .set(authHeader(manager))
+      .send({ prescription: rx });
+    expect(res.status).toBe(404);
+    expect(res.body.error_code).toBe('ITEM_NOT_FOUND');
+  });
+
+  it('thiếu payload prescription -> 400 VALIDATION_ERROR', async () => {
+    const manager = await createManager();
+    const { order, item } = await setupLensOrder();
+    const res = await request(app)
+      .put(`/orders/${order._id}/items/${item._id}/prescription`)
+      .set(authHeader(manager))
+      .send({});
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+});

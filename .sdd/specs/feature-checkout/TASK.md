@@ -1,9 +1,9 @@
 # TASK.md — Checkout & Thanh toán (Checkout Feature Task List)
 
 ## A. THIẾT KẾ DATA SCHEMAS & LOGIC TÍNH LƯỢNG
-- [x] Tạo Schema Mongoose `Order` (gồm 6 status và đối phụ `paymentInfo` nhúng)
-- [x] Tạo Schema Mongoose `OrderItem`
-- [x] Tạo API endpoint `/payment/orders/requirement` tính giá trị hàng trước khi checkout
+- [x] Tạo Schema Mongoose `Order` (6 status; flat fields snake_case: `payment_status`, `transaction_id`, `paid_at`, `bank_info`, `status_history[]`)
+- [x] Tạo Schema Mongoose `OrderItem` (kèm `PrescriptionSchema` nhúng khi item có `lens_id`)
+- [x] Tạo API endpoint `POST /api/payment/orders/requirement` báo giá trước checkout (dùng chung PricingService)
 
 ## B. ĐẶT ĐƠN HÀNG & PHẢN HỒI KHO HÀNG (ATOMIC UPDATES)
 - [x] Lập trình `OrderController.createOrder` nhận Multipart (ảnh toa kính thuốc)
@@ -11,10 +11,14 @@
 - [x] Tạo router `POST /orders/create`
 
 ## C. TÍCH HỢP CỔNG VNPAYmerchant
-- [x] Xây dựng helper tạo URL thanh toán VNPay gửi đi
-- [x] Tạo endpoint khởi tạo link thanh toán `POST /payment/checkout`
-- [x] Viết logic callback kiểm tra chữ ký `vnp_SecureHash` tại `GET /payment/vnpay-callback`
-- [x] Tự động cập nhật `CONFIRMED` khi thanh toán thành công, hoặc `CANCELLED` (hoàn kho) khi lỗi giao dịch
+- [x] Xây dựng helper tạo URL thanh toán VNPay gửi đi (ký SHA512, base path `/api/payment/checkout`)
+- [x] Tạo endpoint khởi tạo link thanh toán `POST /api/payment/checkout`
+- [x] Viết logic callback kiểm tra chữ ký `vnp_SecureHash` tại `GET /api/payment/vnpay-callback`
+- [x] Đối chiếu số tiền `vnp_Amount === total_amount*100` và guard chỉ xử lý đơn `PENDING` (chống double-processing)
+- [x] Chọn trạng thái sau thanh toán: `AWAITING_VERIFICATION` (đơn có tròng/đơn thuốc) hoặc `CONFIRMED` (còn lại); đặt `payment_status=PAID`
+- [x] Chữ ký sai / số tiền lệch → redirect failure, KHÔNG đổi trạng thái đơn
+- [x] `vnp_ResponseCode != '00'` → chuyển đơn `CANCELLED`
+- [x] Endpoint mô phỏng dev-only `POST /api/payment/mock-checkout` (chặn 403 ở production)
 
 ## D. TỰ ĐỘNG DỌN DẸP KHO TREO (WORKER)
 - [x] Viết hàm `startOrderStatusCleanupJob` thực hiện quét các đơn `PENDING` quá 15 phút

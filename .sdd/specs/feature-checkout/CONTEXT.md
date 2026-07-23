@@ -8,7 +8,7 @@
 ---
 
 ## 2. DOMAIN KNOWLEDGE
-*   **Hóa đơn mua hàng (Order):** Phiếu ghi nhận thông tin bán hàng (gồm 6 trạng thái vòng đời).
+*   **Hóa đơn mua hàng (Order):** Phiếu ghi nhận thông tin bán hàng với 6 trạng thái vòng đời: `PENDING`, `AWAITING_VERIFICATION`, `CONFIRMED`, `COMPLETED`, `CANCELLED`, `REFUNDED`. Đơn có gắn tròng kính đi qua `AWAITING_VERIFICATION` (chờ kỹ thuật viên xác minh đơn kính) trước khi `CONFIRMED`. Thông tin thanh toán lưu bằng các trường phẳng (`payment_status`, `transaction_id`, `paid_at`) chứ không nhúng object `paymentInfo`.
 *   **Tên miền VNPay Sandbox:** Cổng thanh toán giả lập trực tuyến phục vụ kiểm thử tích điểm giao dịch.
 *   **Chữ ký bảo mật (vnp_SecureHash):** Chuỗi ký SHA512 đảm bảo tính toàn vẹn dữ liệu truyền nhận giữa máy chủ Optics và VNPay.
 *   **Worker dọn dẹp nền (Cleanup Job):** Tiến trình ngầm tự động tìm kiếm để giải phóng các đơn hàng treo chưa thanh toán.
