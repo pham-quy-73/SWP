@@ -78,6 +78,12 @@ const ProductManagePage = () => {
   const createLensMutation = useCreateManagerLens();
   const updateLensMutation = useUpdateManagerLens();
 
+  const isMutating =
+    createProductMutation.isPending ||
+    updateProductMutation.isPending ||
+    createLensMutation.isPending ||
+    updateLensMutation.isPending;
+
   // Trích xuất danh sách gọng kính
   const rawProducts = useMemo(() => {
     if (!data) return [];
