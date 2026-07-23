@@ -106,12 +106,13 @@ describe('[SYSTEM] Hành trình khách hàng: đăng ký → mua hàng → thanh
     expect(pay.status).toBe(200);
     expect(pay.body.result.success).toBe(true);
 
-    // --- 8. Khách xem lại đơn: đã CONFIRMED + PAID ---
+    // --- 8. Khách xem lại đơn: đơn có tròng -> AWAITING_VERIFICATION + PAID
+    // (chờ kỹ thuật viên xác minh đơn kính; đơn chỉ gọng mới về thẳng CONFIRMED) ---
     const myOrders = await request(app).get('/orders/me').set(bearer(token));
     expect(myOrders.status).toBe(200);
     const found = myOrders.body.result.items.find((o) => o.orderId === orderId);
     expect(found).toBeDefined();
-    expect(found.orderStatus).toBe('CONFIRMED');
+    expect(found.orderStatus).toBe('AWAITING_VERIFICATION');
     expect(found.items[0].lensName).toBe('Tròng chống ánh sáng xanh');
     expect(found.items[0].prescription.od_sphere).toBe(-1.5);
   });

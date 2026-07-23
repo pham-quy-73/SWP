@@ -21,6 +21,9 @@ router.get('/', authenticate, requireRole(['MANAGER', 'ADMIN']), OrderController
 router.get('/:id', authenticate, requireRole(['CUSTOMER', 'MANAGER', 'ADMIN']), OrderController.getOrderById);
 router.put('/:id/status', authenticate, requireRole(['MANAGER', 'ADMIN']), OrderController.updateOrderStatus);
 
+// KTV/Manager sửa đơn kính (prescription) của item khi đơn đang AWAITING_VERIFICATION
+router.put('/:id/items/:itemId/prescription', authenticate, requireRole(['MANAGER', 'ADMIN']), OrderController.updateItemPrescription);
+
 
 // Chỉ duy nhất ADMIN được xóa đơn hàng khỏi database
 router.delete('/:id', authenticate, requireRole(['ADMIN']), OrderController.deleteOrder);

@@ -62,6 +62,11 @@ const OrderSchema = new mongoose.Schema({
   paid_at: {
     type: Date
   },
+  // Thời điểm gần nhất khách khởi tạo link thanh toán VNPay. Cleanup job dựa vào
+  // đây để gia hạn cửa sổ hủy tự động (khách đang ở trang VNPay thì không hủy vội).
+  payment_initiated_at: {
+    type: Date
+  },
   status_history: [{
     from_status: { type: String, default: '' },
     to_status: { type: String, required: true },

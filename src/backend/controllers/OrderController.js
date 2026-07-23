@@ -4,6 +4,36 @@ import OrderItem from '../models/OrderItem.js';
 import ProductVariant from '../models/ProductVariant.js'; // BỔ SUNG: Model Biến thể để trừ kho
 import { priceOrderItem, PricingError } from '../services/PricingService.js';
 
+/**
+ * Trừ lại tồn kho khi phục hồi một đơn từ CANCELLED (reject-cancel, ADMIN
+ * override rời CANCELLED). Dùng update có điều kiện $gte — kho đã bị đơn khác
+ * mua mất thì KHÔNG trừ (tránh kho âm), tự hoàn lại các variant vừa trừ và
+ * báo thất bại để caller giữ nguyên trạng thái đơn.
+ * @returns {{ ok: true } | { ok: false, item: OrderItem }}
+ */
+async function redecrementStockForOrder(orderId) {
+  const items = await OrderItem.find({ order_id: orderId });
+  const decremented = [];
+  for (const item of items) {
+    if (!item.variant_id) continue;
+    const updated = await ProductVariant.findOneAndUpdate(
+      { _id: item.variant_id, quantity: { $gte: item.quantity } },
+      { $inc: { quantity: -item.quantity } },
+      { new: true }
+    );
+    if (!updated) {
+      for (const rollback of decremented) {
+        await ProductVariant.findByIdAndUpdate(rollback.variant_id, {
+          $inc: { quantity: rollback.quantity }
+        });
+      }
+      return { ok: false, item };
+    }
+    decremented.push(item);
+  }
+  return { ok: true };
+}
+
 class OrderController {
   /**
    * Tạo đơn hàng mới từ giỏ hàng (cho Customer)
@@ -14,8 +44,35 @@ class OrderController {
         ? JSON.parse(req.body.orderInfo)
         : req.body.orderInfo;
 
-      if (!orderInfo || !orderInfo.items || orderInfo.items.length === 0) {
+      if (!orderInfo || !Array.isArray(orderInfo.items) || orderInfo.items.length === 0) {
         return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Đơn hàng phải chứa ít nhất một sản phẩm' });
+      }
+
+      // Chặn payload bất thường: mỗi item tốn nhiều query định giá + trừ kho,
+      // đơn thật không bao giờ vượt mức này.
+      if (orderInfo.items.length > 50) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Đơn hàng không được vượt quá 50 dòng sản phẩm' });
+      }
+
+      // Chuẩn hóa thông tin người nhận: bắt buộc là chuỗi, cắt độ dài,
+      // số điện thoại (nếu gửi) phải đúng dạng VN 9-11 số.
+      const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+      const recipientName = str(orderInfo.recipientName, 100);
+      const deliveryAddress = str(orderInfo.deliveryAddress, 300);
+      const phoneNumber = str(orderInfo.phoneNumber, 15);
+      if (phoneNumber && !/^(\+84|0)\d{8,10}$/.test(phoneNumber.replace(/[\s.-]/g, ''))) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Số điện thoại không hợp lệ' });
+      }
+
+      // bank_info chỉ nhận đúng 3 trường chuỗi đã biết, bỏ mọi key lạ.
+      const rawBank = orderInfo.bankInfo || {};
+      const bankInfo = {
+        bank_name: str(rawBank.bank_name ?? rawBank.bankName, 100),
+        bank_account_number: str(rawBank.bank_account_number ?? rawBank.bankAccountNumber, 30),
+        account_holder_name: str(rawBank.account_holder_name ?? rawBank.accountHolderName, 100)
+      };
+      if (bankInfo.bank_account_number && !/^\d+$/.test(bankInfo.bank_account_number)) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Số tài khoản ngân hàng chỉ được chứa chữ số' });
       }
 
       const items = orderInfo.items;
@@ -79,37 +136,69 @@ class OrderController {
         const orderItemsToCreate = [];
 
         for (const item of items) {
+          // Validate số lượng: bắt buộc là số nguyên >= 1, chặn sớm trước khi
+          // định giá / trừ kho (quantity âm sẽ làm $inc CỘNG ngược tồn kho).
+          const qty = Number(item.quantity);
+          if (!Number.isInteger(qty) || qty < 1) {
+            throw new OrderValidationError(400, {
+              error_code: 'VALIDATION_ERROR',
+              message: `Số lượng sản phẩm không hợp lệ: ${item.quantity}. Số lượng phải là số nguyên lớn hơn hoặc bằng 1.`
+            });
+          }
+          item.quantity = qty;
+
           // Định giá qua PricingService (nguồn giá dùng chung với báo giá checkout)
           const { variant, finalUnitPrice } = await priceOrderItem(item, session);
 
-          // Kiểm tra số lượng tồn kho
-          if (variant.quantity < item.quantity) {
+          // Kiểm tra số lượng tồn kho (check sơ bộ để báo lỗi thân thiện;
+          // chốt chặn thật sự nằm ở bước trừ kho có điều kiện bên dưới)
+          if (variant.quantity < qty) {
             throw new OrderValidationError(400, {
               error_code: 'OUT_OF_STOCK',
-              message: `Phiên bản màu "${variant.colorName}" chỉ còn ${variant.quantity} sản phẩm, không đủ đáp ứng số lượng ${item.quantity}.`
+              message: `Phiên bản màu "${variant.colorName}" chỉ còn ${variant.quantity} sản phẩm, không đủ đáp ứng số lượng ${qty}.`
             });
           }
 
-          totalAmount += finalUnitPrice * item.quantity;
+          totalAmount += finalUnitPrice * qty;
           const prescription = item.lensId ? normalizePrescription(item.prescription) : null;
 
           orderItemsToCreate.push({
             product_id: variant.productId._id,
             variant_id: variant._id,
             lens_id: item.lensId || null,
-            quantity: item.quantity,
+            quantity: qty,
             unit_price: finalUnitPrice,
-            prescription
+            prescription,
+            colorName: variant.colorName
           });
         }
 
-        // 2. TRỪ TỒN KHO AN TOÀN BẰNG $inc
+        // 2. TRỪ TỒN KHO AN TOÀN: update có điều kiện quantity >= số cần trừ
+        // để chống race condition (2 đơn đồng thời cùng qua check ở trên vẫn
+        // không thể làm kho âm — đơn đến sau sẽ không match điều kiện $gte).
+        const decrementedVariantIds = [];
         for (const itemToCreate of orderItemsToCreate) {
-          await ProductVariant.findByIdAndUpdate(
-            itemToCreate.variant_id,
+          const updated = await ProductVariant.findOneAndUpdate(
+            { _id: itemToCreate.variant_id, quantity: { $gte: itemToCreate.quantity } },
             { $inc: { quantity: -itemToCreate.quantity } },
-            { session }
+            { session, new: true }
           );
+          if (!updated) {
+            // Hết hàng do đơn khác vừa trừ trước. Nếu không chạy trong transaction
+            // (standalone MongoDB) thì tự hoàn lại các variant đã trừ trước đó.
+            if (!session) {
+              for (const rollback of decrementedVariantIds) {
+                await ProductVariant.findByIdAndUpdate(rollback.variant_id, {
+                  $inc: { quantity: rollback.quantity }
+                });
+              }
+            }
+            throw new OrderValidationError(400, {
+              error_code: 'OUT_OF_STOCK',
+              message: `Phiên bản màu "${itemToCreate.colorName}" vừa hết hàng hoặc không đủ số lượng ${itemToCreate.quantity}.`
+            });
+          }
+          decrementedVariantIds.push({ variant_id: itemToCreate.variant_id, quantity: itemToCreate.quantity });
         }
 
         // 3. Tạo đối tượng Order
@@ -117,12 +206,12 @@ class OrderController {
           user_id: req.user._id,
           status: 'PENDING',
           total_amount: totalAmount,
-          recipient_name: orderInfo.recipientName,
-          phone_number: orderInfo.phoneNumber,
-          delivery_address: orderInfo.deliveryAddress,
+          recipient_name: recipientName,
+          phone_number: phoneNumber,
+          delivery_address: deliveryAddress,
           prescription_text: '',
           prescription_image: req.file ? `/uploads/${req.file.filename}` : '',
-          bank_info: orderInfo.bankInfo || { bank_name: '', bank_account_number: '', account_holder_name: '' },
+          bank_info: bankInfo,
           status_history: [{
             from_status: '',
             to_status: 'PENDING',
@@ -274,6 +363,8 @@ class OrderController {
             prescription_image: order.prescription_image || '',
             totalAmount: order.total_amount || 0,
             finalTotalAfterRefund: order.total_amount || 0,
+            // "Còn phải trả": chính sách thanh toán 100% nên chỉ đơn PENDING
+            // (chưa thu tiền) mới còn nợ toàn bộ; các trạng thái khác luôn 0.
             remainingAmount: order.status === 'PENDING' ? (order.total_amount || 0) : 0,
             items: mappedItems,
             createdAt: order.created_at || new Date()
@@ -563,7 +654,30 @@ class OrderController {
           }
         }
 
-        // 2. Ghi nhận lịch sử trạng thái mới
+        // 2. Đồng bộ tồn kho với thay đổi trạng thái (đồng nhất với cancelOrder /
+        // rejectCancellation): vào CANCELLED thì hoàn kho, rời CANCELLED (ADMIN
+        // override) thì trừ lại kho — tránh lệch tồn kho giữa các đường hủy đơn.
+        if (nextStatus === 'CANCELLED' && currentStatus !== 'CANCELLED') {
+          const orderItems = await OrderItem.find({ order_id: order._id });
+          for (const item of orderItems) {
+            if (item.variant_id) {
+              await ProductVariant.findByIdAndUpdate(item.variant_id, {
+                $inc: { quantity: item.quantity }
+              });
+            }
+          }
+        } else if (currentStatus === 'CANCELLED' && nextStatus !== 'CANCELLED') {
+          const orderItems = await OrderItem.find({ order_id: order._id });
+          for (const item of orderItems) {
+            if (item.variant_id) {
+              await ProductVariant.findByIdAndUpdate(item.variant_id, {
+                $inc: { quantity: -item.quantity }
+              });
+            }
+          }
+        }
+
+        // 3. Ghi nhận lịch sử trạng thái mới
         order.status_history.push({
           from_status: currentStatus,
           to_status: nextStatus,
@@ -581,6 +695,96 @@ class OrderController {
         code: 0,
         message: 'Cập nhật trạng thái đơn hàng thành công',
         result: order
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * KTV/Manager cập nhật đơn kính (prescription) của một OrderItem khi đơn đang
+   * chờ xác minh (AWAITING_VERIFICATION). Dùng cho ca toa thuốc nhập sai số:
+   * KTV liên hệ khách, sửa trực tiếp rồi duyệt đơn — thay vì hủy + hoàn tiền.
+   * Chỉ item có gắn tròng (lens_id) mới có prescription để sửa.
+   */
+  async updateItemPrescription(req, res, next) {
+    try {
+      const { id, itemId } = req.params;
+      const payload = req.body?.prescription;
+
+      if (!payload || typeof payload !== 'object') {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Thiếu dữ liệu đơn kính (prescription)' });
+      }
+
+      const order = await Order.findById(id);
+      if (!order) {
+        return res.status(404).json({ error_code: 'ORDER_NOT_FOUND', message: 'Không tìm thấy đơn hàng' });
+      }
+
+      // Chỉ cho sửa ở đúng cửa sổ xác minh: sau khi đã thu tiền, trước khi
+      // CONFIRMED (đơn đã chốt gia công thì không sửa toa qua đường này nữa).
+      if (order.status !== 'AWAITING_VERIFICATION') {
+        return res.status(400).json({
+          error_code: 'INVALID_STATUS',
+          message: 'Chỉ được cập nhật đơn kính khi đơn hàng đang chờ xác minh (AWAITING_VERIFICATION).'
+        });
+      }
+
+      const orderItem = await OrderItem.findOne({ _id: itemId, order_id: order._id });
+      if (!orderItem) {
+        return res.status(404).json({ error_code: 'ITEM_NOT_FOUND', message: 'Không tìm thấy sản phẩm trong đơn hàng' });
+      }
+
+      if (!orderItem.lens_id) {
+        return res.status(400).json({
+          error_code: 'NO_LENS',
+          message: 'Sản phẩm này không gắn tròng kính nên không có đơn kính để cập nhật.'
+        });
+      }
+
+      // Chuẩn hóa thông số (cùng quy tắc với normalizePrescription lúc tạo đơn:
+      // số không hợp lệ -> 0, AXIS ngoài [0..180] -> 0, note cắt 500 ký tự).
+      const num = (v) => {
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? n : 0;
+      };
+      const axis = (v) => {
+        const n = Math.round(parseFloat(v));
+        if (!Number.isFinite(n) || n < 0 || n > 180) return 0;
+        return n;
+      };
+
+      const current = orderItem.prescription || {};
+      orderItem.prescription = {
+        od_sphere:   num(payload.odSphere ?? payload.od_sphere),
+        od_cylinder: num(payload.odCylinder ?? payload.od_cylinder),
+        od_axis:     axis(payload.odAxis ?? payload.od_axis),
+        od_add:      num(payload.odAdd ?? payload.od_add),
+        od_pd:       num(payload.odPd ?? payload.od_pd),
+        os_sphere:   num(payload.osSphere ?? payload.os_sphere),
+        os_cylinder: num(payload.osCylinder ?? payload.os_cylinder),
+        os_axis:     axis(payload.osAxis ?? payload.os_axis),
+        os_add:      num(payload.osAdd ?? payload.os_add),
+        os_pd:       num(payload.osPd ?? payload.os_pd),
+        note:        typeof payload.note === 'string' ? payload.note.trim().slice(0, 500) : (current.note || ''),
+        imageUrl:    current.imageUrl || '' // ảnh toa giữ nguyên, endpoint này chỉ sửa thông số
+      };
+      await orderItem.save();
+
+      // Audit trail: ghi vào status_history của đơn (trạng thái không đổi).
+      order.status_history.push({
+        from_status: order.status,
+        to_status: order.status,
+        updated_by: req.user._id,
+        updated_at: new Date(),
+        note: `KTV cập nhật đơn kính cho sản phẩm ${orderItem._id}${req.body.note ? `. Lý do: ${req.body.note}` : ''}`
+      });
+      await order.save();
+
+      return res.status(200).json({
+        code: 0,
+        message: 'Cập nhật đơn kính thành công',
+        result: orderItem
       });
     } catch (error) {
       next(error);

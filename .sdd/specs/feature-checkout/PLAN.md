@@ -8,14 +8,14 @@ Hệ thống áp dụng luồng đặt hàng chuyển hướng thanh toán (Redi
 *   **Background Expired Cleaner:** Worker ngầm giải quyết vấn đề giữ kho ảo của các giao dịch `PENDING` bị người dùng bỏ dở quá 15 phút.
 
 ## 2. COMPONENTS
-*   **Order & OrderItem Models:** Chứa dữ liệu các hóa đơn, sản phẩm con và thông tin thanh toán (`paymentInfo`) của VNPay.
+*   **Order & OrderItem Models:** Chứa dữ liệu hóa đơn, sản phẩm con và thông tin thanh toán VNPay lưu ở các trường phẳng (`payment_status`, `transaction_id`, `paid_at`) + `status_history[]`. OrderItem nhúng `PrescriptionSchema` khi có `lens_id`.
 *   **OrderController:**
     - Trách nhiệm: Nhận thông tin gửi lên dạng `multipart/form-data` chứa ảnh toa thuốc, trừ kho variant, khởi tạo bản ghi đơn hàng PENDING.
     - Interface: 
       - Input: `deliveryAddress`, `recipientName`, `phoneNumber`, `prescriptionImage` file.
       - Output: `{ code: 0, result: { orderId, order } }`.
 *   **PaymentController:**
-    - Trách nhiệm: Tạo URL thanh toán VNPay Sandbox. Đối soát mã hóa chữ ký SHA512 khi nhận callback để cập nhật đơn hàng thành `CONFIRMED` hoặc `CANCELLED`.
+    - Trách nhiệm: Báo giá trước checkout (`/payment/orders/requirement`), tạo URL VNPay Sandbox, đối soát SHA512 + số tiền khi nhận callback để cập nhật đơn thành `AWAITING_VERIFICATION`/`CONFIRMED` (thành công) hoặc `CANCELLED` (thất bại). Kèm endpoint dev-only `mock-checkout`. Chữ ký sai / số tiền lệch → không đổi trạng thái đơn.
 *   **Background Expired Cleaner (Worker trong server.js):**
     - Trách nhiệm: Quét định kỳ 5 phút/lần để hủy các đơn PENDING cũ hơn 15 phút và tự động hoàn trả kho.
 *   **MyOrder & CheckoutPage (React Components):**
@@ -25,7 +25,7 @@ Hệ thống áp dụng luồng đặt hàng chuyển hướng thanh toán (Redi
 1.  **Gửi đơn:** Người dùng gửi orders/create kèm tệp ảnh toa thuốc.
 2.  **Đặt chỗ kho:** Backend giảm số lượng variant ứng biến. Đơn lưu ở trạng thái `PENDING`.
 3.  **Thanh toán:** Gọi `/payment/checkout` lấy link VNPay, chuyển hướng người dùng sang Cổng Sandbox.
-4.  **Callback (VNPay IPN):** VNPay gửi phản hồi về `/payment/vnpay-callback`. Hệ thống kiểm tra SecureHash. Nếu thành công chuyển đơn sang `CONFIRMED`.
+4.  **Callback (VNPay):** VNPay gửi phản hồi về `/api/payment/vnpay-callback`. Hệ thống kiểm tra SecureHash + đối chiếu số tiền + guard đơn `PENDING`. Thành công → `AWAITING_VERIFICATION` (đơn có tròng) hoặc `CONFIRMED` (còn lại), `payment_status=PAID`.
 5.  **Dọn dẹp:** Nếu khách hủy hoặc quá 15 phút chưa thanh toán, đơn chuyển thành `CANCELLED` và hoàn lại kho.
 
 ## 4. DEPENDENCIES
@@ -39,7 +39,8 @@ Hệ thống áp dụng luồng đặt hàng chuyển hướng thanh toán (Redi
 
 ## 5. RISKS & MITIGATIONS
 *   **Rủi ro 1: Race Condition khi nhiều khách tranh mua biến thể gọng kính cuối.**
-    - Xác suất: Med | Biện pháp: Sử dụng toán tử atomic của Mongoose (`$inc: { quantity: -qty }`) kèm điều kiện kiểm tra tồn kho `$gte: qty` để đảm bảo không bị âm tồn kho.
+    - Xác suất: Med | Biện pháp hiện tại: Bọc luồng tạo đơn trong transaction (khi MongoDB replica set), kiểm tra `variant.quantity < qty` rồi trừ kho bằng `$inc: { quantity: -qty }`.
+    - **Nợ kỹ thuật:** đây là read-check-then-`$inc`, CHƯA phải điều kiện atomic `$gte: qty` trong một truy vấn duy nhất; ở chế độ standalone (không transaction) vẫn còn khe hở race. Cân nhắc chuyển sang `findOneAndUpdate({ _id, quantity: { $gte: qty } }, { $inc: { quantity: -qty } })` để chốt nguyên tử.
 *   **Rủi ro 2: Khách giả mạo thanh toán thành công.**
     - Xác suất: High | Biện pháp: Luôn tạo chữ ký SHA512 từ các tham số nhận được trong Callback, so khớp chính xác 100% với `vnp_SecureHash` gửi kèm của VNPay.
 *   **Rủi ro 3: Lỗi rò rỉ bộ nhớ hoặc xung đột tài nguyên từ Background Cleaner.**

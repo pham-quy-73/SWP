@@ -13,10 +13,11 @@ const __dirname = path.dirname(__filename);
 
 // Hàm chuyển đổi và làm sạch dữ liệu để khớp 100% với ProductSchema
 const filterRawItemToSchema = (item) => {
-  // Chuẩn hoá Category (Chỉ nhận FRAME, SUNGLASSES hoặc LENS)
+  // Chuẩn hoá Category (Chỉ nhận FRAME hoặc SUNGLASSES — tròng kính là model
+  // Lens riêng, seed bằng seed_lenses.js; category lạ fallback về FRAME)
   let category = 'FRAME';
   const rawCat = (item.category || '').toUpperCase();
-  if (['FRAME', 'SUNGLASSES', 'LENS'].includes(rawCat)) {
+  if (['FRAME', 'SUNGLASSES'].includes(rawCat)) {
     category = rawCat;
   }
 
@@ -93,12 +94,7 @@ const seedProducts = async () => {
     const variantsToCreate = [];
 
     for (const p of createdProducts) {
-      let colors = [];
-      if (p.category === 'LENS') {
-        colors = ['Trong suốt'];
-      } else {
-        colors = ['Đen bóng', 'Đồi mồi', 'Trong suốt'];
-      }
+      const colors = ['Đen bóng', 'Đồi mồi', 'Trong suốt'];
 
       colors.forEach((color, index) => {
         // Tạo SKU: SKU-BRAND-NAME-COLOR (sau khi loại bỏ kí tự đặc biệt)

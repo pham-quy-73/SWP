@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seed_data.js",
-    "seed:users": "node seed_users.js"
+    "seed:users": "node seed_users.js",
+    "seed:lenses": "node seed_lenses.js"
   },
   "keywords": [],
   "author": "",

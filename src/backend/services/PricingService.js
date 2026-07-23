@@ -1,5 +1,6 @@
 import Product from '../models/Product.js';
 import ProductVariant from '../models/ProductVariant.js';
+import Lens from '../models/Lens.js';
 
 /**
  * Lỗi định giá (giống OrderValidationError): mang theo status + body để controller
@@ -51,13 +52,13 @@ export async function priceOrderItem(item, session = null) {
   // Giá gọng lấy từ variant DB.
   const basePrice = pickPrice(variant.price, variant.discountPrice);
 
-  // Giá tròng: chỉ tính khi có lensId, tra Product (category='LENS', đang bán).
+  // Giá tròng: chỉ tính khi có lensId, tra Lens (status='ACTIVE').
   let lensPrice = 0;
   if (item.lensId) {
-    let lensQuery = Product.findById(item.lensId);
+    let lensQuery = Lens.findById(item.lensId);
     if (session) lensQuery = lensQuery.session(session);
     const lens = await lensQuery;
-    if (!lens || lens.category !== 'LENS' || lens.status !== 'ACTIVE') {
+    if (!lens || lens.status !== 'ACTIVE') {
       throw new PricingError(400, {
         error_code: 'INVALID_LENS',
         message: `Tròng kính không hợp lệ hoặc đã ngưng bán (ID: ${item.lensId}).`

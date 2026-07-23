@@ -29,7 +29,7 @@ const upload = multer({
 const router = express.Router();
 
 // Route lấy danh sách sản phẩm (hỗ trợ lọc qua query parameters)
-// optionalAuthenticate: có token MANAGER/ADMIN thì thấy INACTIVE + LENS, khách chỉ thấy ACTIVE
+// optionalAuthenticate: có token MANAGER/ADMIN thì thấy cả INACTIVE, khách chỉ thấy ACTIVE
 router.get('/', optionalAuthenticate, ProductController.getProducts);
 
 // Route lấy chi tiết 1 sản phẩm (khách bị chặn sản phẩm INACTIVE)

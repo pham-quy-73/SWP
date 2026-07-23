@@ -84,13 +84,15 @@ export default function ProductModal({
 
   // LOGIC FRONTEND VALIDATION CHUẨN MỰC
   const isFormValid = () => {
-    // 1. Các trường cơ bản bắt buộc cho MỌI sản phẩm
-    if (!form.name || !form.brand || form.price === '' || form.price === null) return false;
-
-    // 2. Nếu KHÔNG phải là Tròng kính, bắt buộc phải chọn Loại viền và Giới tính
-    if (form.category !== 'LENS') {
-      if (!form.frameType || !form.gender) return false;
+    // 1. Nếu là Tròng kính (LENS)
+    if (form.category === 'LENS') {
+      if (!form.name || !form.material || form.price === '' || form.price === null || form.price === undefined) return false;
+      return true;
     }
+
+    // 2. Các trường cơ bản bắt buộc cho Gọng kính / Kính mát
+    if (!form.name || !form.brand || form.price === '' || form.price === null || form.price === undefined) return false;
+    if (!form.frameType || !form.gender) return false;
 
     return true;
   };
@@ -109,12 +111,12 @@ export default function ProductModal({
         <div className="flex items-center justify-between px-8 py-6 border-b border-zinc-100 bg-white z-10">
           <div>
             <h2 className="text-2xl font-black text-zinc-900 tracking-tight">
-              {product ? 'Cập Nhật Sản Phẩm' : (form.category === 'LENS' ? 'Thêm Tròng Kính' : 'Thêm Kính/Gọng')}
+              {product ? (form.category === 'LENS' ? 'Cập Nhật Tròng Kính' : 'Cập Nhật Sản Phẩm') : (form.category === 'LENS' ? 'Thêm Tròng Kính Mới' : 'Thêm Kính/Gọng')}
             </h2>
             <p className="text-xs text-zinc-500 mt-1 font-medium">
               {product
-                ? 'Sửa đổi các thông số kỹ thuật bên dưới.'
-                : 'Điền đầy đủ thông tin để đưa sản phẩm lên kệ.'}
+                ? 'Sửa đổi các thông số chi tiết bên dưới.'
+                : 'Điền đầy đủ thông tin để khởi tạo sản phẩm.'}
             </p>
           </div>
           <button
@@ -133,30 +135,43 @@ export default function ProductModal({
               <label className={labelClass}>Tên sản phẩm *</label>
               <input
                 name="name"
-                placeholder={form.category === 'LENS' ? "Ví dụ: Tròng kính chống xước 1.56" : "Ví dụ: Kính Mát Classic Aviator"}
-                value={form.name}
+                placeholder={form.category === 'LENS' ? "Ví dụ: Tròng kính chống ánh sáng xanh" : "Ví dụ: Kính Mát Classic Aviator"}
+                value={form.name || ''}
                 onChange={handleChange}
                 className={inputClass}
               />
             </div>
 
-            <div>
-              <label className={labelClass}>Thương hiệu *</label>
-              <input
-                name="brand"
-                placeholder={form.category === 'LENS' ? "Ví dụ: Chemi, Essilor..." : "Ví dụ: Ray-Ban"}
-                value={form.brand}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
+            {form.category === 'LENS' ? (
+              <div>
+                <label className={labelClass}>Chất liệu tròng *</label>
+                <input
+                  name="material"
+                  placeholder="Ví dụ: Nhựa CR-39, Polycarbonate, Trivex..."
+                  value={form.material || ''}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            ) : (
+              <div>
+                <label className={labelClass}>Thương hiệu *</label>
+                <input
+                  name="brand"
+                  placeholder="Ví dụ: Ray-Ban"
+                  value={form.brand || ''}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            )}
 
             <div>
               <label className={labelClass}>Giá bán (VNĐ) *</label>
               <input
                 type="number"
                 name="price"
-                placeholder="Ví dụ: 1500000"
+                placeholder="Ví dụ: 350000"
                 value={form.price || ''}
                 onChange={handleChange}
                 className={inputClass}
@@ -190,6 +205,20 @@ export default function ProductModal({
                 <option value="INACTIVE">Tạm ẩn</option>
               </select>
             </div>
+
+            {form.category === 'LENS' && (
+              <div className="col-span-2">
+                <label className={labelClass}>Mô tả công dụng / đặc điểm</label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  placeholder="Ví dụ: Giảm ánh sáng xanh từ màn hình, bảo vệ mắt khi làm việc máy tính."
+                  value={form.description || ''}
+                  onChange={handleChange}
+                  className={`${inputClass} resize-none`}
+                />
+              </div>
+            )}
 
             {/* CÁC TRƯỜNG CHỈ HIỂN THỊ KHI KHÔNG PHẢI LÀ TRÒNG KÍNH (LENS) */}
             {form.category !== 'LENS' && (

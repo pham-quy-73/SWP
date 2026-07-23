@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import authService from '../services/AuthService.js';
+import { getClientBaseUrl } from '../utils/clientUrl.js';
 
 const registerSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(30).required(),
@@ -68,9 +69,9 @@ class AuthController {
       }
 
       await authService.verifyEmail(token);
-      return res.redirect(`${process.env.CLIENT_URL}/login?verified=true`);
+      return res.redirect(`${getClientBaseUrl()}/login?verified=true`);
     } catch (error) {
-      return res.redirect(`${process.env.CLIENT_URL}/login?error=verify_failed`);
+      return res.redirect(`${getClientBaseUrl()}/login?error=verify_failed`);
     }
   }
 

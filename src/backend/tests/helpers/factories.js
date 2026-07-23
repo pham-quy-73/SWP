@@ -5,6 +5,7 @@ import ProductVariant from '../../models/ProductVariant.js';
 import Order from '../../models/Order.js';
 import OrderItem from '../../models/OrderItem.js';
 import Address from '../../models/Address.js';
+import Lens from '../../models/Lens.js';
 import Refund from '../../models/Refund.js';
 
 let seq = 0;
@@ -57,7 +58,15 @@ export async function createProduct(overrides = {}) {
 }
 
 export async function createLens(overrides = {}) {
-  return createProduct({ category: 'LENS', name: `Lens ${uniq()}`, price: 500, ...overrides });
+  const data = {
+    name: overrides.name || `Lens ${uniq()}`,
+    material: overrides.material || 'Polycarbonate',
+    price: overrides.price !== undefined ? overrides.price : 500,
+    description: overrides.description || '',
+    status: overrides.status || 'ACTIVE',
+    ...overrides
+  };
+  return Lens.create(data);
 }
 
 export async function createVariant(product, overrides = {}) {
