@@ -3,6 +3,7 @@ import { ShoppingBag, CheckCircle2, Circle, AlertCircle, ChevronLeft, ChevronRig
 import { useCartStore } from '../../product/store/useCartStore';
 import { usePrescriptionStore } from '../store/usePrescriptionStore';
 import PrescriptionWidget from './PrescriptionModal';
+import { validatePrescription } from '../utils/prescriptionValidation';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -152,6 +153,40 @@ export default function ProductForm({ product, isLoading, onVariantChange }) {
           : null;
 
     const safeProductImage = getDisplayImageUrl(displayImageObj);
+
+    // Validate đơn kính nếu khách hàng chọn tròng kính
+    if (selectedLens) {
+      const activeTab = prescription.activeTab || 'image';
+      const { isValid, errors } = validatePrescription(prescription, activeTab);
+      if (!isValid) {
+        if (errors.general) {
+          toast.error(errors.general);
+        } else {
+          const errList = [];
+          ['od', 'os'].forEach((eye) => {
+            const eyeLabel = eye === 'od' ? 'Mắt phải (OD)' : 'Mắt trái (OS)';
+            Object.entries(errors[eye]).forEach(([field, msg]) => {
+              errList.push(`${eyeLabel} - ${field.toUpperCase()}: ${msg}`);
+            });
+          });
+          if (errList.length > 0) {
+            toast.error(
+              <div className="text-xs">
+                <span className="font-bold text-rose-600 block mb-1">Thông số đơn kính không hợp lệ:</span>
+                <ul className="list-disc pl-4 space-y-0.5 text-zinc-600">
+                  {errList.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+            );
+          } else {
+            toast.error('Vui lòng điền đầy đủ thông tin đơn kính thuốc!');
+          }
+        }
+        return;
+      }
+    }
 
     const hasPrescriptionData = selectedLens && (
       prescription.imageUrl ||

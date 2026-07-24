@@ -5,6 +5,7 @@ const initialPrescription = {
   os: { sphere: '', cylinder: '', axis: '', add: '', pd: '' },
   imageUrl: null,
   notes: '',
+  activeTab: 'image',
 };
 
 export const usePrescriptionStore = create((set) => ({

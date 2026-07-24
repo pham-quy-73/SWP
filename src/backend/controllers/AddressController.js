@@ -1,5 +1,40 @@
 import Address from '../models/Address.js';
 
+const validateAddressInputs = (recipientName, phoneNumber, deliveryAddress) => {
+  if (recipientName !== undefined) {
+    const name = String(recipientName).trim();
+    if (!name) {
+      throw new Error('Họ tên người nhận không được để trống.');
+    }
+    if (name.length > 100) {
+      throw new Error('Họ tên người nhận không được dài quá 100 ký tự.');
+    }
+  }
+
+  if (phoneNumber !== undefined) {
+    const phone = String(phoneNumber).trim().replace(/[\s.-]/g, '');
+    if (!phone) {
+      throw new Error('Số điện thoại không được để trống.');
+    }
+    if (!/^(\+84|0)\d{8,10}$/.test(phone)) {
+      throw new Error('Số điện thoại không hợp lệ (phải bắt đầu bằng 0 hoặc +84, gồm 9-11 chữ số).');
+    }
+  }
+
+  if (deliveryAddress !== undefined) {
+    const addr = String(deliveryAddress).trim();
+    if (!addr) {
+      throw new Error('Địa chỉ giao hàng không được để trống.');
+    }
+    if (addr.length < 5) {
+      throw new Error('Địa chỉ giao hàng phải dài ít nhất 5 ký tự.');
+    }
+    if (addr.length > 300) {
+      throw new Error('Địa chỉ giao hàng không được dài quá 300 ký tự.');
+    }
+  }
+};
+
 class AddressController {
   /**
    * Lấy danh sách địa chỉ đã lưu của người dùng hiện tại
@@ -23,10 +58,12 @@ class AddressController {
     try {
       const { label, recipientName, phoneNumber, deliveryAddress, isDefault } = req.body;
 
-      if (!recipientName || !phoneNumber || !deliveryAddress) {
+      try {
+        validateAddressInputs(recipientName, phoneNumber, deliveryAddress);
+      } catch (err) {
         return res.status(400).json({
           error_code: 'VALIDATION_ERROR',
-          message: 'Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ giao hàng'
+          message: err.message
         });
       }
 
@@ -75,6 +112,15 @@ class AddressController {
       }
 
       const { label, recipientName, phoneNumber, deliveryAddress, isDefault } = req.body;
+
+      try {
+        validateAddressInputs(recipientName, phoneNumber, deliveryAddress);
+      } catch (err) {
+        return res.status(400).json({
+          error_code: 'VALIDATION_ERROR',
+          message: err.message
+        });
+      }
 
       if (label !== undefined) address.label = label;
       if (recipientName !== undefined) address.recipient_name = recipientName;
