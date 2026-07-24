@@ -51,7 +51,7 @@ describe('POST /api/addresses', () => {
     
     // Test địa chỉ quá ngắn
     res = await request(app).post('/api/addresses').set(authHeader(user)).send({
-      recipientName: 'Nguyen A', phoneNumber: '0900000000', deliveryAddress: '123'
+      recipientName: 'Nguyen A', phoneNumber: '0900000000', deliveryAddress: '12'
     });
     expect(res.status).toBe(400);
     expect(res.body.error_code).toBe('VALIDATION_ERROR');

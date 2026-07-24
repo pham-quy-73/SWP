@@ -274,13 +274,13 @@ describe('POST /orders/create (validate shipping info)', () => {
       items: [{ variantId: variant._id.toString(), quantity: 1 }],
       recipientName: 'Nguyen A',
       phoneNumber: '0900000000',
-      deliveryAddress: '123'
+      deliveryAddress: '12'
     };
     const res = await request(app).post('/orders/create').set(authHeader(user))
       .send({ orderInfo });
     expect(res.status).toBe(400);
     expect(res.body.error_code).toBe('VALIDATION_ERROR');
-    expect(res.body.message).toContain('Địa chỉ giao hàng phải dài ít nhất 5 ký tự');
+    expect(res.body.message).toContain('Địa chỉ giao hàng phải dài ít nhất 3 ký tự');
   });
 });
 

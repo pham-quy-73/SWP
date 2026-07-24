@@ -26,8 +26,8 @@ const validateAddressInputs = (recipientName, phoneNumber, deliveryAddress) => {
     if (!addr) {
       throw new Error('Địa chỉ giao hàng không được để trống.');
     }
-    if (addr.length < 5) {
-      throw new Error('Địa chỉ giao hàng phải dài ít nhất 5 ký tự.');
+    if (addr.length < 3) {
+      throw new Error('Địa chỉ giao hàng phải dài ít nhất 3 ký tự.');
     }
     if (addr.length > 300) {
       throw new Error('Địa chỉ giao hàng không được dài quá 300 ký tự.');
