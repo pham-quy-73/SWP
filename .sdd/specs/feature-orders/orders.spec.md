@@ -84,7 +84,7 @@ Hệ thống Optics Management xoay quanh vòng đời đơn hàng — từ lúc
 
 - **E-4:** WHEN `bankInfo.bank_account_number` is provided, THE system SHALL validate it contains only digits; IF invalid, SHALL return HTTP 400 `VALIDATION_ERROR`.
 
-- **E-5:** WHEN an item has `lensId`, THE system SHALL normalize the `prescription` object with rules: numeric fields parsed via `parseFloat` (default 0 if NaN), `od_axis`/`os_axis` clamped to `[0..180]` (default 0 if out of range), `note` trimmed to 500 characters; WHEN item has NO `lensId`, THE system SHALL set `prescription = null`.
+- **E-5:** WHEN an item has `lensId`, THE system SHALL validate the `prescription` object against strict medical constraints: SPH in `[-20.00..20.00]`, CYL in `[-6.00..6.00]`, AXIS in `[1..180]` (mandatory if CYL !== 0), ADD in `[0.75..4.00]`, and PD in `[20.0..40.0]`. If any field is invalid or out of range, the system SHALL return HTTP 400 `VALIDATION_ERROR` with a descriptive message. WHEN item has NO `lensId`, THE system SHALL ignore the prescription and set `prescription = null`.
 
 - **E-6:** WHEN variant stock is insufficient during conditional decrement (`findOneAndUpdate` returns null), THE system SHALL rollback all previously decremented variants (in non-transaction mode) and return HTTP 400 `OUT_OF_STOCK` with message specifying color name and available quantity.
 
@@ -150,7 +150,7 @@ Hệ thống Optics Management xoay quanh vòng đời đơn hàng — từ lúc
 
 - **E-24:** WHEN Manager/Admin requests `PUT /api/orders/:id/items/:itemId/prescription` with `{ prescription, note? }`, THE system SHALL validate: (1) order exists, (2) order status is `AWAITING_VERIFICATION`, (3) OrderItem belongs to the order, (4) OrderItem has `lens_id` (gắn tròng kính).
 
-- **E-25:** WHEN updating prescription, THE system SHALL normalize values using same rules as creation (E-5), preserve existing `imageUrl`, save the updated prescription, and record an audit trail in `status_history` (status unchanged, note references the item ID and reason).
+- **E-25:** WHEN updating prescription, THE system SHALL validate values using same strict rules as creation (E-5), return HTTP 400 `VALIDATION_ERROR` if invalid, preserve existing `imageUrl`, save the updated prescription, and record an audit trail in `status_history` (status unchanged, note references the item ID and reason).
 
 #### 3.2.9 Xóa Đơn hàng (Delete Order — Admin Only)
 

@@ -40,6 +40,23 @@ describe('POST /api/addresses', () => {
     expect(res.body.error_code).toBe('VALIDATION_ERROR');
   });
 
+  it('tên quá dài, sđt không hợp lệ hoặc địa chỉ quá ngắn -> 400', async () => {
+    const user = await createCustomer();
+    // Test sđt lỗi
+    let res = await request(app).post('/api/addresses').set(authHeader(user)).send({
+      recipientName: 'Nguyen A', phoneNumber: '123', deliveryAddress: '123 Test St'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+    
+    // Test địa chỉ quá ngắn
+    res = await request(app).post('/api/addresses').set(authHeader(user)).send({
+      recipientName: 'Nguyen A', phoneNumber: '0900000000', deliveryAddress: '123'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+
   it('đặt isDefault=true gỡ cờ mặc định địa chỉ cũ', async () => {
     const user = await createCustomer();
     const old = await createAddress(user, { is_default: true });
@@ -89,6 +106,16 @@ describe('PUT /api/addresses/:id', () => {
     const user = await createCustomer();
     const res = await request(app).put('/api/addresses/64b7f0000000000000000000').set(authHeader(user)).send({ recipientName: 'X' });
     expect(res.status).toBe(404);
+  });
+
+  it('cập nhật với giá trị không hợp lệ -> 400', async () => {
+    const user = await createCustomer();
+    const addr = await createAddress(user);
+    const res = await request(app).put(`/api/addresses/${addr._id}`).set(authHeader(user)).send({
+      phoneNumber: '12345'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
   });
 });
 

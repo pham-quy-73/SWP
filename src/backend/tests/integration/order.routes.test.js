@@ -230,7 +230,7 @@ describe('GET /orders/me (kèm order item populate)', () => {
 });
 
 describe('POST /orders/create (chuẩn hóa prescription)', () => {
-  it('cắt AXIS ngoài [0,180] và số không hợp lệ về 0', async () => {
+  it('từ chối AXIS ngoài [1..180] và số không hợp lệ với lỗi 400', async () => {
     const user = await createCustomer();
     const product = await createProduct({ price: 1000 });
     const variant = await createVariant(product, { price: 1000, quantity: 5 });
@@ -243,13 +243,44 @@ describe('POST /orders/create (chuẩn hóa prescription)', () => {
     };
     const res = await request(app).post('/orders/create').set(authHeader(user))
       .field('orderInfo', JSON.stringify(orderInfo));
-    expect(res.status).toBe(201);
-    const items = await OrderItem.find({ order_id: res.body.result.orderId });
-    expect(items[0].prescription.od_axis).toBe(0); // 999 -> 0
-    expect(items[0].prescription.os_axis).toBe(0); // -50 -> 0
-    expect(items[0].prescription.od_sphere).toBe(0); // 'abc' -> 0
-    expect(items[0].prescription.os_sphere).toBe(-1.25);
-    expect(items[0].prescription.note).toBe('test note');
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+});
+
+describe('POST /orders/create (validate shipping info)', () => {
+  it('từ chối số điện thoại người nhận không hợp lệ', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ price: 1000 });
+    const variant = await createVariant(product, { price: 1000, quantity: 5 });
+    const orderInfo = {
+      items: [{ variantId: variant._id.toString(), quantity: 1 }],
+      recipientName: 'Nguyen A',
+      phoneNumber: '12345',
+      deliveryAddress: '123 Test Street'
+    };
+    const res = await request(app).post('/orders/create').set(authHeader(user))
+      .send({ orderInfo });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+    expect(res.body.message).toContain('Số điện thoại không hợp lệ');
+  });
+
+  it('từ chối địa chỉ giao hàng quá ngắn', async () => {
+    const user = await createCustomer();
+    const product = await createProduct({ price: 1000 });
+    const variant = await createVariant(product, { price: 1000, quantity: 5 });
+    const orderInfo = {
+      items: [{ variantId: variant._id.toString(), quantity: 1 }],
+      recipientName: 'Nguyen A',
+      phoneNumber: '0900000000',
+      deliveryAddress: '123'
+    };
+    const res = await request(app).post('/orders/create').set(authHeader(user))
+      .send({ orderInfo });
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+    expect(res.body.message).toContain('Địa chỉ giao hàng phải dài ít nhất 5 ký tự');
   });
 });
 
@@ -483,7 +514,7 @@ describe('PUT /orders/:id/items/:itemId/prescription (KTV sửa đơn kính)', (
     expect(lastHist.note).toContain('Khách đọc nhầm SPH');
   });
 
-  it('chuẩn hóa thông số: AXIS ngoài [0..180] -> 0, số hỏng -> 0', async () => {
+  it('từ chối AXIS ngoài [1..180] hoặc số không hợp lệ với lỗi 400', async () => {
     const manager = await createManager();
     const { order, item } = await setupLensOrder();
     const res = await request(app)
@@ -491,10 +522,8 @@ describe('PUT /orders/:id/items/:itemId/prescription (KTV sửa đơn kính)', (
       .set(authHeader(manager))
       .send({ prescription: { ...rx, odAxis: 250, osSphere: 'abc' } });
 
-    expect(res.status).toBe(200);
-    const reloaded = await OrderItem.findById(item._id);
-    expect(reloaded.prescription.od_axis).toBe(0);
-    expect(reloaded.prescription.os_sphere).toBe(0);
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
   });
 
   it('đơn không ở AWAITING_VERIFICATION -> 400 INVALID_STATUS', async () => {

@@ -1,12 +1,29 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { usePrescriptionStore } from '../store/usePrescriptionStore';
-import { Trash2, Keyboard, Image as ImageIcon, Camera } from 'lucide-react';
+import { Trash2, Keyboard, Image as ImageIcon, Camera, AlertCircle } from 'lucide-react';
+import { formatOpticalValue, validatePrescription } from '../utils/prescriptionValidation';
 
 export default function PrescriptionWidget() {
   const { updatePrescription, prescription } = usePrescriptionStore();
-  const [activeTab, setActiveTab] = useState('image');
+  const activeTab = prescription.activeTab || 'image';
+  const setActiveTab = (tab) => updatePrescription({ activeTab: tab });
   const [activeEye, setActiveEye] = useState('od');
+  const [localErrors, setLocalErrors] = useState({ od: {}, os: {}, general: '' });
   const fileInputRef = useRef(null);
+
+  // Chạy validation bất cứ khi nào dữ liệu đơn kính hoặc tab thay đổi
+  useEffect(() => {
+    const hasData = prescription.imageUrl || 
+                    Object.values(prescription.od || {}).some(v => v !== '') ||
+                    Object.values(prescription.os || {}).some(v => v !== '');
+    
+    if (hasData) {
+      const { errors } = validatePrescription(prescription, activeTab);
+      setLocalErrors(errors);
+    } else {
+      setLocalErrors({ od: {}, os: {}, general: '' });
+    }
+  }, [prescription, activeTab]);
 
   const updateEyeData = (eye, field, value) => {
     const newEyeData = { ...prescription[eye], [field]: value };
@@ -39,15 +56,28 @@ export default function PrescriptionWidget() {
     }
   };
 
-  const renderMiniInput = (val, onChange) => (
-    <input
-      type="text"
-      value={val}
-      onChange={(e) => onChange(e.target.value)}
-      className="text-center font-bold text-gray-800 h-8 text-xs bg-white border border-gray-200 focus:border-[#4A8795] focus:outline-none rounded px-0 w-full"
-      placeholder="0.00"
-    />
-  );
+  const renderMiniInput = (field, val, onChange) => {
+    const hasError = !!localErrors[activeEye]?.[field];
+    return (
+      <input
+        type="text"
+        value={val}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={(e) => {
+          const formatted = formatOpticalValue(field, e.target.value);
+          onChange(formatted);
+        }}
+        title={localErrors[activeEye]?.[field] || ''}
+        className={`text-center font-bold h-8 text-xs bg-white border focus:outline-none rounded px-0 w-full transition-colors duration-200
+          ${hasError 
+            ? 'border-rose-500 focus:border-rose-500 text-rose-600 bg-rose-50/30' 
+            : 'border-gray-200 focus:border-[#4A8795] text-gray-800'}`}
+        placeholder="0.00"
+      />
+    );
+  };
+
+  const activeEyeErrors = Object.entries(localErrors[activeEye] || {});
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300">
@@ -155,19 +185,39 @@ export default function PrescriptionWidget() {
 
               <div className="grid grid-cols-5 gap-1.5">
                 {['sphere', 'cylinder', 'axis', 'add', 'pd'].map((field) =>
-                  renderMiniInput(prescription[activeEye][field], (v) =>
+                  renderMiniInput(field, prescription[activeEye]?.[field] || '', (v) =>
                     updateEyeData(activeEye, field, v)
                   )
                 )}
               </div>
             </div>
+
+            {/* Hiển thị lỗi trường cụ thể ở tab Nhập thủ công */}
+            {activeEyeErrors.length > 0 && (
+              <div className="mt-2.5 p-2 bg-rose-50 border border-rose-100 rounded-lg space-y-1">
+                {activeEyeErrors.map(([field, errMsg]) => (
+                  <div key={field} className="flex items-start gap-1.5 text-[10px] text-rose-600 font-semibold leading-tight">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>{errMsg}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Hiển thị lỗi chung (ví dụ: thiếu ảnh hoặc chưa điền mắt nào) */}
+        {localErrors.general && (
+          <div className="mt-3 p-2 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+            <span className="text-[10px] text-rose-600 font-bold">{localErrors.general}</span>
           </div>
         )}
 
         <div className="mt-3">
           <textarea
             placeholder="Ghi chú thêm cho kỹ thuật viên..."
-            value={prescription.notes}
+            value={prescription.notes || ''}
             onChange={(e) => updatePrescription({ notes: e.target.value })}
             className="w-full p-2.5 bg-white text-xs min-h-[50px] resize-none focus:outline-none focus:border-[#4A8795] border border-gray-200 rounded-lg"
           />
