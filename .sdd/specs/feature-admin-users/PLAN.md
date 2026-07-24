@@ -1,6 +1,6 @@
 # PLAN.md — Implementation Plan: Quản lý thành viên (User Management)
 
-**Status:** In-Progress (đã có code, cần bổ sung phân trang)
+**Status:** Done
 **Author:** AI Agent
 **Date:** 2026-06-23
 **Spec ref:** `users.spec.md`

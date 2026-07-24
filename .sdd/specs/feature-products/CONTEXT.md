@@ -1,5 +1,4 @@
 # CONTEXT.md — Trang sản phẩm & Biến thể (Store & Products Feature)
-# Người viết: @antigravity | Ngày: 2026-06-23
 
 ## 1. PROBLEM STATEMENT
 *   **Khó khăn trong việc tìm kiếm gọng kính phù hợp:** Các sản phẩm gọng kính thông thường có rất nhiều kích cỡ vật lý khác nhau (temple length, lens width, bridge width) và màu sắc đặc thù. Nếu không lọc chi tiết, khách hàng rất dễ mua nhầm gọng kính quá rộng/quá chật so với khuôn mặt.

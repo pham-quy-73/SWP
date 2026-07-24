@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-06-10
 **Priority:** High  
 **Risk Level:** High (Giao dịch hoàn tiền, thay đổi trạng thái đơn hàng, vô hiệu hóa biến thể sản phẩm)  
 **Related Specs:** `feature-orders`, `feature-payment`, `feature-products`  
@@ -16,12 +16,14 @@
 ### 1.1 Business Context
 
 Hệ thống hoàn tiền xử lý hai trường hợp chính:
+
 1. **Đơn hủy đã thanh toán**: Khách thanh toán VNPay xong rồi hủy đơn, hoặc đơn bị hủy bởi Manager → cần hoàn tiền
 2. **Dừng bán sản phẩm**: Manager quyết định ngưng bán một biến thể (variant) → tất cả đơn đang xử lý chứa sản phẩm cha của biến thể đó cần được hủy và hoàn tiền hàng loạt
 
 Quy trình hoàn tiền gồm 5 bước tuần tự: (1) Vô hiệu hóa biến thể → (2) Xem đơn ảnh hưởng → (3) Tạo lô hoàn tiền → (4) Xem danh sách chờ duyệt → (5) Phê duyệt hoàn tiền.
 
 **Pain point hiện tại:**
+
 - Hoàn tiền thủ công qua ngân hàng, cần theo dõi trạng thái từng yêu cầu
 - Cần gom nhiều đơn thành lô (batch) để xử lý hiệu quả
 - Khi dừng bán sản phẩm, cần tự động xác định đơn nào bị ảnh hưởng
@@ -37,17 +39,18 @@ Quy trình hoàn tiền gồm 5 bước tuần tự: (1) Vô hiệu hóa biến 
 
 ## 2. Actors & Roles (Tác nhân & Vai trò)
 
-| Actor | Vai trò | Phân quyền |
-| :--- | :--- | :--- |
-| **MANAGER** | Quản lý | Toàn quyền: vô hiệu hóa variant, xem đơn ảnh hưởng, tạo lô hoàn tiền, xem danh sách chờ duyệt, phê duyệt hoàn tiền, từ chối hủy đơn |
-| **ADMIN** | Quản trị | Tất cả quyền của MANAGER |
-| **CUSTOMER** | Khách hàng | **KHÔNG** có quyền truy cập (chặn bởi `requireRole(['MANAGER', 'ADMIN'])`) |
+| Actor        | Vai trò    | Phân quyền                                                                                                                          |
+| :----------- | :--------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| **MANAGER**  | Quản lý    | Toàn quyền: vô hiệu hóa variant, xem đơn ảnh hưởng, tạo lô hoàn tiền, xem danh sách chờ duyệt, phê duyệt hoàn tiền, từ chối hủy đơn |
+| **ADMIN**    | Quản trị   | Tất cả quyền của MANAGER                                                                                                            |
+| **CUSTOMER** | Khách hàng | **KHÔNG** có quyền truy cập (chặn bởi `requireRole(['MANAGER', 'ADMIN'])`)                                                          |
 
 ---
 
 ## 3. Functional Requirements (Yêu cầu chức năng — EARS)
 
 > **Nguồn hành vi:**
+>
 > - Backend: `src/backend/controllers/RefundController.js`, `src/backend/models/Refund.js`
 > - Routes: `src/backend/routes/refund.routes.js`
 
@@ -68,10 +71,15 @@ Quy trình hoàn tiền gồm 5 bước tuần tự: (1) Vô hiệu hóa biến 
 - **E-2:** WHEN returning results, THE system SHALL map each order to response format:
   ```json
   {
-    "orderId": "...", "recipientName": "...", "phoneNumber": "...",
-    "totalAmount": 500000, "paidAmount": 500000,
-    "orderStatus": "CANCELLED", "deliveryAddress": "...",
-    "cancelReason": "Khách hàng yêu cầu hủy đơn", "createdAt": "..."
+    "orderId": "...",
+    "recipientName": "...",
+    "phoneNumber": "...",
+    "totalAmount": 500000,
+    "paidAmount": 500000,
+    "orderStatus": "CANCELLED",
+    "deliveryAddress": "...",
+    "cancelReason": "Khách hàng yêu cầu hủy đơn",
+    "createdAt": "..."
   }
   ```
   The `cancelReason` is extracted from the most recent CANCELLED entry in `status_history`.
@@ -173,14 +181,14 @@ Quy trình hoàn tiền gồm 5 bước tuần tự: (1) Vô hiệu hóa biến 
 
 ### Collection: `refunds`
 
-| Field | Type | Required | Default | Constraints / Notes |
-| :--- | :--- | :---: | :--- | :--- |
-| `order_id` | ObjectId (ref: Order) | ✅ | — | Đơn hàng cần hoàn tiền |
-| `amount` | Number | ✅ | — | Số tiền hoàn (= `order.total_amount` nếu PAID) |
-| `reason` | String | — | — | Lý do hoàn tiền |
-| `status` | String (Enum) | — | `'PENDING'` | `PENDING`, `COMPLETED`, `FAILED` |
-| `created_at` | Date (auto) | — | `Date.now` | Timestamps: `createdAt → created_at` |
-| `updated_at` | Date (auto) | — | `Date.now` | Timestamps: `updatedAt → updated_at` |
+| Field        | Type                  | Required | Default     | Constraints / Notes                            |
+| :----------- | :-------------------- | :------: | :---------- | :--------------------------------------------- |
+| `order_id`   | ObjectId (ref: Order) |    ✅    | —           | Đơn hàng cần hoàn tiền                         |
+| `amount`     | Number                |    ✅    | —           | Số tiền hoàn (= `order.total_amount` nếu PAID) |
+| `reason`     | String                |    —     | —           | Lý do hoàn tiền                                |
+| `status`     | String (Enum)         |    —     | `'PENDING'` | `PENDING`, `COMPLETED`, `FAILED`               |
+| `created_at` | Date (auto)           |    —     | `Date.now`  | Timestamps: `createdAt → created_at`           |
+| `updated_at` | Date (auto)           |    —     | `Date.now`  | Timestamps: `updatedAt → updated_at`           |
 
 ### Refund Lifecycle
 
@@ -208,13 +216,13 @@ Quy trình hoàn tiền gồm 5 bước tuần tự: (1) Vô hiệu hóa biến 
 
 ## 6. Error Handling (Xử lý lỗi)
 
-| Error Code | HTTP Status | Trigger | Hành vi hệ thống |
-| :--- | :---: | :--- | :--- |
-| `VALIDATION_ERROR` | 400 | `orderIds` rỗng hoặc thiếu trong batch | Trả lỗi |
-| `VARIANT_NOT_FOUND` | 404 | Variant ID không tồn tại khi in-activate hoặc xem affected | Trả lỗi |
-| `REFUND_NOT_FOUND` | 404 | Refund ID không tồn tại khi checkout | Trả lỗi |
-| `ORDER_NOT_FOUND` | 404 | Order ID không tồn tại khi reject-cancel | Trả lỗi |
-| `INVALID_STATUS` | 400 | Reject-cancel trên đơn không phải CANCELLED | Trả lỗi |
+| Error Code          | HTTP Status | Trigger                                                    | Hành vi hệ thống |
+| :------------------ | :---------: | :--------------------------------------------------------- | :--------------- |
+| `VALIDATION_ERROR`  |     400     | `orderIds` rỗng hoặc thiếu trong batch                     | Trả lỗi          |
+| `VARIANT_NOT_FOUND` |     404     | Variant ID không tồn tại khi in-activate hoặc xem affected | Trả lỗi          |
+| `REFUND_NOT_FOUND`  |     404     | Refund ID không tồn tại khi checkout                       | Trả lỗi          |
+| `ORDER_NOT_FOUND`   |     404     | Order ID không tồn tại khi reject-cancel                   | Trả lỗi          |
+| `INVALID_STATUS`    |     400     | Reject-cancel trên đơn không phải CANCELLED                | Trả lỗi          |
 
 ---
 

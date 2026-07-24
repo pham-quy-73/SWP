@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-07-12 
 **Priority:** Medium  
 **Risk Level:** Medium (Ảnh hưởng tính giá đơn hàng khi tròng bị INACTIVE, dữ liệu y tế liên quan)  
 **Related Specs:** `feature-products`, `feature-orders`, `feature-payment`  

@@ -1,5 +1,4 @@
 # CONTEXT.md — Giỏ hàng (Cart Feature)
-# Người viết: @antigravity | Ngày: 2026-06-23
 
 ## 1. PROBLEM STATEMENT
 *   **Trải nghiệm mua sắm bị gián đoạn:** Khi duyệt sản phẩm gọng kính, người dùng cần lưu trữ các lựa chọn kính mắt (bao gồm các biến thể màu sắc, kích cỡ và cả thông tin đo mắt/to thuốc kèm theo) trước khi ra quyết định thanh toán cuối cùng.

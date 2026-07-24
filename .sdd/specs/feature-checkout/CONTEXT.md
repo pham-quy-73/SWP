@@ -1,5 +1,4 @@
 # CONTEXT.md — Checkout & Thanh toán VNPay (Checkout & Payment Feature)
-# Người viết: @antigravity | Ngày: 2026-06-23
 
 ## 1. PROBLEM STATEMENT
 *   **Rủi ro găm giữ tồn kho ảo:** Khi khách hàng đặt mua kính mắt nhưng không thanh toán kịp thời (ví dụ: tắt tab thanh toán VNPay giữa chừng), hệ thống sẽ bị găm tồn kho ảo. Điều này khiến những khách hàng có nhu cầu thực sự không thể tiếp cận và mua sản phẩm đó.

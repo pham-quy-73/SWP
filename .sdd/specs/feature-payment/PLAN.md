@@ -2,7 +2,7 @@
 
 **Status:** Done (đã tích hợp code VNPay + Mock checkout)
 **Author:** AI Agent
-**Date:** 2026-07-23
+**Date:** 2026-07-15
 **Spec ref:** `payment.spec.md`
 **Risk Level:** Critical (giao dịch tài chính trực tiếp)
 

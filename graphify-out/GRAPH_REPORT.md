@@ -1,16 +1,16 @@
-# Graph Report - optic  (2026-07-23)
+# Graph Report - optic  (2026-07-24)
 
 ## Corpus Check
-- 206 files · ~831,261 words
+- 224 files · ~856,364 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1131 nodes · 1628 edges · 102 communities (81 shown, 21 thin omitted)
+- 1417 nodes · 1908 edges · 119 communities (93 shown, 26 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.65)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5a94b24b`
+- Built from commit: `3fed6dd4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -113,6 +113,23 @@
 - @react-oauth/google
 - @tanstack/react-query
 - zustand
+- Người viết: @antigravity | Ngày: 2026-07-23
+- Người viết: @antigravity | Ngày: 2026-07-23
+- Người viết: @antigravity | Ngày: 2026-07-23
+- Người viết: @antigravity | Ngày: 2026-07-23
+- Người viết: @antigravity | Ngày: 2026-07-23
+- Người viết: @antigravity | Ngày: 2026-07-23
+- Người viết: @antigravity | Ngày: 2026-07-23
+- RefundController
+- TASKS.md — Danh sách task: Sổ Địa chỉ Giao hàng (Address Book)
+- TASKS.md — Danh sách task: Bảng phân tích doanh số (Dashboard Analytics)
+- TASKS.md — Danh sách task: Quản lý Hoàn tiền (Refunds Management)
+- TASKS.md — Danh sách task: Đánh giá Sản phẩm (Feedback / Reviews)
+- TASKS.md — Danh sách task: Quản lý Tròng kính (Lens Management)
+- TASKS.md — Danh sách task: Quản lý Đơn hàng (Order Management)
+- TASKS.md — Danh sách task: Thanh toán VNPay (Payment Integration)
+- @hookform/resolvers
+- AddressController
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 30 edges
@@ -141,27 +158,27 @@
 ## Import Cycles
 - None detected.
 
-## Communities (102 total, 21 thin omitted)
+## Communities (119 total, 26 thin omitted)
 
 ### Community 0 - "App.jsx"
 Cohesion: 0.16
-Nodes (12): App(), PrivateRoute(), AuthContext, AuthProvider(), AdminLayout(), ManagerLayout(), CartDrawer(), CartItemRow() (+4 more)
+Nodes (10): App(), PrivateRoute(), AuthContext, AuthProvider(), AdminLayout(), LoginForm(), loginSchema, useLoginForm() (+2 more)
 
 ### Community 1 - "ProductVariant.js"
-Cohesion: 0.07
-Nodes (15): AuthController, googleLoginSchema, loginSchema, registerSchema, resendEmailSchema, OrderController, orderHasPrescription(), PaymentController (+7 more)
+Cohesion: 0.12
+Nodes (11): AuthController, googleLoginSchema, loginSchema, registerSchema, resendEmailSchema, orderHasPrescription(), PaymentController, recoverAutoExpiredOrder() (+3 more)
 
 ### Community 2 - "dependencies"
 Cohesion: 0.04
 Nodes (46): bcryptjs, cors, dotenv, express, google-auth-library, joi, jsonwebtoken, mongodb-memory-server (+38 more)
 
 ### Community 3 - "MyOrder.jsx"
-Cohesion: 0.25
-Nodes (6): profileApi, FeedbackModal(), useProfileQuery(), emptyForm, MyAddresses(), ProfilePage()
+Cohesion: 0.20
+Nodes (8): ProductFeedback(), profileApi, FeedbackModal(), useProfileQuery(), emptyForm, MyAddresses(), MyFeedbacks(), ProfilePage()
 
 ### Community 4 - "index.js"
-Cohesion: 0.09
-Nodes (26): ADR-0003, createLens(), deleteLens(), getLensById(), getLenses(), updateLens(), validateLensPayload(), RefundController (+18 more)
+Cohesion: 0.12
+Nodes (24): createLens(), deleteLens(), getLensById(), getLenses(), updateLens(), validateLensPayload(), authenticate(), optionalAuthenticate() (+16 more)
 
 ### Community 5 - "useRefunds.js"
 Cohesion: 0.13
@@ -169,15 +186,15 @@ Nodes (24): refundApi, CreateBatchModal(), fmt(), getDisplayImageUrl(), Customer
 
 ### Community 6 - "dependencies"
 Cohesion: 0.13
-Nodes (15): axios, dependencies, axios, framer-motion, @hookform/resolvers, react-hook-form, react-router-dom, sonner (+7 more)
+Nodes (15): axios, dependencies, axios, framer-motion, react-helmet-async, react-hook-form, react-router-dom, sonner (+7 more)
 
 ### Community 7 - "useCartStore"
-Cohesion: 0.11
-Nodes (23): AuthLayout(), Footer(), Header(), MainLayout(), MobileBottomNav(), paymentApi, CheckoutStepper(), OrderSummary() (+15 more)
+Cohesion: 0.09
+Nodes (27): paymentApi, CheckoutStepper(), OrderSummary(), PaymentForm(), ReviewOrder(), ShippingForm(), useOrderSuccess(), usePaymentRequirement() (+19 more)
 
 ### Community 8 - "User"
 Cohesion: 0.09
-Nodes (11): UserController, User, userSchema, cleanUser(), __dirname, __filename, seedUsers(), AuthService (+3 more)
+Nodes (10): UserController, User, cleanUser(), __dirname, __filename, seedUsers(), AuthService, googleClient (+2 more)
 
 ### Community 9 - "devDependencies"
 Cohesion: 0.13
@@ -188,8 +205,8 @@ Cohesion: 0.07
 Nodes (26): 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2 Event-driven (Kích hoạt bằng sự kiện), 3.3 State-driven (Khi ở trạng thái), 3.4 Optional / Where (Tùy chọn), 3.5 Unwanted (Lỗi / Edge Case), 3. Functional Requirements (Yêu cầu chức năng — EARS) (+18 more)
 
 ### Community 11 - "Feature: Giỏ hàng (Cart) — SPECIFICATION"
-Cohesion: 0.12
-Nodes (13): escapeRegex(), isStaff(), ProductController, removeLocalImages(), SORT_OPTIONS, ProductVariantController, httpError(), ImageSchema (+5 more)
+Cohesion: 0.18
+Nodes (7): escapeRegex(), isStaff(), ProductController, removeLocalImages(), SORT_OPTIONS, ProductVariantController, httpError()
 
 ### Community 12 - "What You Must Do When Invoked"
 Cohesion: 0.08
@@ -198,6 +215,10 @@ Nodes (24): For /graphify add and --watch, For /graphify query, For the commit h
 ### Community 13 - "ProductManagePage.jsx"
 Cohesion: 0.30
 Nodes (11): useCreateManagerLens(), useDeleteManagerLens(), useManagerLenses(), useUpdateManagerLens(), useCreateManagerProduct(), useDeleteManagerProduct(), useManagerProducts(), useUpdateManagerProduct() (+3 more)
+
+### Community 14 - "AddressController"
+Cohesion: 0.06
+Nodes (34): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.10 Auto-Cleanup Job (System), 3.2.1 Tạo Đơn Hàng (Create Order — Customer), 3.2.2 Xem Lịch sử Đơn hàng (My Orders — Customer) (+26 more)
 
 ### Community 15 - "UserManagePage.jsx"
 Cohesion: 0.50
@@ -220,40 +241,40 @@ Cohesion: 0.14
 Nodes (13): 2026-06-15, 2026-07-08, 2026-07-12, FEATURE-001: Server-side price validation trong OrderController.createOrder, FEATURE-002: Address Book (Sổ địa chỉ persistent cho Customer), FEATURE-003: Lens Builder — Persist đơn kính (prescription) theo từng OrderItem, FIX-001: Sửa 3 chỗ `stock_quantity` → `quantity` (đúng model `ProductVariant`), MEMORY_LOG.md — Auto-generated Memory Log (+5 more)
 
 ### Community 25 - "PLAN.md — Implementation Plan: Bảng phân tích doanh số (Dashboard Analytics)"
-Cohesion: 0.14
-Nodes (13): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có — cần hiệu chỉnh), Cách tiếp cận tổng thể (+5 more)
+Cohesion: 0.08
+Nodes (25): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.1 Xem Đơn hàng Hủy Đã Thanh toán, 3.2.2 Vô hiệu hóa Biến thể (Step 1), 3.2.3 Xem Đơn hàng Bị Ảnh hưởng (Step 2) (+17 more)
 
 ### Community 26 - "PLAN.md — Implementation Plan: Quản lý Hoàn tiền (Refunds Management)"
-Cohesion: 0.14
-Nodes (13): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có — cần khớp tên route với spec), Cách tiếp cận tổng thể (+5 more)
+Cohesion: 0.08
+Nodes (23): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.1 Tạo Đánh giá (Create Feedback), 3.2.2 Xem Đánh giá của Tôi (My Feedbacks), 3.2.3 Xem Đánh giá theo Sản phẩm (Public) (+15 more)
 
 ### Community 27 - "Feature: Quản lý Hoàn tiền (Refunds Management) — FULL SPECIFICATION"
-Cohesion: 0.14
-Nodes (13): 1. Business Context & Goals, 2. Stakeholders & User Personas, 3. User Stories (all paths), 4. Acceptance Criteria (EARS), 5.1 Lấy danh sách đơn hàng đã hủy cần hoàn trả tiền, 5.2 Lấy danh sách các đơn hàng bị ảnh hưởng khi dừng bán biến thể, 5.3 Tạo yêu cầu hoàn tiền hàng loạt (Batch), 5.4 Phê duyệt hoàn tiền thành công (+5 more)
+Cohesion: 0.09
+Nodes (22): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.1 Tính toán Yêu cầu Thanh toán (Payment Requirement), 3.2.2 Khởi tạo Link Thanh toán VNPay (Checkout), 3.2.3 VNPay ReturnURL Callback (+14 more)
 
 ### Community 28 - "PLAN.md — Implementation Plan: Quản lý thành viên (User Management)"
-Cohesion: 0.21
-Nodes (12): VnpayCheckoutButton(), useCheckoutVnpay(), useMyOrders(), ALL_STATUSES, fmt(), getDisplayImageUrl(), ITEM_STATUS, MyOrders() (+4 more)
+Cohesion: 0.18
+Nodes (13): VnpayCheckoutButton(), useCheckoutVnpay(), FeedbackPreview(), useMyOrders(), ALL_STATUSES, fmt(), getDisplayImageUrl(), ITEM_STATUS (+5 more)
 
 ### Community 29 - "Version: 1.0.0 | Status: APPROVED | Risk: Cao | Level: Formal"
 Cohesion: 0.14
 Nodes (13): 1. Context & Goal, 2. Actors & Roles, 3.1 Ubiquitous (Luôn luôn đúng), 3.2 Event-driven (Phản ứng với sự kiện), 3.3 State-driven (Hành vi liên tục trong trạng thái), 3. Functional Requirements (EARS Notation), 4. Non-functional Requirements, 5. Data Model (MongoDB Schema) (+5 more)
 
 ### Community 30 - "server.js"
-Cohesion: 0.07
-Nodes (47): createApp(), __dirname, __filename, connectDB(), DashboardController, cleanupExpiredOrders(), startOrderStatusCleanupJob(), errorHandler() (+39 more)
+Cohesion: 0.05
+Nodes (58): ADR-0003, createApp(), __dirname, __filename, connectDB(), DashboardController, cleanupExpiredOrders(), startOrderStatusCleanupJob() (+50 more)
 
 ### Community 31 - "RefundController.js"
 Cohesion: 0.14
 Nodes (13): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+5 more)
 
 ### Community 32 - "AGENTS.md — Hướng dẫn Coding Agent cho Optics Management Project"
-Cohesion: 0.21
-Nodes (3): policyApi, orderApi, httpClient
+Cohesion: 0.09
+Nodes (21): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.1 Xem Danh sách Địa chỉ, 3.2.2 Tạo Địa chỉ Mới, 3.2.3 Cập nhật Địa chỉ (+13 more)
 
 ### Community 33 - "Feature: Quản lý thành viên (User Management) — STANDARD SPECIFICATION"
-Cohesion: 0.18
-Nodes (10): 1. Business Context, 2. User Stories, 3. Acceptance Criteria (EARS), 4.1 Liệt kê người dùng, 4.2 Cập nhật quyền (Role), 4.3 Khóa/Mở khóa tài khoản (Status), 4. API Contract, 5. Technical Constraints (+2 more)
+Cohesion: 0.09
+Nodes (21): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.1 Lấy Danh sách Tròng kính, 3.2.2 Lấy Chi tiết Tròng kính, 3.2.3 Tạo Tròng kính Mới (+13 more)
 
 ### Community 34 - "Feature: Trang sản phẩm (Store & Products) — STANDARD SPECIFICATION"
 Cohesion: 0.07
@@ -272,16 +293,16 @@ Cohesion: 0.22
 Nodes (9): 6.1 Tạo đơn hàng từ giỏ (CUSTOMER), 6.2 Lịch sử đơn hàng của tôi, 6.3 Khách hàng tự hủy đơn, 6.4 Chi tiết đơn hàng, 6.5 Toàn bộ đơn hàng trong hệ thống, 6.6 Danh sách đơn CANCELLED đã thanh toán (chờ hoàn tiền), 6.7 Cập nhật trạng thái đơn (MANAGER/ADMIN), 6.8 Xóa đơn khỏi CSDL (+1 more)
 
 ### Community 38 - "📌 Tổng quan dự án: Optics Management"
-Cohesion: 0.23
-Nodes (8): Breadcrumb(), ProductFeedback(), getDisplayImageUrl(), ProductGallery(), ProductInfo(), ProductDetailPage(), getDisplayImageUrl(), ProductsPage()
+Cohesion: 0.11
+Nodes (17): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2.1 Liệt kê & Tìm kiếm, 3.2.2 Tạo Tài khoản Mới (Create User), 3.2.3 Cập Nhật Vai trò (Update Role) (+9 more)
 
 ### Community 39 - "Người viết: @antigravity | Ngày: 2026-06-23"
-Cohesion: 0.22
-Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Bảng phân tích doanh số (Dashboard Analytics Feature), Người viết: @antigravity | Ngày: 2026-06-23
+Cohesion: 0.12
+Nodes (16): 1.1 Business Context, 1.2 Goals, 1. Context & Goal (Bối cảnh & Mục tiêu), 2. Actors & Roles (Tác nhân & Vai trò), 3.1 Ubiquitous (Luôn luôn đúng), 3.2 Event-driven (Kích hoạt bằng sự kiện), 3.3 State-driven (Khi ở trạng thái), 3.4 Unwanted (Lỗi / Edge Case) (+8 more)
 
 ### Community 40 - "Người viết: @antigravity | Ngày: 2026-06-23"
-Cohesion: 0.22
-Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Quản lý Hoàn tiền (Refunds Management Feature), Người viết: @antigravity | Ngày: 2026-06-23
+Cohesion: 0.14
+Nodes (13): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+5 more)
 
 ### Community 41 - "Người viết: @antigravity | Ngày: 2026-06-23"
 Cohesion: 0.22
@@ -308,8 +329,8 @@ Cohesion: 0.29
 Nodes (3): FeedbackController, Feedback, feedbackSchema
 
 ### Community 47 - "Người viết: @antigravity | Ngày: 2026-06-23"
-Cohesion: 0.18
-Nodes (10): 1. TECH STACK THỰC TẾ, 2. CẤU TRÚC THƯ MỤC THỰC TẾ, 3. API ENDPOINTS THỰC TẾ (đã triển khai), 4. DATABASE COLLECTIONS THỰC TẾ, 5. CÁC GAP ĐÃ ĐƯỢC GIẢI QUYẾT & BẢN ĐĂNG KÝ, 6. QUY TẮC AGENT, AGENTS.md — Hướng dẫn Coding Agent cho Optics Management Project, Auth & Users (+2 more)
+Cohesion: 0.17
+Nodes (11): 1. TECH STACK THỰC TẾ, 2. CẤU TRÚC THƯ MỤC THỰC TẾ, 3. API ENDPOINTS THỰC TẾ (đã triển khai), 4. DATABASE COLLECTIONS THỰC TẾ, 5. CÁC GAP ĐÃ ĐƯỢC GIẢI QUYẾT & BẢN ĐĂNG KÝ, 6. QUY TẮC AGENT, AGENTS.md — Hướng dẫn Coding Agent cho Optics Management Project, Auth & Users (+3 more)
 
 ### Community 48 - "Người viết: @antigravity | Ngày: 2026-06-23"
 Cohesion: 0.22
@@ -336,8 +357,8 @@ Cohesion: 0.29
 Nodes (7): 4.1 Danh sách sản phẩm (có lọc & phân trang), 4.2 Chi tiết sản phẩm, 4.3 Thêm sản phẩm mới, 4.4 Cập nhật sản phẩm, 4.5 Xóa sản phẩm, 4.6 Biến thể sản phẩm (Product Variants), 4. Sản phẩm & Biến thể (Products API) — Base: `/api/products`
 
 ### Community 54 - "PLAN.md"
-Cohesion: 0.29
-Nodes (6): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN
+Cohesion: 0.14
+Nodes (13): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+5 more)
 
 ### Community 55 - "TASK.md — Checkout & Thanh toán (Checkout Feature Task List)"
 Cohesion: 0.22
@@ -364,16 +385,16 @@ Cohesion: 0.33
 Nodes (6): 8.1 Vô hiệu hóa biến thể (bước 1), 8.2 Danh sách đơn bị ảnh hưởng (bước 2), 8.3 Tạo lô hoàn tiền (bước 3), 8.4 Danh sách yêu cầu hoàn tiền sẵn sàng (bước 4), 8.5 Xác nhận hoàn tiền (bước 5), 8. Hoàn tiền (Refund API) — Base: `/api/refund`
 
 ### Community 61 - "Feature: Bảng phân tích doanh số (Dashboard Analytics) — LIGHT SPECIFICATION"
-Cohesion: 0.33
-Nodes (5): 1. Business Context, 2. User Stories, 3. Technical Implementation, 4. Acceptance Criteria, Feature: Bảng phân tích doanh số (Dashboard Analytics) — LIGHT SPECIFICATION
+Cohesion: 0.14
+Nodes (13): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+5 more)
 
 ### Community 62 - "ProductVariantController"
 Cohesion: 0.40
 Nodes (5): 7.1 Tính yêu cầu thanh toán trước khi tạo đơn, 7.2 Sinh liên kết thanh toán VNPay, 7.3 Callback VNPay (IPN), 7.4 Mock thanh toán (chỉ dùng local/test), 7. Thanh toán VNPay (Payment API) — Base: `/payment` (hoặc `/api/payment`)
 
 ### Community 63 - "7. Thanh toán VNPay (Payment API) — Base: `/payment` (hoặc `/api/payment`)"
-Cohesion: 0.40
-Nodes (4): 1. Cấu Trúc 8 Thành Phần Cốt Lõi, 2. Ngôn Ngữ EARS Notation (Cách Viết Chống Mơ Hồ), 5 Mẫu Câu Chuẩn EARS, Hướng Dẫn Viết Spec Chuẩn & Chuyên Nghiệp
+Cohesion: 0.15
+Nodes (12): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+4 more)
 
 ### Community 64 - "Hướng Dẫn Viết Spec Chuẩn & Chuyên Nghiệp"
 Cohesion: 0.40
@@ -407,6 +428,18 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 Cohesion: 0.50
 Nodes (4): Các vai trò người dùng (Roles):, Mã trạng thái HTTP:, 📌 Quy tắc & Định dạng chung, Định dạng response chuẩn:
 
+### Community 74 - "TASKS.md — Danh sách task: Dashboard Analytics"
+Cohesion: 0.15
+Nodes (12): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+4 more)
+
+### Community 75 - "TASKS.md — Danh sách task: Refunds Management (Manager/Admin)"
+Cohesion: 0.15
+Nodes (12): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+4 more)
+
+### Community 80 - "TASK.md"
+Cohesion: 0.15
+Nodes (12): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Backend (đã có), Cách tiếp cận tổng thể (+4 more)
+
 ### Community 81 - "Người viết: @antigravity | Ngày: 2026-06-23"
 Cohesion: 0.22
 Nodes (8): 1. ARCHITECTURAL APPROACH, 2. COMPONENTS, 3. DATA FLOW, 4. DEPENDENCIES, 5. RISKS & MITIGATIONS, 6. QUESTIONS FOR HUMAN, Người viết: @antigravity | Ngày: 2026-06-23, PLAN.md — Checkout & Thanh toán (Checkout Feature Implementation Plan)
@@ -416,12 +449,12 @@ Cohesion: 0.25
 Nodes (7): ARTICLE 1 — TECH STACK (immutable), ARTICLE 2 — CODING STANDARDS, ARTICLE 3 — SECURITY POLICIES (non-negotiable), ARTICLE 4 — DATABASE SCHEMA (MongoDB), ARTICLE 5 — API CONVENTIONS, ARTICLE 6 — OUT-OF-SCOPE (explicitly excluded), CONSTITUTION.md — Project Law
 
 ### Community 83 - "Architecture Decisions (ADR)"
-Cohesion: 0.29
-Nodes (5): ADR-001: Chọn JWT + Google OAuth2 thay vì Session, ADR-002: Chọn Mongoose ODM thay vì MongoDB Native Driver, ADR-003: Nhúng dữ liệu Payment vào Order thay vì tách collection riêng, Architecture Decisions (ADR), graphify
+Cohesion: 0.14
+Nodes (13): 1. Quyết định Kiến trúc (ADRs), 2. Các lệnh phát triển thường dùng (Dev Commands), 3. Cấu trúc thư mục (Directory Structure), 4. Quy chuẩn Validate & Xử lý lỗi (Validation Standards), 5. Duy trì Mạng lưới Tri thức (Graphify & Wiki), A. Ràng buộc ở Frontend (FE Validation), ADR-001: Chọn JWT + Google OAuth2 thay vì Session, ADR-002: Chọn Mongoose ODM thay vì MongoDB Native Driver (+5 more)
 
 ### Community 84 - "BÁO CÁO AUDIT RESPONSIVE MOBILE — PHASE 3 & STOREFRONT (Full Suite)"
-Cohesion: 0.29
-Nodes (6): 1. `HomePage.jsx`, 2. `CheckoutPage.jsx`, BÁO CÁO AUDIT RESPONSIVE MOBILE — PHASE 3 & STOREFRONT (Full Suite), 📑 BẢNG TỔNG HỢP DANH SÁCH FILE ĐÃ AUDIT, 🔍 CHI TIẾT KẾT QUẢ AUDIT STOREFRONT & CHECKOUT (PHASE 3), 🚀 TỔNG HỢP CÁC ACTION FIX UY TIÊN HÀNG ĐẦU (MUST-FIX FIRST)
+Cohesion: 0.21
+Nodes (3): policyApi, orderApi, httpClient
 
 ### Community 85 - "TASK.md — Checkout & Thanh toán (Checkout Feature Task List)"
 Cohesion: 0.29
@@ -436,40 +469,72 @@ Cohesion: 0.38
 Nodes (4): ImportVariantModal(), ProductVariantManagePage(), EMPTY_FORM, VariantModal()
 
 ### Community 88 - "useLoginForm.js"
-Cohesion: 0.60
-Nodes (3): LoginForm(), loginSchema, useLoginForm()
-
-### Community 89 - "RegisterForm.jsx"
-Cohesion: 0.60
-Nodes (3): RegisterForm(), registerSchema, useRegisterForm()
+Cohesion: 0.17
+Nodes (11): 1. TECH STACK THỰC TẾ, 2. CẤU TRÚC THƯ MỤC THỰC TẾ, 3. API ENDPOINTS THỰC TẾ (đã triển khai), 4. DATABASE COLLECTIONS THỰC TẾ, 5. CÁC GAP ĐÃ ĐƯỢC GIẢI QUYẾT & BẢN ĐĂNG KÝ, 6. QUY TẮC AGENT, AGENTS.md — Hướng dẫn Coding Agent cho Optics Management Project, Auth & Users (+3 more)
 
 ### Community 90 - "ManagerDashboardPage.jsx"
 Cohesion: 0.70
 Nodes (3): useDashboardRevenue(), getDashboardImageUrl(), ManagerDashboardPage()
 
 ### Community 91 - "ProfileLayout.jsx"
-Cohesion: 0.50
-Nodes (3): ProfileSidebar(), sidebarItems, ProfileLayout()
+Cohesion: 0.18
+Nodes (9): RegisterForm(), registerSchema, useRegisterForm(), ManagerLayout(), ProfileSidebar(), sidebarItems, ProfileLayout(), HomePage() (+1 more)
+
+### Community 97 - "react-helmet-async"
+Cohesion: 0.33
+Nodes (5): AuthLayout(), Footer(), Header(), MainLayout(), MobileBottomNav()
+
+### Community 102 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Sổ Địa chỉ Giao hàng (Address Book Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 103 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Bảng phân tích doanh số (Dashboard Analytics Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 104 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Quản lý Hoàn tiền (Refunds Management Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 105 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Đánh giá Sản phẩm (Feedback / Reviews Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 106 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Quản lý Tròng kính (Lens Management Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 107 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Quản lý Đơn hàng (Order Management Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 108 - "Người viết: @antigravity | Ngày: 2026-07-23"
+Cohesion: 0.22
+Nodes (8): 1. PROBLEM STATEMENT, 2. DOMAIN KNOWLEDGE, 3. STAKEHOLDERS, 4. CONSTRAINTS (ràng buộc không thể thay đổi), 5. ASSUMPTIONS (giả định — cần confirm), 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời), CONTEXT.md — Thanh toán VNPay (Payment Integration Feature), Người viết: @antigravity | Ngày: 2026-07-23
+
+### Community 121 - "AddressController"
+Cohesion: 0.24
+Nodes (3): AddressController, validateAddressInputs(), AddressSchema
 
 ## Knowledge Gaps
-- **514 isolated node(s):** `__filename`, `__dirname`, `registerSchema`, `loginSchema`, `googleLoginSchema` (+509 more)
+- **714 isolated node(s):** `__filename`, `__dirname`, `registerSchema`, `loginSchema`, `googleLoginSchema` (+709 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `xlsx` connect `dependencies` to `Feature: Giỏ hàng (Cart) — SPECIFICATION`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Why does `httpError()` connect `Feature: Giỏ hàng (Cart) — SPECIFICATION` to `server.js`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `createApp()` (e.g. with `errorHandler()` and `notFound()`) actually correct?**
   _`createApp()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `__filename`, `__dirname`, `registerSchema` to the rest of the system?**
-  _514 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _714 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ProductVariant.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.07051282051282051 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1225296442687747 - nodes in this community are weakly interconnected._
 - **Should `dependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
 - **Should `index.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.08585858585858586 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11904761904761904 - nodes in this community are weakly interconnected._

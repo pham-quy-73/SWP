@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-06-15
 **Priority:** Medium  
 **Risk Level:** Low (Read-only aggregation, không thay đổi dữ liệu)  
 **Related Specs:** `feature-orders`, `feature-products`  
@@ -18,6 +18,7 @@
 Ban giám đốc và quản lý cửa hàng Optics cần một giao diện tổng quát để nắm bắt sức khỏe tài chính và hoạt động kinh doanh hàng ngày. Dashboard cung cấp dữ liệu tổng hợp thời gian thực (realtime aggregation) từ các collection `orders`, `orderitems`, `products`, `product_variants` — không lưu cache, mỗi lần gọi đều truy vấn trực tiếp.
 
 **Pain point hiện tại:**
+
 - Quản lý phải tự tổng hợp doanh thu từ danh sách đơn hàng
 - Không có cảnh báo sớm khi sản phẩm sắp hết hàng
 - Không biết sản phẩm nào bán chạy nhất để điều chỉnh chiến lược nhập hàng
@@ -34,10 +35,10 @@ Ban giám đốc và quản lý cửa hàng Optics cần một giao diện tổn
 
 ## 2. Actors & Roles (Tác nhân & Vai trò)
 
-| Actor | Vai trò | Phân quyền |
-| :--- | :--- | :--- |
-| **MANAGER** | Quản lý | Toàn quyền xem Dashboard |
-| **ADMIN** | Quản trị | Toàn quyền xem Dashboard |
+| Actor        | Vai trò    | Phân quyền                                                                 |
+| :----------- | :--------- | :------------------------------------------------------------------------- |
+| **MANAGER**  | Quản lý    | Toàn quyền xem Dashboard                                                   |
+| **ADMIN**    | Quản trị   | Toàn quyền xem Dashboard                                                   |
 | **CUSTOMER** | Khách hàng | **KHÔNG** có quyền truy cập (chặn bởi `requireRole(['ADMIN', 'MANAGER'])`) |
 
 ---
@@ -45,6 +46,7 @@ Ban giám đốc và quản lý cửa hàng Optics cần một giao diện tổn
 ## 3. Functional Requirements (Yêu cầu chức năng — EARS)
 
 > **Nguồn hành vi:**
+>
 > - Backend: `src/backend/controllers/DashboardController.js`
 > - Routes: `src/backend/routes/dashboard.routes.js`
 
@@ -146,12 +148,12 @@ Ban giám đốc và quản lý cửa hàng Optics cần một giao diện tổn
 
 Dashboard API is **read-only** — no dedicated collection. Data is aggregated from:
 
-| Source Collection | Fields Used | Purpose |
-| :--- | :--- | :--- |
-| `orders` | `status`, `total_amount`, `created_at` | Revenue, active orders, orders today |
-| `orderitems` | `product_id`, `lens_id`, `quantity`, `unit_price`, `order_id` | Best sellers, prescription ratio |
-| `products` | `name`, `brand`, `imageUrl`, `category` | Populate top products |
-| `product_variants` | `status`, `quantity` | Low stock count |
+| Source Collection  | Fields Used                                                   | Purpose                              |
+| :----------------- | :------------------------------------------------------------ | :----------------------------------- |
+| `orders`           | `status`, `total_amount`, `created_at`                        | Revenue, active orders, orders today |
+| `orderitems`       | `product_id`, `lens_id`, `quantity`, `unit_price`, `order_id` | Best sellers, prescription ratio     |
+| `products`         | `name`, `brand`, `imageUrl`, `category`                       | Populate top products                |
+| `product_variants` | `status`, `quantity`                                          | Low stock count                      |
 
 ### Response Schema
 
@@ -179,11 +181,11 @@ Dashboard API is **read-only** — no dedicated collection. Data is aggregated f
 
 ## 6. Error Handling (Xử lý lỗi)
 
-| Error | HTTP Status | Trigger | Hành vi hệ thống |
-| :--- | :---: | :--- | :--- |
-| `UNAUTHORIZED` | 401 | Thiếu hoặc JWT hết hạn | Middleware chặn |
-| `FORBIDDEN` | 403 | Role không phải MANAGER/ADMIN | Middleware chặn |
-| Internal aggregation error | 500 | MongoDB query fail | Đẩy xuống `errorHandler` chung |
+| Error                      | HTTP Status | Trigger                       | Hành vi hệ thống               |
+| :------------------------- | :---------: | :---------------------------- | :----------------------------- |
+| `UNAUTHORIZED`             |     401     | Thiếu hoặc JWT hết hạn        | Middleware chặn                |
+| `FORBIDDEN`                |     403     | Role không phải MANAGER/ADMIN | Middleware chặn                |
+| Internal aggregation error |     500     | MongoDB query fail            | Đẩy xuống `errorHandler` chung |
 
 ---
 

@@ -10,9 +10,9 @@
     "semantic_hash": "02b07d91567f85f68c31b46559c28a1d"
   },
   "src/backend/controllers/AddressController.js": {
-    "mtime": 1783479100.7792249,
-    "ast_hash": "43f7113ed8e3b73f0ae4d24441406705",
-    "semantic_hash": "43f7113ed8e3b73f0ae4d24441406705"
+    "mtime": 1784902293.037666,
+    "ast_hash": "bc41e0886d7a862b385b56dbb5f91b6a",
+    "semantic_hash": ""
   },
   "src/backend/controllers/AuthController.js": {
     "mtime": 1784691459.721973,
@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "src/backend/controllers/OrderController.js": {
-    "mtime": 1784714127.6475396,
-    "ast_hash": "c19aca66dd8e444f3e412f9b1c2e8116",
+    "mtime": 1784902285.2373798,
+    "ast_hash": "2affa8c09f2da900a81a59bd737431e8",
     "semantic_hash": ""
   },
   "src/backend/controllers/PaymentController.js": {
@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/backend/controllers/ProductVariantController.js": {
-    "mtime": 1784561133.067827,
-    "ast_hash": "308cd0f40903ff6eba5c0ca9d0398fc9",
+    "mtime": 1784823042.2564802,
+    "ast_hash": "a383b7953c07b58a4548a9d7db7f86ae",
     "semantic_hash": ""
   },
   "src/backend/controllers/RefundController.js": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "src/frontend/src/feature/checkout/store/useCheckoutFlow.js": {
-    "mtime": 1784564685.6029994,
-    "ast_hash": "cf5301b6f6ffd949b2cae08bec932795",
+    "mtime": 1784902542.431934,
+    "ast_hash": "f27f1a0f0363362b81caa488ec8fdacf",
     "semantic_hash": ""
   },
   "src/frontend/src/feature/checkout/store/useCheckoutStore.js": {
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "src/frontend/src/feature/manager/page/products/ProductManagePage.jsx": {
-    "mtime": 1784804395.0715356,
-    "ast_hash": "081a3ef359383bd8334ff932cb89ed42",
+    "mtime": 1784827901.6785915,
+    "ast_hash": "88241d7a4ed285d5a02d7f94be6d7a37",
     "semantic_hash": ""
   },
   "src/frontend/src/feature/manager/page/products/ProductModal.jsx": {
@@ -430,9 +430,9 @@
     "semantic_hash": ""
   },
   "src/frontend/src/feature/product/components/PrescriptionModal.jsx": {
-    "mtime": 1781711554.5116684,
-    "ast_hash": "90898649ae0d9a1e80182f34c5279a6d",
-    "semantic_hash": "90898649ae0d9a1e80182f34c5279a6d"
+    "mtime": 1784901750.768653,
+    "ast_hash": "93bbdee7f438a912bfd35b88192a783f",
+    "semantic_hash": ""
   },
   "src/frontend/src/feature/product/components/ProductFeedback.jsx": {
     "mtime": 1784555221.014752,
@@ -440,8 +440,8 @@
     "semantic_hash": ""
   },
   "src/frontend/src/feature/product/components/ProductForm.jsx": {
-    "mtime": 1784655126.8310728,
-    "ast_hash": "b3ea9c349919a1166ac6fc50df39a0ed",
+    "mtime": 1784901762.998436,
+    "ast_hash": "92e46558adc24f730edbef6e280c1bc0",
     "semantic_hash": ""
   },
   "src/frontend/src/feature/product/components/ProductGallery.jsx": {
@@ -460,9 +460,9 @@
     "semantic_hash": ""
   },
   "src/frontend/src/feature/product/store/usePrescriptionStore.js": {
-    "mtime": 1781711546.0971236,
-    "ast_hash": "93a831ca56bcdaaf88844336bfe2aad8",
-    "semantic_hash": "93a831ca56bcdaaf88844336bfe2aad8"
+    "mtime": 1784901744.620523,
+    "ast_hash": "09b20280af0fa3adcfe35703b6f3bc55",
+    "semantic_hash": ""
   },
   "src/frontend/src/feature/profile/api/api.js": {
     "mtime": 1784598293.2160864,
@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "src/frontend/src/feature/profile/page/MyAddresses.jsx": {
-    "mtime": 1784805397.3529031,
-    "ast_hash": "f16aee32fb3d4d737d17a9dbe1203445",
+    "mtime": 1784902519.115705,
+    "ast_hash": "bf8e859b7146ca717bcf5ba3b632f592",
     "semantic_hash": ""
   },
   "src/frontend/src/feature/profile/page/MyOrder.jsx": {
@@ -620,43 +620,43 @@
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-dashboard/CONTEXT.md": {
-    "mtime": 1782151367.0004625,
-    "ast_hash": "e0e2e6985d0712891b0e4c6e1d348349",
+    "mtime": 1784822516.132421,
+    "ast_hash": "636f751bf3ddfc5cb2483e0bcf9430d6",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-dashboard/PLAN.md": {
-    "mtime": 1782176654.7116444,
-    "ast_hash": "4c6f6b990aa02d381a75a52be0a10d3f",
+    "mtime": 1784822521.7684462,
+    "ast_hash": "d22b9bf2dbce68426d747ceeafbc42d2",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-dashboard/TASKS.md": {
-    "mtime": 1782177190.204319,
-    "ast_hash": "0872b8a4afea8aa9ebeafd2aa0b4512e",
+    "mtime": 1784822525.9112926,
+    "ast_hash": "84bd1d75e8298e6a9615fe17df01c4b8",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-dashboard/dashboard.spec.md": {
-    "mtime": 1782151364.9747698,
-    "ast_hash": "9dd6721253cbfb5e113ce088b2f81e44",
+    "mtime": 1784821950.9975274,
+    "ast_hash": "746c9efa360b05cca7a7b9c5dd3c6ea0",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-refunds/CONTEXT.md": {
-    "mtime": 1782151381.1843822,
-    "ast_hash": "acdf5ad98f012733bac715fabaa1a655",
+    "mtime": 1784822530.4393451,
+    "ast_hash": "bdf23d84089f3bf7f000a3e0adcbdf50",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-refunds/PLAN.md": {
-    "mtime": 1782177470.6914885,
-    "ast_hash": "61264edde03aa80ffbf1c4a6d27e702d",
+    "mtime": 1784822535.9526322,
+    "ast_hash": "7a1f49f9d01a7be2b7cc853985be5c64",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-refunds/TASKS.md": {
-    "mtime": 1782177570.3006067,
-    "ast_hash": "0e726176d9475b986870fc0c39ef60bf",
+    "mtime": 1784822540.1226048,
+    "ast_hash": "b3462c9999f691e83d828ad0b64cb802",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-refunds/refunds.spec.md": {
-    "mtime": 1782151375.429155,
-    "ast_hash": "b0787d56908722b94473a009f98f6d96",
+    "mtime": 1784822031.9513304,
+    "ast_hash": "35dfda408a147c14bb23775ae0396203",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-users/CONTEXT.md": {
@@ -675,8 +675,8 @@
     "semantic_hash": ""
   },
   ".sdd/specs/feature-admin-users/users.spec.md": {
-    "mtime": 1782151356.6322916,
-    "ast_hash": "f1fe1e6e4b0248681489abbd894b3e69",
+    "mtime": 1784820687.0721,
+    "ast_hash": "b97c07c22cead1d84c1a90d7e26679b0",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-auth/CONTEXT.md": {
@@ -715,8 +715,8 @@
     "semantic_hash": ""
   },
   ".sdd/specs/feature-cart/cart.spec.md": {
-    "mtime": 1784708421.415531,
-    "ast_hash": "8c92cf8c35fbd381b8e1d819f15d82da",
+    "mtime": 1784901980.4820967,
+    "ast_hash": "af5d7961d433181d26ce1e864b042b35",
     "semantic_hash": ""
   },
   ".sdd/specs/feature-checkout/CONTEXT.md": {
@@ -774,24 +774,9 @@
     "ast_hash": "5836824b7a08b46773d2af77a4581f32",
     "semantic_hash": ""
   },
-  "docs/PLAN.md": {
-    "mtime": 1782151163.5138464,
-    "ast_hash": "a9b9d58b6908cce0413637173d4ec576",
-    "semantic_hash": ""
-  },
-  "docs/TASK.md": {
-    "mtime": 1782175826.2883809,
-    "ast_hash": "2145bc4e4fde1efc732531edb7937167",
-    "semantic_hash": ""
-  },
   "docs/architecture.md": {
     "mtime": 1783789498.807012,
     "ast_hash": "0774aba614643b0cd5aedaf6691d3f7a",
-    "semantic_hash": ""
-  },
-  "docs/spec.md": {
-    "mtime": 1783788337.4262092,
-    "ast_hash": "eb0043880ea4f86225c4562860472de2",
     "semantic_hash": ""
   },
   "src/frontend/index.html": {
@@ -895,8 +880,8 @@
     "semantic_hash": ""
   },
   "src/backend/tests/integration/address.routes.test.js": {
-    "mtime": 1784473534.522817,
-    "ast_hash": "9aa197ba89a2cfd0ed5d4de4c7723138",
+    "mtime": 1784902309.000275,
+    "ast_hash": "df052d755dea7a399ac2d11c2e59913a",
     "semantic_hash": ""
   },
   "src/backend/tests/integration/auth.routes.test.js": {
@@ -920,8 +905,8 @@
     "semantic_hash": ""
   },
   "src/backend/tests/integration/order.routes.test.js": {
-    "mtime": 1784658758.7885928,
-    "ast_hash": "e151a2a9f2e3bb3cb4b5fe93a1e26639",
+    "mtime": 1784902300.792622,
+    "ast_hash": "c4c75023ce75242261d16405d085a4d3",
     "semantic_hash": ""
   },
   "src/backend/tests/integration/payment.routes.test.js": {
@@ -1030,13 +1015,13 @@
     "semantic_hash": ""
   },
   "docs/AGENTS.md": {
-    "mtime": 1782145271.3063307,
-    "ast_hash": "70769e0850e7fad773927de01d88e939",
+    "mtime": 1784902949.2434666,
+    "ast_hash": "d5e2dea48dca99fb30689e16f5383f01",
     "semantic_hash": ""
   },
   "docs/CLAUDE.md": {
-    "mtime": 1783991291.009205,
-    "ast_hash": "1eacc44c219bf43f5408ba95ce7565a8",
+    "mtime": 1784902760.4350016,
+    "ast_hash": "cec1472ef34212dbb766a49d2840a154",
     "semantic_hash": ""
   },
   "docs/CONSTITUTION.md": {
@@ -1054,14 +1039,119 @@
     "ast_hash": "1b8dd3c1badb6f9d36973f56af99698e",
     "semantic_hash": ""
   },
-  "docs/RESPONSIVE_MOBILE_AUDIT_REPORT.md": {
-    "mtime": 1784803957.237159,
-    "ast_hash": "f7185ae30de9cd6f8b343773a66f9434",
-    "semantic_hash": ""
-  },
   "src/backend/TEST_REPORT.md": {
     "mtime": 1784476977.8831134,
     "ast_hash": "5aa4e9da00913e550c5303b485eb6571",
+    "semantic_hash": ""
+  },
+  "src/frontend/src/feature/product/utils/prescriptionValidation.js": {
+    "mtime": 1784901720.9353845,
+    "ast_hash": "cdbc03e438349df32a28601240f5ce95",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-address/CONTEXT.md": {
+    "mtime": 1784822502.7638056,
+    "ast_hash": "e30e28a212bc32594f1e6d8ff8e5647a",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-address/PLAN.md": {
+    "mtime": 1784822507.5927906,
+    "ast_hash": "d6109eecb692d7a7c845cc60323463db",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-address/TASKS.md": {
+    "mtime": 1784822511.9677637,
+    "ast_hash": "af27f9d3b4a2c1ccf7bde3e4c32ba058",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-address/address.spec.md": {
+    "mtime": 1784902563.972764,
+    "ast_hash": "0a5dad2f722e67875f40c2f8674c82d1",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-feedback/CONTEXT.md": {
+    "mtime": 1784822475.5028195,
+    "ast_hash": "982b1ff6297a4aa328c56c6b83d017a7",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-feedback/PLAN.md": {
+    "mtime": 1784822480.68872,
+    "ast_hash": "3627d414398cffb3ef89763754d1406c",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-feedback/TASKS.md": {
+    "mtime": 1784822484.8313265,
+    "ast_hash": "d15b614f665f29d7ec6464b2730d1edd",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-feedback/feedback.spec.md": {
+    "mtime": 1784821663.9940832,
+    "ast_hash": "1f501ca381a61ab9070ec013f7dbc725",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-lens/CONTEXT.md": {
+    "mtime": 1784822489.1659925,
+    "ast_hash": "64e4958238120e7cc02b5084de9251c6",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-lens/PLAN.md": {
+    "mtime": 1784822494.1590984,
+    "ast_hash": "c520d3015af132934b58c6f0ff0c9804",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-lens/TASKS.md": {
+    "mtime": 1784822498.0655737,
+    "ast_hash": "6986b2b52360f76c509856b750558ac3",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-lens/lens.spec.md": {
+    "mtime": 1784821728.5578725,
+    "ast_hash": "04b0bc8b2a1bd283d065c302a60c285a",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-orders/CONTEXT.md": {
+    "mtime": 1784822348.4726503,
+    "ast_hash": "ccd8249f32d3cdd21a051bb6e1c91990",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-orders/PLAN.md": {
+    "mtime": 1784822399.8730128,
+    "ast_hash": "7fa7889f47d59f6a90ad2d1c217aff18",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-orders/TASKS.md": {
+    "mtime": 1784822450.8828049,
+    "ast_hash": "3fb6987b5239b5622b97f43802880180",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-orders/orders.spec.md": {
+    "mtime": 1784902586.224003,
+    "ast_hash": "f2cafc5e491a99e21957e39459703eb9",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-payment/CONTEXT.md": {
+    "mtime": 1784822457.907578,
+    "ast_hash": "db08f06207731611e440458db5eec87c",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-payment/PLAN.md": {
+    "mtime": 1784822465.8401816,
+    "ast_hash": "802fc8562aee710d047fb27f727284dc",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-payment/TASKS.md": {
+    "mtime": 1784822470.6194265,
+    "ast_hash": "aa4897215c01550dfbaf29655187d295",
+    "semantic_hash": ""
+  },
+  ".sdd/specs/feature-payment/payment.spec.md": {
+    "mtime": 1784821598.3815775,
+    "ast_hash": "42478832e443c475bf0fa5c34e05c08b",
+    "semantic_hash": ""
+  },
+  ".agents/AGENTS.md": {
+    "mtime": 1784903012.4437404,
+    "ast_hash": "e6dd9256fa59d4687039f707488c8a0c",
     "semantic_hash": ""
   }
 }

@@ -1,5 +1,4 @@
 # PLAN.md — Giỏ hàng (Cart Feature Implementation Plan)
-# Người viết: @antigravity | Ngày: 2026-06-23
 
 ## 1. ARCHITECTURAL APPROACH
 Hệ thống sử dụng mô hình giỏ hàng thuần túy phía client (Client-side Cart Pattern) để đạt hiệu năng xử lý cao nhất. 

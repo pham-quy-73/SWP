@@ -1,5 +1,4 @@
 # PLAN.md — Checkout & Thanh toán (Checkout Feature Implementation Plan)
-# Người viết: @antigravity | Ngày: 2026-06-23
 
 ## 1. ARCHITECTURAL APPROACH
 Hệ thống áp dụng luồng đặt hàng chuyển hướng thanh toán (Redirect Payment Pattern) kết hợp xử lý tồn kho nguyên tố, sử dụng tác vụ Worker chạy nền để tự động hóa việc giải phóng kho hàng treo.
