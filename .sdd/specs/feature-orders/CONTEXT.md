@@ -1,5 +1,4 @@
 # CONTEXT.md — Quản lý Đơn hàng (Order Management Feature)
-# Người viết: @antigravity | Ngày: 2026-07-23
 
 ## 1. PROBLEM STATEMENT
 *   **Đơn hàng PENDING bị treo vô thời hạn:** Nếu khách không thanh toán sau khi đặt đơn, đơn hàng ở trạng thái PENDING sẽ giữ tồn kho vĩnh viễn, dẫn đến sản phẩm bị "lock" mà không bán được cho khách khác.

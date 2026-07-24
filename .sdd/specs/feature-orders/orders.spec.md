@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-07-10
 **Priority:** Critical  
 **Risk Level:** Critical (Giao dịch tài chính, quản lý tồn kho, dữ liệu đơn kính y tế)  
 **Related Specs:** `feature-payment`, `feature-products`, `feature-checkout`, `feature-admin-refunds`  
@@ -80,7 +80,7 @@ Hệ thống Optics Management xoay quanh vòng đời đơn hàng — từ lúc
 
 - **E-2:** WHEN creating order, THE system SHALL validate each item's `quantity` is a positive integer (≥ 1); IF invalid, SHALL return HTTP 400 `VALIDATION_ERROR`.
 
-- **E-3:** WHEN `phoneNumber` is provided, THE system SHALL validate it matches Vietnamese format `^(\+84|0)\d{8,10}$` (after removing spaces, dots, dashes); IF invalid, SHALL return HTTP 400 `VALIDATION_ERROR`.
+- **E-3:** WHEN creating order, THE system SHALL validate shipping details: (1) `recipientName` must be present, non-empty, and ≤ 100 characters, (2) `phoneNumber` must be present, non-empty, and match Vietnamese format `^(\+84|0)\d{8,10}$` (after removing spaces, dots, dashes), (3) `deliveryAddress` must be present, non-empty, and between `[3..300]` characters; IF any check fails, THE system SHALL return HTTP 400 `VALIDATION_ERROR` with a descriptive message.
 
 - **E-4:** WHEN `bankInfo.bank_account_number` is provided, THE system SHALL validate it contains only digits; IF invalid, SHALL return HTTP 400 `VALIDATION_ERROR`.
 

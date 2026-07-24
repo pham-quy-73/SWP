@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-07-19  
 **Priority:** Medium  
 **Risk Level:** Low (CRUD chuẩn, ownership-based, không ảnh hưởng giao dịch tài chính)  
 **Related Specs:** `feature-orders`, `feature-products`  

@@ -1,5 +1,4 @@
 # CONTEXT.md — Quản lý Tròng kính (Lens Management Feature)
-# Người viết: @antigravity | Ngày: 2026-07-23
 
 ## 1. PROBLEM STATEMENT
 *   **Đứt gãy dữ liệu lịch sử đơn hàng:** Nếu xóa trực tiếp (hard delete) một loại tròng kính khỏi DB, các đơn hàng cũ chứa loại tròng kính này sẽ bị lỗi khi truy vấn hoặc thống kê doanh thu.

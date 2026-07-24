@@ -20,10 +20,47 @@ export const useCheckoutFlow = () => {
       setIsSubmitting(true);
 
       // --- VALIDATION NHANH ---
-      if (!shippingData.phone || !shippingData.address || !shippingData.name) {
+      const name = shippingData.name?.trim() || '';
+      const phone = shippingData.phone?.trim().replace(/[\s.-]/g, '') || '';
+      const address = shippingData.address?.trim() || '';
+
+      if (!name || !phone || !address) {
         toast.error('Thiếu thông tin giao hàng', {
           id: toastId,
-          description: 'Vui lòng kiểm tra lại họ tên, số điện thoại và địa chỉ, cũng như thông tin ngân hàng nếu chọn thanh toán chuyển khoản.',
+          description: 'Vui lòng kiểm tra lại họ tên, số điện thoại và địa chỉ nhận hàng.',
+        });
+        setIsSubmitting(false);
+        setStep(1);
+        return;
+      }
+      if (name.length > 100) {
+        toast.error('Họ tên không được dài quá 100 ký tự', { id: toastId });
+        setIsSubmitting(false);
+        setStep(1);
+        return;
+      }
+      if (!/^(\+84|0)\d{8,10}$/.test(phone)) {
+        toast.error('Số điện thoại không hợp lệ', {
+          id: toastId,
+          description: 'Số điện thoại phải từ 9 đến 11 chữ số, bắt đầu bằng 0 hoặc +84.',
+        });
+        setIsSubmitting(false);
+        setStep(1);
+        return;
+      }
+      if (address.length < 3) {
+        toast.error('Địa chỉ giao hàng quá ngắn', {
+          id: toastId,
+          description: 'Địa chỉ giao hàng phải từ 3 ký tự trở lên.',
+        });
+        setIsSubmitting(false);
+        setStep(1);
+        return;
+      }
+      if (address.length > 300) {
+        toast.error('Địa chỉ giao hàng quá dài', {
+          id: toastId,
+          description: 'Địa chỉ giao hàng không được vượt quá 300 ký tự.',
         });
         setIsSubmitting(false);
         setStep(1);
@@ -168,18 +205,35 @@ export const useCheckoutFlow = () => {
   const handleContinue = () => {
     if (isSubmitting) return;
     if (step === 1) {
-      if (!shippingData.name?.trim() || !shippingData.phone?.trim() || !shippingData.address?.trim()) {
+      const name = shippingData.name?.trim() || '';
+      const phone = shippingData.phone?.trim().replace(/[\s.-]/g, '') || '';
+      const address = shippingData.address?.trim() || '';
+
+      if (!name || !phone || !address) {
         toast.error('Thiếu thông tin giao hàng', {
           description: 'Vui lòng cung cấp đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng để tiếp tục.'
         });
         return;
       }
-
-      const phoneClean = shippingData.phone.replace(/\s/g, '');
-      const phoneRegex = /^[0-9+]{9,15}$/;
-      if (!phoneRegex.test(phoneClean)) {
+      if (name.length > 100) {
+        toast.error('Họ tên người nhận không được dài quá 100 ký tự');
+        return;
+      }
+      if (!/^(\+84|0)\d{8,10}$/.test(phone)) {
         toast.error('Số điện thoại không hợp lệ', {
-          description: 'Số điện thoại phải từ 9 đến 15 chữ số.'
+          description: 'Số điện thoại phải từ 9 đến 11 chữ số, bắt đầu bằng 0 hoặc +84.'
+        });
+        return;
+      }
+      if (address.length < 3) {
+        toast.error('Địa chỉ giao hàng quá ngắn', {
+          description: 'Địa chỉ giao hàng phải từ 3 ký tự trở lên.'
+        });
+        return;
+      }
+      if (address.length > 300) {
+        toast.error('Địa chỉ giao hàng quá dài', {
+          description: 'Địa chỉ giao hàng không được vượt quá 300 ký tự.'
         });
         return;
       }

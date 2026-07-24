@@ -2,7 +2,7 @@
 
 **Status:** Done (đã hoàn thành CRUD + tích hợp PricingService)
 **Author:** AI Agent
-**Date:** 2026-07-23
+**Date:** 2026-07-12
 **Spec ref:** `lens.spec.md`
 **Risk Level:** Medium (ảnh hưởng trực tiếp đến tính tiền đơn hàng)
 

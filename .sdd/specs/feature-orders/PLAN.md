@@ -2,7 +2,7 @@
 
 **Status:** Done (đã có code đầy đủ cả BE lẫn FE)
 **Author:** AI Agent
-**Date:** 2026-07-23
+**Date:** 2026-07-10
 **Spec ref:** `orders.spec.md`
 **Risk Level:** Critical (giao dịch tài chính, tồn kho, đơn kính y tế)
 

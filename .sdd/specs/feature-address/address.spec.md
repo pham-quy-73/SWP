@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-07-15
 **Priority:** Medium  
 **Risk Level:** Low (CRUD cá nhân, ownership-based, không ảnh hưởng giao dịch)  
 **Related Specs:** `feature-checkout`, `feature-orders`  
@@ -18,6 +18,7 @@
 Khách hàng mua gọng kính trực tuyến cần nhập địa chỉ giao hàng mỗi lần đặt đơn. Sổ địa chỉ cho phép khách lưu trữ nhiều địa chỉ (nhà, công ty, người thân...) và chọn nhanh khi checkout, tiết kiệm thời gian nhập liệu lặp lại. Mỗi khách có đúng một địa chỉ mặc định (default) — khi checkout, hệ thống tự động điền địa chỉ mặc định.
 
 **Pain point hiện tại:**
+
 - Khách phải nhập lại địa chỉ giao hàng mỗi lần đặt hàng
 - Cần quản lý "địa chỉ mặc định" để checkout nhanh
 - Khi xóa địa chỉ mặc định, cần auto-fallback sang địa chỉ khác
@@ -33,16 +34,17 @@ Khách hàng mua gọng kính trực tuyến cần nhập địa chỉ giao hàn
 
 ## 2. Actors & Roles (Tác nhân & Vai trò)
 
-| Actor | Vai trò | Phân quyền |
-| :--- | :--- | :--- |
-| **Authenticated User** | Bất kỳ user đăng nhập | CRUD toàn bộ trên địa chỉ của chính mình |
-| **System** | Hệ thống | Tự động đặt default cho địa chỉ đầu tiên, auto-fallback khi xóa default |
+| Actor                  | Vai trò               | Phân quyền                                                              |
+| :--------------------- | :-------------------- | :---------------------------------------------------------------------- |
+| **Authenticated User** | Bất kỳ user đăng nhập | CRUD toàn bộ trên địa chỉ của chính mình                                |
+| **System**             | Hệ thống              | Tự động đặt default cho địa chỉ đầu tiên, auto-fallback khi xóa default |
 
 ---
 
 ## 3. Functional Requirements (Yêu cầu chức năng — EARS)
 
 > **Nguồn hành vi:**
+>
 > - Backend: `src/backend/controllers/AddressController.js`, `src/backend/models/Address.js`
 > - Routes: `src/backend/routes/address.routes.js`
 
@@ -64,7 +66,7 @@ Khách hàng mua gọng kính trực tuyến cần nhập địa chỉ giao hàn
 
 #### 3.2.2 Tạo Địa chỉ Mới
 
-- **E-2:** WHEN user submits `POST /api/addresses` with `{ label?, recipientName, phoneNumber, deliveryAddress, isDefault? }`, THE system SHALL validate: `recipientName`, `phoneNumber`, `deliveryAddress` are all present and non-empty.
+- **E-2:** WHEN user submits `POST /api/addresses` with `{ label?, recipientName, phoneNumber, deliveryAddress, isDefault? }`, THE system SHALL validate that: (1) `recipientName` is present, non-empty, and ≤ 100 characters, (2) `phoneNumber` is present, non-empty, and matches format `^(\+84|0)\d{8,10}$` after stripping whitespaces/dots/dashes, (3) `deliveryAddress` is present, non-empty, and between `[3..300]` characters; IF any check fails, THE system SHALL return HTTP 400 `VALIDATION_ERROR` with a descriptive message.
 
 - **E-3:** WHEN `isDefault === true` OR this is the user's FIRST address (count = 0), THE system SHALL: (1) clear `is_default` on ALL existing addresses of this user, (2) create new address with `is_default = true`.
 
@@ -75,7 +77,7 @@ Khách hàng mua gọng kính trực tuyến cần nhập địa chỉ giao hàn
 
 #### 3.2.3 Cập nhật Địa chỉ
 
-- **E-5:** WHEN user submits `PUT /api/addresses/:id` with partial payload, THE system SHALL: (1) verify address exists, (2) verify ownership, (3) update only provided fields (label, recipientName, phoneNumber, deliveryAddress).
+- **E-5:** WHEN user submits `PUT /api/addresses/:id` with partial payload, THE system SHALL: (1) verify address exists, (2) verify ownership, (3) validate provided fields with same strict rules as creation (E-2) and return HTTP 400 `VALIDATION_ERROR` if invalid, (4) update only provided fields (label, recipientName, phoneNumber, deliveryAddress).
 
 - **E-6:** WHEN `isDefault === true` AND address is NOT currently default, THE system SHALL clear `is_default` on ALL other addresses of this user, then set `is_default = true` on this address.
 
@@ -93,9 +95,13 @@ Khách hàng mua gọng kính trực tuyến cần nhập địa chỉ giao hàn
 - **E-9:** WHEN user submits `DELETE /api/addresses/:id`, THE system SHALL: (1) verify address exists, (2) verify ownership, (3) permanently delete the address document.
 
 - **E-10:** WHEN deleted address was the default (`is_default === true`), THE system SHALL auto-select the most recently updated remaining address as the new default:
+
   ```javascript
   const fallback = await Address.findOne({ user_id }).sort({ updatedAt: -1 });
-  if (fallback) { fallback.is_default = true; await fallback.save(); }
+  if (fallback) {
+    fallback.is_default = true;
+    await fallback.save();
+  }
   ```
 
 - **E-11:** WHEN deletion succeeds, THE system SHALL return HTTP 200 `{ code: 0, message: 'Đã xóa địa chỉ' }`.
@@ -132,29 +138,30 @@ Khách hàng mua gọng kính trực tuyến cần nhập địa chỉ giao hàn
 
 ### Collection: `addresses`
 
-| Field | Type | Required | Default | Constraints / Notes |
-| :--- | :--- | :---: | :--- | :--- |
-| `user_id` | ObjectId (ref: User) | ✅ | — | Indexed. Chủ sở hữu |
-| `label` | String | — | `''` | Trim. Nhãn tùy chỉnh: "Nhà", "Công ty", v.v. |
-| `recipient_name` | String | ✅ | — | Trim. Tên người nhận |
-| `phone_number` | String | ✅ | — | Trim. SĐT người nhận |
-| `delivery_address` | String | ✅ | — | Trim. Địa chỉ giao hàng đầy đủ |
-| `is_default` | Boolean | — | `false` | Tối đa 1 default per user |
-| `createdAt` | Date (auto) | — | `Date.now` | Timestamps plugin |
-| `updatedAt` | Date (auto) | — | `Date.now` | Timestamps plugin |
+| Field              | Type                 | Required | Default    | Constraints / Notes                          |
+| :----------------- | :------------------- | :------: | :--------- | :------------------------------------------- |
+| `user_id`          | ObjectId (ref: User) |    ✅    | —          | Indexed. Chủ sở hữu                          |
+| `label`            | String               |    —     | `''`       | Trim. Nhãn tùy chỉnh: "Nhà", "Công ty", v.v. |
+| `recipient_name`   | String               |    ✅    | —          | Trim. Tên người nhận                         |
+| `phone_number`     | String               |    ✅    | —          | Trim. SĐT người nhận                         |
+| `delivery_address` | String               |    ✅    | —          | Trim. Địa chỉ giao hàng đầy đủ               |
+| `is_default`       | Boolean              |    —     | `false`    | Tối đa 1 default per user                    |
+| `createdAt`        | Date (auto)          |    —     | `Date.now` | Timestamps plugin                            |
+| `updatedAt`        | Date (auto)          |    —     | `Date.now` | Timestamps plugin                            |
 
 **Indexes:**
+
 - `{ user_id: 1, is_default: -1, updatedAt: -1 }` — composite index cho danh sách sắp xếp
 
 ---
 
 ## 6. Error Handling (Xử lý lỗi)
 
-| Error Code | HTTP Status | Trigger | Hành vi hệ thống |
-| :--- | :---: | :--- | :--- |
-| `VALIDATION_ERROR` | 400 | Thiếu `recipientName`, `phoneNumber`, hoặc `deliveryAddress` | Trả lỗi |
-| `ADDRESS_NOT_FOUND` | 404 | Address ID không tồn tại | Trả lỗi |
-| `FORBIDDEN` | 403 | User truy cập địa chỉ của người khác | Trả lỗi kèm thông báo cụ thể theo hành động |
+| Error Code          | HTTP Status | Trigger                                                      | Hành vi hệ thống                            |
+| :------------------ | :---------: | :----------------------------------------------------------- | :------------------------------------------ |
+| `VALIDATION_ERROR`  |     400     | Thiếu `recipientName`, `phoneNumber`, hoặc `deliveryAddress` | Trả lỗi                                     |
+| `ADDRESS_NOT_FOUND` |     404     | Address ID không tồn tại                                     | Trả lỗi                                     |
+| `FORBIDDEN`         |     403     | User truy cập địa chỉ của người khác                         | Trả lỗi kèm thông báo cụ thể theo hành động |
 
 ---
 

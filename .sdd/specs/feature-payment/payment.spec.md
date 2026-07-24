@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-23  
+**Date:** 2026-07-15
 **Priority:** Critical  
 **Risk Level:** Critical (Giao dịch tài chính thực, tích hợp cổng thanh toán bên thứ 3, rủi ro mất tiền)  
 **Related Specs:** `feature-orders`, `feature-checkout`, `feature-admin-refunds`  

@@ -1,5 +1,4 @@
 # CONTEXT.md — Thanh toán VNPay (Payment Integration Feature)
-# Người viết: @antigravity | Ngày: 2026-07-23
 
 ## 1. PROBLEM STATEMENT
 *   **Thất thoát doanh thu do lệch thông tin thanh toán:** Nếu không có cơ chế đối soát chặt chẽ giữa số tiền trên link thanh toán VNPay và số tiền thực tế cần thanh toán lưu trong DB, kẻ xấu có thể can thiệp sửa đổi tham số link thanh toán để mua hàng với giá rẻ.

@@ -1,5 +1,4 @@
 # CONTEXT.md — Đánh giá Sản phẩm (Feedback / Reviews Feature)
-# Người viết: @antigravity | Ngày: 2026-07-23
 
 ## 1. PROBLEM STATEMENT
 *   **Spam đánh giá hoặc đánh giá giả mạo:** Đối thủ hoặc khách hàng chưa từng mua sản phẩm có thể spam đánh giá tiêu cực làm ảnh hưởng đến uy tín sản phẩm của cửa hàng.

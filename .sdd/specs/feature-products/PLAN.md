@@ -1,5 +1,4 @@
 # PLAN.md — Trang sản phẩm & Biến thể (Store & Products Implementation Plan)
-# Người viết: @antigravity | Ngày: 2026-06-23
 
 ## 1. ARCHITECTURAL APPROACH
 Sử dụng mô hình MVC chia tách rõ ràng giữa Mongoose model ở lớp data, Express routing/controllers ở lớp xử lý logic Backend, và React Component giao tiếp bằng API Axios ở lớp hiển thị Client.

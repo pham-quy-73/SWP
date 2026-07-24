@@ -2,7 +2,7 @@
 
 **Status:** Done (đã hoàn thành code backend và tích hợp upload ảnh)
 **Author:** AI Agent
-**Date:** 2026-07-23
+**Date:** 2026-07-19
 **Spec ref:** `feedback.spec.md`
 **Risk Level:** Low (CRUD nghiệp vụ cơ bản)
 

@@ -24,8 +24,28 @@ function AddressFormDialog({ open, onClose, initial, onSubmit, submitting }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.recipientName?.trim() || !form.phoneNumber?.trim() || !form.deliveryAddress?.trim()) {
+    const name = form.recipientName?.trim() || '';
+    const phone = form.phoneNumber?.trim().replace(/[\s.-]/g, '') || '';
+    const address = form.deliveryAddress?.trim() || '';
+
+    if (!name || !phone || !address) {
       toast.error('Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ.');
+      return;
+    }
+    if (name.length > 100) {
+      toast.error('Họ tên người nhận không được dài quá 100 ký tự.');
+      return;
+    }
+    if (!/^(\+84|0)\d{8,10}$/.test(phone)) {
+      toast.error('Số điện thoại không hợp lệ (gồm 9-11 chữ số, bắt đầu bằng 0 hoặc +84).');
+      return;
+    }
+    if (address.length < 3) {
+      toast.error('Địa chỉ giao hàng phải dài ít nhất 3 ký tự.');
+      return;
+    }
+    if (address.length > 300) {
+      toast.error('Địa chỉ giao hàng không được dài quá 300 ký tự.');
       return;
     }
     onSubmit(form);

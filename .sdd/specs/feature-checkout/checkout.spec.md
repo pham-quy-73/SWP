@@ -1,9 +1,9 @@
 # Feature: Checkout & Thanh toán VNPay — FULL SPECIFICATION
 
-**Status:** Approved (đồng bộ lại theo source code)
+**Status:** Approved 
 **Author:** AI Agent
 **Tech Lead Approval:** Tech Lead
-**Date:** 2026-06-23 · **Last sync với code:** 2026-07-21
+**Date:** 2026-07-19 · 
 **Risk Level:** High (Thanh toán trực tuyến, Đồng bộ tồn kho, Background Worker)
 **Related Specs:** `cart.spec.md`, `products.spec.md`, `refunds.spec.md`
 
