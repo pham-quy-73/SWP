@@ -171,8 +171,8 @@ class OrderController {
       if (!deliveryAddress) {
         return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Địa chỉ giao hàng không được để trống' });
       }
-      if (deliveryAddress.length < 5) {
-        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Địa chỉ giao hàng phải dài ít nhất 5 ký tự' });
+      if (deliveryAddress.length < 3) {
+        return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Địa chỉ giao hàng phải dài ít nhất 3 ký tự' });
       }
       if (deliveryAddress.length > 300) {
         return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Địa chỉ giao hàng không được dài quá 300 ký tự' });
