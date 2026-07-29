@@ -85,7 +85,7 @@ export default function ManagerDashboardPage() {
             <Activity size={12} className="mr-2 text-emerald-500" />
             Dashboard
           </span>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-zinc-900">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-zinc-900">
             Tổng Quan Hệ Thống.
           </h1>
         </div>
@@ -101,10 +101,10 @@ export default function ManagerDashboardPage() {
       </div>
 
       {/* KPI SECTION (3 Cột) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
 
         {/* Card 1: Doanh Thu */}
-        <div className="bg-white rounded-[2rem] p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+        <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-[100px] -z-10 transition-transform duration-500 group-hover:scale-110"></div>
 
           <div className="flex items-center justify-between mb-6">
@@ -134,7 +134,7 @@ export default function ManagerDashboardPage() {
         {/* Card 2: Đơn hàng mới */}
         <div
           onClick={() => navigate('/manager/orders')}
-          className="bg-white rounded-[2rem] p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-all duration-300"
+          className="bg-white rounded-[2rem] p-6 md:p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative overflow-hidden group cursor-pointer hover:-translate-y-1 transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-6">
             <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
@@ -160,7 +160,7 @@ export default function ManagerDashboardPage() {
         {/* Card 3: Cảnh báo Kho */}
         <div
           onClick={() => navigate('/manager/products')}
-          className="bg-white rounded-[2rem] p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative overflow-hidden group cursor-pointer hover:-translate-y-1 hover:border-rose-200 transition-all duration-300"
+          className="bg-white rounded-[2rem] p-6 md:p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative overflow-hidden group cursor-pointer hover:-translate-y-1 hover:border-rose-200 transition-all duration-300"
         >
           {stats.lowStockItems > 0 && (
             <span className="absolute top-8 right-8 flex h-3 w-3">
@@ -208,7 +208,7 @@ export default function ManagerDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Top 5 Gọng kính bán chạy */}
             <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-6 md:p-8 border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] space-y-4">
-              <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900 flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <span>🏆 Top 5 Gọng Kính Bán Chạy Nhất</span>
                 <span className="text-xs font-medium text-zinc-400 normal-case">Tổng sản phẩm đã bán</span>
               </h3>
@@ -303,7 +303,7 @@ export default function ManagerDashboardPage() {
         {/* Action 1: Dark Mode Box */}
         <div
           onClick={() => navigate('/manager/products')}
-          className="group relative overflow-hidden rounded-[2.5rem] bg-zinc-950 p-10 cursor-pointer shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+          className="group relative overflow-hidden rounded-[2.5rem] bg-zinc-950 p-6 md:p-10 cursor-pointer shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
         >
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -333,7 +333,7 @@ export default function ManagerDashboardPage() {
         {/* Action 2: Light Mode Box */}
         <div
           onClick={() => navigate('/manager/orders')}
-          className="group relative overflow-hidden rounded-[2.5rem] bg-zinc-100 p-10 cursor-pointer border border-zinc-200 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:border-zinc-300"
+          className="group relative overflow-hidden rounded-[2.5rem] bg-zinc-100 p-6 md:p-10 cursor-pointer border border-zinc-200 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:border-zinc-300"
         >
           <div className="relative z-10 flex flex-col h-full justify-between min-h-[220px]">
             <div>

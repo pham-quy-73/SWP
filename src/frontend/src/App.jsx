@@ -8,6 +8,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CheckoutPage from './pages/CheckoutPage';
 import { PaymentSuccessPage } from './pages/PaymentSuccessPage';
 import { PaymentFailurePage } from './pages/PaymentFailurePage';
+import PaymentCallbackPage from './pages/PaymentCallbackPage';
 import { ProfileLayout } from './feature/profile/layout/ProfileLayout';
 import ProfilePage from './feature/profile/page/ProfilePage';
 import MyOrders from './feature/profile/page/MyOrder';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/checkout" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
           <Route path="/checkout/success" element={<PrivateRoute><PaymentSuccessPage /></PrivateRoute>} />
           <Route path="/checkout/failure" element={<PrivateRoute><PaymentFailurePage /></PrivateRoute>} />
+          <Route path="/payment/vnpay-callback" element={<PaymentCallbackPage />} />
 
           {/* Hồ sơ cá nhân & Đơn hàng của khách hàng */}
           <Route path="/profile" element={<PrivateRoute><ProfileLayout /></PrivateRoute>}>

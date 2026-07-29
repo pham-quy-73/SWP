@@ -107,7 +107,7 @@ export default function ImportVariantModal({ open, onClose, productId, onSuccess
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-[2rem] max-w-xl w-full p-8 shadow-2xl border border-zinc-100 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div className="bg-white rounded-[2rem] max-w-xl w-full p-5 md:p-8 shadow-2xl border border-zinc-100 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -133,7 +133,7 @@ export default function ImportVariantModal({ open, onClose, productId, onSuccess
         </div>
 
         {/* Download Template Banner */}
-        <div className="mb-6 p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 flex items-center justify-between gap-4">
+        <div className="mb-6 p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <FileText className="w-5 h-5 text-emerald-600 shrink-0" />
             <div className="text-xs">

@@ -103,7 +103,7 @@ export default function VariantModal({ open, onClose, onSubmit, variant, isSubmi
         </div>
 
         {/* BODY */}
-        <div className="overflow-y-auto px-8 py-8 flex-1 custom-scrollbar">
+        <div className="overflow-y-auto px-5 py-6 md:px-8 md:py-8 flex-1 custom-scrollbar">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
 
             {/* Hàng 1: Mã SKU & Tên màu */}

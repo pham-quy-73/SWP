@@ -218,14 +218,14 @@ const ProductManagePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-6 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-zinc-50 p-4 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 max-w-7xl mx-auto">
         <div>
           <span className="inline-block py-1 px-3 mb-3 text-[10px] font-bold tracking-[0.3em] text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100 uppercase">
             Quản lý kho
           </span>
-          <h1 className="text-4xl font-black tracking-tight text-zinc-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-zinc-900 mb-2">
             Danh Mục Sản Phẩm.
           </h1>
           <p className="text-zinc-500 text-sm max-w-lg leading-relaxed">
@@ -237,7 +237,7 @@ const ProductManagePage = () => {
       <div className="max-w-7xl mx-auto bg-white rounded-[2rem] border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[600px]">
 
         {/* TABS ĐIỀU HƯỚNG */}
-        <div className="flex items-center gap-6 px-8 border-b border-zinc-100 bg-zinc-50/30 overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-4 md:gap-6 px-4 md:px-8 border-b border-zinc-100 bg-zinc-50/30 overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab('GLASSES')}
             className={`py-5 text-sm font-bold tracking-wide uppercase transition-all whitespace-nowrap border-b-2 ${activeTab === 'GLASSES' ? 'border-emerald-500 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'}`}
@@ -253,7 +253,7 @@ const ProductManagePage = () => {
         </div>
 
         {/* TOOLBAR */}
-        <div className="px-8 py-6 border-b border-zinc-100 bg-white flex flex-col lg:flex-row justify-between items-center gap-5 sticky top-0 z-10">
+        <div className="px-4 py-4 md:px-8 md:py-6 border-b border-zinc-100 bg-white flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-5 sticky top-0 z-10">
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="relative w-full sm:w-[350px] group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

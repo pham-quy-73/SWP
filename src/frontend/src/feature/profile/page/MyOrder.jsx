@@ -227,7 +227,7 @@ function OrderItemCard({ item, orderName }) {
         <p className="text-sm font-bold text-gray-800 shrink-0">{fmt(item.totalPrice)}</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-sm">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-sm">
         <div className="bg-gray-50 rounded-xl p-2 text-center">
           <p className="text-[10px] text-gray-400 font-bold mb-0.5 uppercase tracking-wider">Số lượng</p>
           <p className="font-bold text-gray-700">{item.quantity}</p>
@@ -761,7 +761,8 @@ export default function MyOrders() {
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center gap-1 px-2">
+            {/* Cuộn ngang khi nhiều trang trên mobile */}
+            <div className="flex items-center gap-1 px-2 overflow-x-auto max-w-[55vw] sm:max-w-none">
               {Array.from({ length: totalPages }, (_, i) => {
                 const page = i + 1;
                 const isActive = page === currentPage;
@@ -769,7 +770,7 @@ export default function MyOrders() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 text-sm font-semibold rounded-lg transition-all cursor-pointer ${isActive
+                    className={`w-8 h-8 shrink-0 text-sm font-semibold rounded-lg transition-all cursor-pointer ${isActive
                         ? 'bg-indigo-650 bg-[#1e2575] text-white shadow-md'
                         : 'text-gray-600 hover:bg-gray-100'
                       }`}

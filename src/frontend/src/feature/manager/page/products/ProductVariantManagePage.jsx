@@ -208,7 +208,7 @@ export default function ProductVariantManagePage() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-6 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-zinc-50 p-4 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
 
       {/* HEADER */}
       <div className="max-w-7xl mx-auto flex flex-col gap-6 mb-10">
@@ -222,8 +222,8 @@ export default function ProductVariantManagePage() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-4xl font-black tracking-tight text-zinc-900">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-zinc-900">
                 Phiên Bản Sản Phẩm.
               </h1>
               <span className="px-3 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded-full tracking-widest uppercase shadow-sm">
@@ -241,7 +241,7 @@ export default function ProductVariantManagePage() {
       <div className="max-w-7xl mx-auto bg-white rounded-[2rem] border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[600px]">
 
         {/* TOOLBAR */}
-        <div className="px-8 py-6 border-b border-zinc-100 bg-white flex flex-col sm:flex-row justify-between items-center gap-5 sticky top-0 z-10">
+        <div className="px-4 py-4 md:px-8 md:py-6 border-b border-zinc-100 bg-white flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 md:gap-5 sticky top-0 z-10">
           <div className="relative w-full sm:w-[400px] group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" />

@@ -124,14 +124,14 @@ export default function UserManagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-6 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-zinc-50 p-4 md:p-10 font-sans text-zinc-800 animate-in fade-in duration-700">
 
       {/* HEADER */}
       <div className="mb-10 max-w-7xl mx-auto">
         <span className="inline-flex items-center gap-1.5 py-1 px-3 mb-3 text-[10px] font-bold tracking-[0.3em] text-zinc-600 bg-zinc-200/50 rounded-full border border-zinc-200 uppercase">
           <ShieldCheck className="w-3 h-3" /> Control Panel
         </span>
-        <h1 className="text-4xl font-black tracking-tight text-zinc-900 mb-2">Tài Khoản Hệ Thống.</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-zinc-900 mb-2">Tài Khoản Hệ Thống.</h1>
         <p className="text-zinc-500 text-sm max-w-lg leading-relaxed">
           Quản lý toàn bộ thông tin đăng nhập của nhân viên và khách hàng. Bảo vệ quyền riêng tư tuyệt đối.
         </p>
@@ -140,7 +140,7 @@ export default function UserManagePage() {
       <div className="max-w-7xl mx-auto bg-white rounded-[2rem] border border-zinc-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[600px]">
 
         {/* TABS ĐIỀU HƯỚNG */}
-        <div className="flex items-center gap-6 px-8 border-b border-zinc-100 bg-zinc-50/30 overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-4 md:gap-6 px-4 md:px-8 border-b border-zinc-100 bg-zinc-50/30 overflow-x-auto custom-scrollbar">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -156,7 +156,7 @@ export default function UserManagePage() {
         </div>
 
         {/* TOOLBAR */}
-        <div className="px-8 py-6 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-5">
+        <div className="px-4 py-4 md:px-8 md:py-6 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-4 md:gap-5">
           <div className="relative w-full sm:w-[400px] group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" />
@@ -186,7 +186,7 @@ export default function UserManagePage() {
               <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Đang đồng bộ...</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[860px] text-left border-collapse">
               <thead>
                 <tr className="border-b border-zinc-100 bg-white">
                   <th className="px-8 py-5 text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">Người dùng</th>
@@ -290,7 +290,7 @@ export default function UserManagePage() {
 
         {/* PAGINATION */}
         {!isLoading && pagination && pagination.totalPages > 1 && (
-          <div className="bg-white px-8 py-6 border-t border-zinc-100 flex items-center justify-between gap-4">
+          <div className="bg-white px-4 md:px-8 py-4 md:py-6 border-t border-zinc-100 flex items-center justify-between gap-4">
             <span className="text-zinc-500 text-sm font-medium">
               Trang <span className="font-bold text-zinc-900">{pagination.page}</span> / {pagination.totalPages}
             </span>

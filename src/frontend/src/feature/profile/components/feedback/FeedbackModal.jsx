@@ -194,7 +194,7 @@ export default function FeedbackModal({ isOpen, onClose, orderId, productId, exi
 
                         {/* Image previews */}
                         {imagePreviews.length > 0 && (
-                            <div className="grid grid-cols-3 gap-2 mb-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                                 {imagePreviews.map((preview, index) => (
                                     <div key={index} className="relative group rounded-xl overflow-hidden border">
                                         <img

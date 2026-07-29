@@ -198,7 +198,7 @@ export default function ProductsPage() {
         <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-10 border-b border-zinc-200/60 pb-6">
           <div>
             <Breadcrumb items={breadcrumbItems} />
-            <h1 className="text-4xl font-black tracking-tight text-zinc-900 mt-4">Bộ Sưu Tập.</h1>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-900 mt-4">Bộ Sưu Tập.</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
@@ -225,6 +225,107 @@ export default function ProductsPage() {
             </button>
           </div>
         </div>
+
+        {/* MOBILE FILTER DRAWER (<lg) */}
+        <AnimatePresence>
+          {showMobileFilters && (
+            <>
+              {/* Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setShowMobileFilters(false)}
+                className="fixed inset-0 bg-black/50 z-[60] lg:hidden"
+              />
+              {/* Panel trượt từ phải */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                className="fixed top-0 right-0 h-full w-[85%] max-w-[340px] bg-white z-[70] shadow-2xl lg:hidden flex flex-col"
+              >
+                <div className="flex items-center justify-between p-5 border-b border-zinc-100">
+                  <h3 className="text-lg font-black text-zinc-900">Bộ lọc</h3>
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="p-2 text-zinc-500 hover:text-zinc-900 transition-colors"
+                    aria-label="Đóng bộ lọc"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleApplyAllFilters} className="flex-1 overflow-y-auto p-5 space-y-7">
+                  {/* Search */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Tìm kiếm</label>
+                    <input
+                      type="text"
+                      placeholder="Tên sản phẩm..."
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        if (!e.target.value) handleApplyQuickFilters({ search: '' });
+                      }}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Giới tính</label>
+                    <div className="flex flex-col gap-3">
+                      {genders.map((g) => (
+                        <label key={g.id} className="flex items-center gap-3 text-sm text-zinc-600 cursor-pointer group font-medium">
+                          <input
+                            type="radio"
+                            name="gender-mobile"
+                            value={g.id}
+                            checked={gender === g.id}
+                            onChange={(e) => setGender(e.target.value)}
+                            className="w-4 h-4 text-emerald-600 border-zinc-300 focus:ring-emerald-500 cursor-pointer"
+                          />
+                          <span className="group-hover:text-zinc-900 transition-colors">{g.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Khoảng giá (VND)</label>
+                    <div className="flex items-center gap-3">
+                      <input type="number" placeholder="Từ" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className={inputClass} />
+                      <span className="text-zinc-300 font-bold">-</span>
+                      <input type="number" placeholder="Đến" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className={inputClass} />
+                    </div>
+                  </div>
+                </form>
+
+                {/* Actions cố định dưới đáy */}
+                <div className="p-5 border-t border-zinc-100 space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleApplyAllFilters}
+                    className="w-full bg-zinc-900 hover:bg-emerald-600 text-white py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-xl active:scale-95"
+                  >
+                    ÁP DỤNG BỘ LỌC
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className="w-full bg-white border border-zinc-200 text-zinc-600 hover:border-zinc-400 py-3 rounded-2xl text-sm font-bold transition-all active:scale-95"
+                  >
+                    Xóa tất cả
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* MAIN LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
