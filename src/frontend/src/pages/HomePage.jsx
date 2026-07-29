@@ -112,7 +112,7 @@ export default function HomePage() {
                                 Categories
                             </span>
 
-                            <h2 className="text-4xl font-black text-zinc-900 tracking-tight mt-3 mb-3">
+                            <h2 className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight mt-3 mb-3">
                                 Mua Sắm Theo Đối Tượng
                             </h2>
 
@@ -149,17 +149,17 @@ export default function HomePage() {
 
                                     </div>
 
-                                    {/* Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                                    {/* Overlay — luôn hiện trên mobile (không có hover), md+ mới hover-reveal */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500"></div>
 
                                     {/* Content */}
-                                    <div className="absolute bottom-8 left-8 right-8">
+                                    <div className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-8">
 
-                                        <h3 className="text-white text-3xl font-black opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                                        <h3 className="text-white text-2xl md:text-3xl font-black opacity-100 translate-y-0 md:opacity-0 md:translate-y-5 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all duration-500">
                                             {cat.title}
                                         </h3>
 
-                                        <p className="text-white/70 mt-2 text-sm opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
+                                        <p className="text-white/70 mt-2 text-sm opacity-100 translate-y-0 md:opacity-0 md:translate-y-5 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all duration-700">
                                             Khám phá bộ sưu tập mới nhất
                                         </p>
 

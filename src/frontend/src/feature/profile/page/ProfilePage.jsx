@@ -137,9 +137,9 @@ export default function ProfilePage() {
       <div className="p-4 sm:p-8 space-y-8 sm:space-y-10">
         {/* --- 1. PHẦN ĐẦU & ẢNH ĐẠI DIỆN --- */}
         <div className="flex flex-col md:flex-row gap-8 items-start justify-between">
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-4 sm:gap-6 items-center">
             {/* Khung chứa ảnh đại diện */}
-            <div className="h-24 w-24 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-sm shrink-0 relative group">
+            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-sm shrink-0 relative group">
               <img
                 src={
                   profile.imageUrl ||
@@ -154,7 +154,7 @@ export default function ProfilePage() {
             {/* Tên & Tên đăng nhập */}
             <div className="space-y-2">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
                   {profile.firstName || profile.first_name} {profile.lastName || profile.last_name}
                 </h1>
                 <p className="text-sm text-gray-500 font-semibold mt-0.5">@{profile.username}</p>

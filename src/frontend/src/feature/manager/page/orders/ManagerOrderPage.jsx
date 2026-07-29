@@ -177,8 +177,8 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
         </div>
 
         {/* Content Section */}
-        <div className="overflow-y-auto p-8 flex-1 space-y-8 bg-slate-50/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="overflow-y-auto p-4 md:p-8 flex-1 space-y-6 md:space-y-8 bg-slate-50/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {/* Cột 1: Thông tin khách hàng */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-[11px]">
@@ -416,7 +416,7 @@ function OrderDetailModal({ orderId, onClose, onUpdateStatus, onDeleteOrder, isA
 
                             {/* Trường hợp 1: Nhập số độ (OD / OS) */}
                             {(p.od_sphere !== 0 || p.od_cylinder !== 0 || p.os_sphere !== 0 || p.os_cylinder !== 0) && (
-                              <div className="grid grid-cols-2 gap-x-4 text-[11px] font-mono text-slate-800">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] font-mono text-slate-800">
                                 <div><span className="font-bold text-blue-700">OD (Phải):</span> SPH {p.od_sphere > 0 ? `+${p.od_sphere}` : p.od_sphere} | CYL {p.od_cylinder} | AX {p.od_axis}°</div>
                                 <div><span className="font-bold text-indigo-700">OS (Trái):</span> SPH {p.os_sphere > 0 ? `+${p.os_sphere}` : p.os_sphere} | CYL {p.os_cylinder} | AX {p.os_axis}°</div>
                               </div>
