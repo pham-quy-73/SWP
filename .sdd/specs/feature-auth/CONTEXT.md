@@ -3,7 +3,7 @@
 # Người lập: @Doan-Bao-Long | Ngày: 2026-06-13
 
 ## 1. PROBLEM STATEMENT
-Hệ thống Optics Management (bản thu nhỏ) yêu cầu một cơ chế định danh và phân quyền an toàn cho 3 vai trò: CUSTOMER, SALE, và ADMIN. Hệ thống cần vận hành một luồng Đăng ký nghiêm ngặt cho Khách hàng (yêu cầu kích hoạt qua Email để tránh tài khoản ảo) và một luồng Đăng nhập hợp nhất (hỗ trợ cả tài khoản hệ thống lẫn tài khoản Google OAuth2). Hệ thống sử dụng JSON Web Token (JWT) cho mục đích xác thực Stateless.
+Hệ thống Optics Management (bản thu nhỏ) yêu cầu một cơ chế định danh và phân quyền an toàn cho các vai trò: CUSTOMER, MANAGER, và ADMIN (role SALE đã loại bỏ — out of scope). Hệ thống cần vận hành một luồng Đăng ký nghiêm ngặt cho Khách hàng (yêu cầu kích hoạt qua Email để tránh tài khoản ảo) và một luồng Đăng nhập hợp nhất (hỗ trợ cả tài khoản hệ thống lẫn tài khoản Google OAuth2). Hệ thống sử dụng JSON Web Token (JWT) cho mục đích xác thực Stateless.
 
 ## 2. DOMAIN KNOWLEDGE & CONSTRAINTS
 * **Bảo mật mật khẩu (SEC-01):** Bắt buộc sử dụng `bcrypt` với cost factor ≥ 10 để băm mật khẩu trước khi lưu. Tuyệt đối không lưu plaintext.
@@ -13,7 +13,7 @@ Hệ thống Optics Management (bản thu nhỏ) yêu cầu một cơ chế đ�
 
 ## 3. STAKEHOLDERS
 * **CUSTOMER:** Khách hàng sử dụng web để đăng ký, kích hoạt tài khoản, đăng nhập mua hàng và quản lý giỏ hàng.
-* **SALE / ADMIN:** Nhân viên hệ thống sử dụng tài khoản nội bộ do ADMIN cấp để vào các phân hệ quản trị, xác minh đơn thuốc của khách.
+* **MANAGER / ADMIN:** Nhân viên hệ thống sử dụng tài khoản nội bộ do ADMIN cấp để vào các phân hệ quản trị, xác minh đơn thuốc của khách.
 
 ## 4. ASSUMPTIONS (Giả định)
 * Frontend lưu trữ JWT Token trong `localStorage` để đính kèm vào header `Authorization: Bearer <token>` ở các request tiếp theo.

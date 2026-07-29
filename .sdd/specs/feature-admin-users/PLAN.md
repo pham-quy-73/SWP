@@ -22,7 +22,7 @@
 | :------------------------- | :------------------------------------------------------------------------------------------------------------------- |
 | Controller class           | Đồng nhất với Dashboard/Refund.                                                                                      |
 | Soft-delete (`deleted_at`) | Không mất dữ liệu lịch sử; `authMiddleware.authenticate` đã có sẵn check `deleted_at !== null` → tự động chặn login. |
-| Whitelist role             | `allowedRoles` ở controller để chặn role không hợp lệ (`SHIPPER`...).                                                |
+| Whitelist role             | `allowedRoles` ở controller để chặn role không hợp lệ (SALE, SHIPPER đã loại bỏ).                                                |
 
 ---
 
@@ -61,7 +61,7 @@ Admin (role=ADMIN) login → JWT
 
 [Đổi role]
   → AssignRoleModal → PUT /api/users/:id/role { role }
-  → updateUserRole → validate role ∈ [CUSTOMER,SALE,MANAGER,SHIPPER,ADMIN]
+  → updateUserRole → validate role ∈ [CUSTOMER,MANAGER,ADMIN]
   → user.role = ...; save → 200
 
 [Khóa/Mở]

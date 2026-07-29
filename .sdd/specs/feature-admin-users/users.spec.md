@@ -18,7 +18,6 @@
 Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò người dùng:
 
 - **CUSTOMER**: Khách hàng mua sắm
-- **SALE**: Nhân viên bán hàng (đã được loại bỏ trong phiên bản hiện tại)
 - **MANAGER**: Quản lý kho, sản phẩm, đơn hàng
 - **ADMIN**: Quản trị viên tối cao với quyền quản lý tài khoản
 
@@ -47,6 +46,10 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 | **MANAGER**                 | Quản lý    | **KHÔNG** có quyền truy cập trang User Management (route chặn bởi `requireRole(['ADMIN'])`)                                                 |
 | **CUSTOMER**                | Khách hàng | **KHÔNG** có quyền                                                                                                                          |
 | **System (AuthMiddleware)** | Hệ thống   | Kiểm tra `deleted_at !== null` → từ chối đăng nhập (ngăn tài khoản bị khóa đăng nhập lại)                                                   |
+
+> **Out of scope — role `SALE` và `SHIPPER`:**
+>
+> Cả hai đã loại bỏ hoàn toàn khỏi hệ thống — không còn trong enum `models/User.js`, API tạo tài khoản / đổi vai trò không chấp nhận. Không thêm lại nếu chưa được duyệt. Role hợp lệ: `CUSTOMER | MANAGER | ADMIN`.
 
 ---
 
@@ -91,7 +94,7 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 
 - **E-6:** WHEN creating a new user, THE system SHALL check if `username` or `email` already exists in database; IF duplicate found, SHALL return HTTP 400 with `error_code: 'DUPLICATE_ERROR'`.
 
-- **E-7:** WHEN `role` is provided and is one of `['CUSTOMER', 'SALE', 'MANAGER', 'SHIPPER', 'ADMIN']`, THE system SHALL assign that role (uppercased); OTHERWISE SHALL default to `'MANAGER'`.
+- **E-7:** WHEN `role` is provided and is one of `['CUSTOMER', 'MANAGER', 'ADMIN']`, THE system SHALL assign that role (uppercased); OTHERWISE SHALL default to `'MANAGER'`.
 
 - **E-8:** WHEN user is created by Admin, THE system SHALL set `is_email_verified: true` (bypass email verification flow) and `deleted_at: null` (active by default).
 
@@ -99,7 +102,7 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 
 #### 3.2.3 Cập Nhật Vai trò (Update Role)
 
-- **E-10:** WHEN Admin requests `PUT /api/users/:id/role` with body `{ role }`, THE system SHALL validate `role` is one of `['CUSTOMER', 'SALE', 'MANAGER', 'ADMIN']`; OTHERWISE return HTTP 400 `VALIDATION_ERROR`.
+- **E-10:** WHEN Admin requests `PUT /api/users/:id/role` with body `{ role }`, THE system SHALL validate `role` is one of `['CUSTOMER', 'MANAGER', 'ADMIN']`; OTHERWISE return HTTP 400 `VALIDATION_ERROR`.
 
 - **E-11:** WHEN updating role, THE system SHALL check if `req.user._id.toString() === id` (self-action); IF true, SHALL return HTTP 403 `SELF_ACTION_FORBIDDEN: 'Bạn không thể thay đổi vai trò của chính mình'`.
 
@@ -189,32 +192,34 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 
 ### Collection: `users`
 
-| Field | Type | Required | Default | Constraints / Notes |
-| :--- | :--- | :---: | :--- | :--- |
-| `username` | String | ✅ | — | Unique, lowercase, trim. Tên đăng nhập |
-| `email` | String | ✅ | — | Unique, lowercase, trim. Email đăng nhập |
-| `password` | String | — | `null` | Bcrypt hashed (salt 12). `null` cho tài khoản Google OAuth |
-| `first_name` | String | ✅ | — | Tên |
-| `last_name` | String | ✅ | — | Họ |
-| `phone` | String | — | `null` | Số điện thoại |
-| `dob` | Date | — | `null` | Ngày sinh |
-| `avatar_url` | String | — | `null` | Đường dẫn ảnh đại diện |
-| `google_id` | String | — | — | Unique, sparse. ID Google OAuth |
-| `is_email_verified` | Boolean | — | `false` | Trạng thái xác minh email |
-| `verify_token` | String | — | `null` | Token xác minh email (indexed) |
-| `verify_token_expires` | Date | — | `null` | Thời hạn token xác minh |
-| `role` | String (enum) | — | `'CUSTOMER'` | Enum: `['CUSTOMER', 'SALE', 'MANAGER', 'SHIPPER', 'ADMIN']` |
-| `deleted_at` | Date | — | `null` | Soft-delete flag. `!== null` → tài khoản bị khóa |
-| `createdAt` | Date (auto) | — | — | Timestamps plugin |
-| `updatedAt` | Date (auto) | — | — | Timestamps plugin |
+| Field                  | Type          | Required | Default      | Constraints / Notes                                         |
+| :--------------------- | :------------ | :------: | :----------- | :---------------------------------------------------------- |
+| `username`             | String        |    ✅    | —            | Unique, lowercase, trim. Tên đăng nhập                      |
+| `email`                | String        |    ✅    | —            | Unique, lowercase, trim. Email đăng nhập                    |
+| `password`             | String        |    —     | `null`       | Bcrypt hashed (salt 12). `null` cho tài khoản Google OAuth  |
+| `first_name`           | String        |    ✅    | —            | Tên                                                         |
+| `last_name`            | String        |    ✅    | —            | Họ                                                          |
+| `phone`                | String        |    —     | `null`       | Số điện thoại                                               |
+| `dob`                  | Date          |    —     | `null`       | Ngày sinh                                                   |
+| `avatar_url`           | String        |    —     | `null`       | Đường dẫn ảnh đại diện                                      |
+| `google_id`            | String        |    —     | —            | Unique, sparse. ID Google OAuth                             |
+| `is_email_verified`    | Boolean       |    —     | `false`      | Trạng thái xác minh email                                   |
+| `verify_token`         | String        |    —     | `null`       | Token xác minh email (indexed)                              |
+| `verify_token_expires` | Date          |    —     | `null`       | Thời hạn token xác minh                                     |
+| `role`                 | String (enum) |    —     | `'CUSTOMER'` | Enum: `['CUSTOMER', 'MANAGER', 'ADMIN']`                    |
+| `deleted_at`           | Date          |    —     | `null`       | Soft-delete flag. `!== null` → tài khoản bị khóa            |
+| `createdAt`            | Date (auto)   |    —     | —            | Timestamps plugin                                           |
+| `updatedAt`            | Date (auto)   |    —     | —            | Timestamps plugin                                           |
 
 **Indexes:**
+
 - `{ username: 1 }` — unique
 - `{ email: 1 }` — unique
 - `{ google_id: 1 }` — unique, sparse
 - `{ verify_token: 1 }` — for email verification lookup
 
 **Middleware:**
+
 - `pre('save')`: Hash `password` with bcrypt (salt 12) if modified.
 - `comparePassword(candidatePassword)`: Instance method, compare bcrypt hash.
 
@@ -226,23 +231,23 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 
 #### Tuyến công khai (Authenticated, không yêu cầu ADMIN):
 
-| Method | Path | Auth | Mô tả |
-| :--- | :--- | :---: | :--- |
-| GET | `/me` | `authenticate` | Lấy thông tin cá nhân của user đang đăng nhập |
-| PUT | `/me` | `authenticate` | Cập nhật thông tin cá nhân (`first_name`, `last_name`, `phone`, `dob`) |
-| PUT | `/me/change-password` | `authenticate` | Đổi mật khẩu (yêu cầu `oldPassword` + `newPassword` ≥ 6 ký tự) |
+| Method | Path                  |      Auth      | Mô tả                                                                  |
+| :----- | :-------------------- | :------------: | :--------------------------------------------------------------------- |
+| GET    | `/me`                 | `authenticate` | Lấy thông tin cá nhân của user đang đăng nhập                          |
+| PUT    | `/me`                 | `authenticate` | Cập nhật thông tin cá nhân (`first_name`, `last_name`, `phone`, `dob`) |
+| PUT    | `/me/change-password` | `authenticate` | Đổi mật khẩu (yêu cầu `oldPassword` + `newPassword` ≥ 6 ký tự)         |
 
 #### Tuyến quản trị (ADMIN only):
 
-| Method | Path | Auth | Mô tả |
-| :--- | :--- | :---: | :--- |
-| GET | `/` | ADMIN | Danh sách tài khoản (phân trang, lọc theo `role`, `search`) |
-| GET | `/:id` | ADMIN | Xem chi tiết một tài khoản |
-| POST | `/` | ADMIN | Cấp phát tài khoản mới (bypass email verification) |
-| PUT | `/:id/role` | ADMIN | Thay đổi vai trò (chặn self-action) |
-| PUT | `/:id/status` | ADMIN | Khóa / Mở khóa (chặn target ADMIN) |
-| DELETE | `/:id` | ADMIN | Xóa vĩnh viễn (chặn target ADMIN) |
-| PUT | `/:id/reset-password` | ADMIN | Cấp lại mật khẩu (chặn target ADMIN) |
+| Method | Path                  | Auth  | Mô tả                                                       |
+| :----- | :-------------------- | :---: | :---------------------------------------------------------- |
+| GET    | `/`                   | ADMIN | Danh sách tài khoản (phân trang, lọc theo `role`, `search`) |
+| GET    | `/:id`                | ADMIN | Xem chi tiết một tài khoản                                  |
+| POST   | `/`                   | ADMIN | Cấp phát tài khoản mới (bypass email verification)          |
+| PUT    | `/:id/role`           | ADMIN | Thay đổi vai trò (chặn self-action)                         |
+| PUT    | `/:id/status`         | ADMIN | Khóa / Mở khóa (chặn target ADMIN)                          |
+| DELETE | `/:id`                | ADMIN | Xóa vĩnh viễn (chặn target ADMIN)                           |
+| PUT    | `/:id/reset-password` | ADMIN | Cấp lại mật khẩu (chặn target ADMIN)                        |
 
 ---
 
@@ -255,14 +260,14 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 
 ### 7.2 Custom Hooks (`src/frontend/src/feature/admin/hooks/useAdminUsers.js`)
 
-| Hook | Chức năng | API Call |
-| :--- | :--- | :--- |
-| `useAdminUsers(queryParams)` | Lấy danh sách phân trang + lọc | `GET /api/users` |
-| `useCreateUser()` | Tạo tài khoản mới | `POST /api/users` |
-| `useUpdateUserRole()` | Đổi vai trò | `PUT /api/users/:id/role` |
-| `useUpdateUserStatus()` | Khóa / Mở khóa | `PUT /api/users/:id/status` |
-| `useDeleteUser()` | Xóa vĩnh viễn | `DELETE /api/users/:id` |
-| `useResetUserPassword()` | Cấp lại mật khẩu | `PUT /api/users/:id/reset-password` |
+| Hook                         | Chức năng                      | API Call                            |
+| :--------------------------- | :----------------------------- | :---------------------------------- |
+| `useAdminUsers(queryParams)` | Lấy danh sách phân trang + lọc | `GET /api/users`                    |
+| `useCreateUser()`            | Tạo tài khoản mới              | `POST /api/users`                   |
+| `useUpdateUserRole()`        | Đổi vai trò                    | `PUT /api/users/:id/role`           |
+| `useUpdateUserStatus()`      | Khóa / Mở khóa                 | `PUT /api/users/:id/status`         |
+| `useDeleteUser()`            | Xóa vĩnh viễn                  | `DELETE /api/users/:id`             |
+| `useResetUserPassword()`     | Cấp lại mật khẩu               | `PUT /api/users/:id/reset-password` |
 
 ### 7.3 Quy ước UI
 
@@ -276,15 +281,15 @@ Hệ thống Optics Management phân biệt rõ ràng giữa các vai trò ngư�
 
 ### File: `src/backend/tests/integration/user.routes.test.js`
 
-| Describe Block | Số test | Các kịch bản chính |
-| :--- | :---: | :--- |
-| `GET /api/users/me` | 3 | Trả hồ sơ, ẩn password; không token → 401; token rác → 401 |
-| `GET /api/users (admin)` | 3 | Customer bị chặn → 403; Admin phân trang; Tìm kiếm theo `search` |
-| `GET /api/users (lọc theo role)` | 1 | Lọc `role=MANAGER` trả đúng nhóm |
-| `POST /api/users` | 4 | Tạo thành công → 201; Thiếu field → 400; Trùng → 400 DUPLICATE; Role mặc định MANAGER |
-| `GET /api/users/:id` | 2 | Xem chi tiết ẩn password; Không tồn tại → 404 |
-| `PUT /api/users/:id/role` | 5 | Đổi thành công; Thiếu role → 400; Role lạ → 400; Self-action → 403; Không tồn tại → 404 |
-| `PUT /api/users/:id/status` | 4 | Khóa → `deleted_at` set; Mở → `deleted_at` null; Status lạ → 400; Khóa ADMIN → 403 |
-| `DELETE /api/users/:id` | 3 | Xóa customer OK; Xóa ADMIN → 403; Không tồn tại → 404 |
-| `PUT /api/users/:id/reset-password` | 4 | Reset thành công; Không tồn tại → 404; Quá ngắn → 400; Reset ADMIN → 403 |
-| **Tổng cộng** | **29** | — |
+| Describe Block                      | Số test | Các kịch bản chính                                                                      |
+| :---------------------------------- | :-----: | :-------------------------------------------------------------------------------------- |
+| `GET /api/users/me`                 |    3    | Trả hồ sơ, ẩn password; không token → 401; token rác → 401                              |
+| `GET /api/users (admin)`            |    3    | Customer bị chặn → 403; Admin phân trang; Tìm kiếm theo `search`                        |
+| `GET /api/users (lọc theo role)`    |    1    | Lọc `role=MANAGER` trả đúng nhóm                                                        |
+| `POST /api/users`                   |    4    | Tạo thành công → 201; Thiếu field → 400; Trùng → 400 DUPLICATE; Role mặc định MANAGER   |
+| `GET /api/users/:id`                |    2    | Xem chi tiết ẩn password; Không tồn tại → 404                                           |
+| `PUT /api/users/:id/role`           |    5    | Đổi thành công; Thiếu role → 400; Role lạ → 400; Self-action → 403; Không tồn tại → 404 |
+| `PUT /api/users/:id/status`         |    4    | Khóa → `deleted_at` set; Mở → `deleted_at` null; Status lạ → 400; Khóa ADMIN → 403      |
+| `DELETE /api/users/:id`             |    3    | Xóa customer OK; Xóa ADMIN → 403; Không tồn tại → 404                                   |
+| `PUT /api/users/:id/reset-password` |    4    | Reset thành công; Không tồn tại → 404; Quá ngắn → 400; Reset ADMIN → 403                |
+| **Tổng cộng**                       | **29**  | —                                                                                       |

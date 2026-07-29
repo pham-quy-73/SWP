@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 /**
  * @typedef {Object} Verification
  * @property {mongoose.Types.ObjectId} order_id
- * @property {mongoose.Types.ObjectId} verified_by - Người duyệt (Sale)
+ * @property {mongoose.Types.ObjectId} verified_by - Người duyệt (Manager/Admin)
  * @property {string} status - APPROVE, REJECT
  * @property {string} note
  */

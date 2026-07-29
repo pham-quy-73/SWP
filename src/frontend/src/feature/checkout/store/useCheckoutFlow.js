@@ -10,7 +10,7 @@ export const useCheckoutFlow = () => {
 
   const { step, setStep, nextStep, prevStep, shippingData, paymentMethod, bankInfo } =
     useCheckoutStore();
-  const { items, clearCart } = useCartStore();
+  const { items } = useCartStore();
 
   const submitOrder = async () => {
     if (isSubmitting) return;
@@ -160,10 +160,10 @@ export const useCheckoutFlow = () => {
         const redirectUrl = mockResult?.result?.redirectUrl;
 
         if (redirectUrl) {
-          clearCart();
-          setTimeout(() => {
-            window.location.href = redirectUrl;
-          }, 1000);
+          // KHÔNG clearCart ở đây: giỏ rỗng sẽ kích hoạt guard của CheckoutPage
+          // (Navigate về /products) trước khi kịp chuyển trang. Giỏ được clear
+          // tại trang kết quả (useOrderSuccess).
+          window.location.href = redirectUrl;
         } else {
           throw new Error('Không nhận được URL chuyển hướng từ API mô phỏng.');
         }
@@ -174,10 +174,9 @@ export const useCheckoutFlow = () => {
         const paymentUrl = paymentResponseData?.result || paymentResponseData;
 
         if (paymentUrl && typeof paymentUrl === 'string') {
-          clearCart();
-          setTimeout(() => {
-            window.location.href = paymentUrl;
-          }, 1000);
+          // KHÔNG clearCart ở đây (xem ghi chú ở nhánh mock phía trên); chuyển
+          // thẳng sang VNPay, giỏ chỉ được clear khi thanh toán có kết quả.
+          window.location.href = paymentUrl;
         } else {
           toast.error('Lỗi cổng thanh toán VNPay', { id: toastId });
           setIsSubmitting(false);
