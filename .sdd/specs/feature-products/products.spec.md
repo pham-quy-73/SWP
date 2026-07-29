@@ -190,7 +190,7 @@ Toàn bộ lỗi đi qua `errorHandler` trung tâm, format thống nhất `{ err
 | **PROD-E02** | `GET /:id`                  | ID sai định dạng ObjectId                           | 400  | `INVALID_ID`                         |
 | **PROD-E03** | `POST /`                    | Thiếu name/brand/price                              | 400  | `VALIDATION_ERROR`                   |
 | **PROD-E04** | Mọi route ghi               | Không token / token hết hạn                         | 401  | `UNAUTHORIZED`                       |
-| **PROD-E05** | Mọi route ghi               | Sai role (CUSTOMER/SALE/SHIPPER)                    | 403  | `FORBIDDEN`                          |
+| **PROD-E05** | Mọi route ghi               | Sai role (CUSTOMER)                                 | 403  | `FORBIDDEN`                          |
 | **PROD-E06** | `POST /` `PUT /:id`         | JSON field `product` hỏng / lỗi Mongoose validation | 400  | `INVALID_JSON` \| `VALIDATION_ERROR` |
 | **PROD-E07** | `PUT /:id` `DELETE /:id`    | Product không tồn tại                               | 404  | `NOT_FOUND`                          |
 | **PROD-E08** | Route ghi có upload         | File vượt 10MB                                      | 400  | `FILE_TOO_LARGE`                     |

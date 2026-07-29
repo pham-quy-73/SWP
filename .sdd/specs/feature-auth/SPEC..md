@@ -40,7 +40,7 @@ Collection `users`:
 * `is_email_verified`: Boolean, Default: false.
 * `verify_token`: String, Optional.
 * `verify_token_expires`: Date, Optional.
-* `role`: Enum `['CUSTOMER', 'SALE', 'ADMIN']`, Default: `CUSTOMER`.
+* `role`: Enum `['CUSTOMER', 'MANAGER', 'ADMIN']`, Default: `CUSTOMER`.
 * `deleted_at`: Date, Default: null.
 
 ## 6. Error Handling (Unwanted Patterns)
@@ -56,3 +56,4 @@ Collection `users`:
 
 ## 8. Out of Scope
 * KHÔNG thực hiện luồng khôi phục mật khẩu (Forgot Password qua mã OTP) trong phân rã tính năng này.
+* KHÔNG thực hiện role `SALE` — đã loại bỏ khỏi enum và các luồng phân quyền của hệ thống.

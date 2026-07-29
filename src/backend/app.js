@@ -3,7 +3,6 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
-import authRoutes from './routes/auth.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import feedbackRoutes from './routes/feedback.routes.js';
@@ -53,9 +52,7 @@ export function createApp() {
     });
   });
 
-  app.use('/api/auth', authRoutes);
-
-  // Auth & feature routes (all API routes unified under /api)
+  // Unified API routes under /api (includes /api/auth, /api/products, /api/orders, etc.)
   app.use('/api', apiRoutes);
 
   // Legacy route aliases for backward compatibility and test coverage

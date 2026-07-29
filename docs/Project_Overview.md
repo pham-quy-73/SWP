@@ -21,10 +21,9 @@
 **Bao gồm:**
 
 - **Các vai trò (Actors) hiện triển khai:** `CUSTOMER` (Khách hàng), `MANAGER` (Quản lý cửa hàng), `ADMIN` (Quản trị viên hệ thống).
-- **Hỗ trợ Đặt trước (Pre-order):** Biến thể sản phẩm có thuộc tính `orderItemType` = `IN_STOCK` | `PRE_ORDER` cho phép mở bán sản phẩm chưa sẵn hàng trong kho.
 - **Quản lý sản phẩm & biến thể:** Product chia theo `category` (`FRAME` / `SUNGLASSES` / `LENS`). Mỗi Product có nhiều `ProductVariant` với `sku`, `colorName`, `frameFinish`, `lensWidthMm`, `bridgeWidthMm`, `templeLengthMm`, `sizeLabel`, `price`, `discountPrice` và tồn kho riêng (`quantity`).
 - **Quản lý tròng kính (Lens):** Catalog tròng kính riêng với thông tin chất liệu, loại tròng, giá. Khách chọn tròng kính kết hợp với gọng khi đặt hàng.
-- **Đơn kính thuốc (Prescription):** Khách có thể nhập đơn kính thuốc thủ công (OD/OS: SPH, CYL, AXIS, ADD, PD) hoặc upload ảnh toa thuốc. Dữ liệu được validate nghiêm ngặt ở cả Frontend (auto-format `onBlur` về bội số 0.25/0.5) và Backend (`validatePrescriptionFields` trả lỗi 400 thay vì tự đưa về 0).
+- **Đơn kính thuốc (Prescription):** Khách có thể nhập đơn kính thuốc thủ công (OD/OS: SPH, CYL, AXIS, ADD, PD) hoặc upload ảnh toa thuốc.
 - **Sổ địa chỉ (Address book):** Người dùng có thể lưu và chọn địa chỉ giao hàng mặc định từ collection `addresses`. Validate nghiêm ngặt họ tên (≤ 100 ký tự), số điện thoại (định dạng VN), địa chỉ (3-300 ký tự) ở cả Frontend và Backend.
 - **Thanh toán trực tuyến 100% qua VNPay Sandbox:** Không hỗ trợ COD.
 - **Quản lý trạng thái đơn chặt chẽ:** Vòng đời đơn qua 6 trạng thái — `PENDING` → `AWAITING_VERIFICATION` → `CONFIRMED` → `COMPLETED` / `CANCELLED` / `REFUNDED`.
@@ -47,11 +46,11 @@
 
 ### 4. Các actor chính & Chức năng
 
-| Actor        | Chức năng chính                                                                                                                                                                                                                                                                                                         |
-| :----------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor        | Chức năng chính                                                                                                                                                                                                                                                                                                                                           |
+| :----------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Customer** | Đăng ký/Đăng nhập (tài khoản thường hoặc Google OAuth2), xem/lọc sản phẩm theo brand/category, quản lý giỏ hàng client-side (Zustand), chọn tròng kính + nhập đơn thuốc, quản lý sổ địa chỉ, tạo đơn hàng, thanh toán qua VNPay, xem lịch sử đơn, tiếp tục thanh toán đơn `PENDING` chưa hoàn tất, hủy đơn `PENDING`/`AWAITING_VERIFICATION`/`CONFIRMED`. |
-| **Manager**  | Quản lý danh mục sản phẩm & tròng kính, tạo/cập nhật/xóa biến thể (màu, kích thước, giá, SKU, tồn kho), cập nhật trạng thái đơn hàng, xem Dashboard, quản lý danh sách đơn đã thanh toán bị hủy và xác nhận hoàn tiền.                                                                                                               |
-| **Admin**    | Toàn quyền của Manager + quản lý người dùng (cấp phát tài khoản, đổi vai trò, khóa/mở khóa qua `deleted_at`, cấp lại mật khẩu, xóa vĩnh viễn), xóa đơn hàng khỏi database.                                                                                                                                                                                               |
+| **Manager**  | Quản lý danh mục sản phẩm & tròng kính, tạo/cập nhật/xóa biến thể (màu, kích thước, giá, SKU, tồn kho), cập nhật trạng thái đơn hàng, xem Dashboard, quản lý danh sách đơn đã thanh toán bị hủy và xác nhận hoàn tiền.                                                                                                                                    |
+| **Admin**    | Toàn quyền của Manager + quản lý người dùng (cấp phát tài khoản, đổi vai trò, khóa/mở khóa qua `deleted_at`, cấp lại mật khẩu, xóa vĩnh viễn), xóa đơn hàng khỏi database.                                                                                                                                                                                |
 
 ---
 
@@ -71,17 +70,17 @@
 
 ### 6. Công nghệ triển khai thực tế
 
-| Thành phần            | Công nghệ                       | Chi tiết                                                                                                                                                                                                                         |
-| :-------------------- | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Backend**           | Node.js 20 LTS + Express 5.x   | ES Modules (`"type": "module"`), Joi validation, multer phục vụ upload ảnh sản phẩm/biến thể.                                                                                                                                    |
+| Thành phần            | Công nghệ                       | Chi tiết                                                                                                                                                                                                                               |
+| :-------------------- | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend**           | Node.js 20 LTS + Express 5.x    | ES Modules (`"type": "module"`), Joi validation, multer phục vụ upload ảnh sản phẩm/biến thể.                                                                                                                                          |
 | **Database**          | MongoDB / Mongoose 9.x          | Collections hoạt động: `users`, `products`, `product_variants`, `orders`, `order_items`, `lenses`, `refunds`, `addresses`, `feedbacks`, `verifications`. Collection `carts` **không sử dụng** (giữ file model để tương thích lịch sử). |
-| **Frontend**          | React 18 + Vite 5               | JavaScript thuần, styling Tailwind CSS 3.4, animation Framer Motion, toast Sonner, icon Lucide.                                                                                                                                    |
-| **Auth**              | JWT + bcrypt, Google OAuth2     | Token gửi qua header `Authorization: Bearer <token>`; đăng nhập Google qua `@react-oauth/google` + `google-auth-library` phía server.                                                                                            |
-| **State Client**      | Zustand + persist / React Query | Giỏ hàng `vision-cart-storage` và store đơn thuốc tại localStorage; dữ liệu server (đơn hàng, sản phẩm, dashboard) fetch/cache qua `@tanstack/react-query`.                                                                      |
-| **Form & Validation** | react-hook-form + Zod           | Kiểm tra dữ liệu form phía client trước khi gửi API. Bổ sung validate quang học riêng cho đơn kính thuốc (`prescriptionValidation.js`).                                                                                           |
-| **Thanh toán**        | VNPay Sandbox                   | Sinh URL thanh toán ký HmacSHA512, callback IPN xác thực chữ ký `vnp_SecureHash` và cập nhật trạng thái đơn.                                                                                                                     |
-| **Email**             | Nodemailer                      | Gửi mail xác thực tài khoản qua `verify_token`.                                                                                                                                                                                  |
-| **Testing**           | Vitest + Supertest              | 232+ integration tests sử dụng `mongodb-memory-server` cho in-memory DB. Coverage bao phủ: auth, users, products, variants, orders, payment, addresses, dashboard, lenses, refunds, middleware.                                    |
+| **Frontend**          | React 18 + Vite 5               | JavaScript thuần, styling Tailwind CSS 3.4, animation Framer Motion, toast Sonner, icon Lucide.                                                                                                                                        |
+| **Auth**              | JWT + bcrypt, Google OAuth2     | Token gửi qua header `Authorization: Bearer <token>`; đăng nhập Google qua `@react-oauth/google` + `google-auth-library` phía server.                                                                                                  |
+| **State Client**      | Zustand + persist / React Query | Giỏ hàng `vision-cart-storage` và store đơn thuốc tại localStorage; dữ liệu server (đơn hàng, sản phẩm, dashboard) fetch/cache qua `@tanstack/react-query`.                                                                            |
+| **Form & Validation** | react-hook-form + Zod           | Kiểm tra dữ liệu form phía client trước khi gửi API. Bổ sung validate quang học riêng cho đơn kính thuốc (`prescriptionValidation.js`).                                                                                                |
+| **Thanh toán**        | VNPay Sandbox                   | Sinh URL thanh toán ký HmacSHA512, callback IPN xác thực chữ ký `vnp_SecureHash` và cập nhật trạng thái đơn.                                                                                                                           |
+| **Email**             | Nodemailer                      | Gửi mail xác thực tài khoản qua `verify_token`.                                                                                                                                                                                        |
+| **Testing**           | Vitest + Supertest              | 232+ integration tests sử dụng `mongodb-memory-server` cho in-memory DB. Coverage bao phủ: auth, users, products, variants, orders, payment, addresses, dashboard, lenses, refunds, middleware.                                        |
 
 ---
 

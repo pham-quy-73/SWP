@@ -31,8 +31,33 @@ export async function cleanupExpiredOrders() {
   if (expiredOrders.length === 0) return 0;
 
   console.log(`[Cleaner] Tìm thấy ${expiredOrders.length} đơn hàng PENDING hết hạn thanh toán. Tiến hành hủy tự động...`);
+  let cancelledCount = 0;
   for (const order of expiredOrders) {
-    // Hoàn lại số lượng tồn kho cho sản phẩm
+    // Hủy đơn bằng cập nhật CÓ ĐIỀU KIỆN (atomic) — đóng vai trò "khóa":
+    // chỉ thành công nếu đơn VẪN còn PENDING + UNPAID ngay tại thời điểm update.
+    // Tránh race khi chạy nhiều instance (hoàn kho trùng) hoặc khi VNPay callback
+    // vừa cập nhật đơn thành PAID giữa lúc find() và lúc hủy.
+    // Note AUTO_EXPIRED giữ nguyên để callback về muộn nhận diện & phục hồi đơn.
+    const claimed = await Order.findOneAndUpdate(
+      { _id: order._id, status: 'PENDING', payment_status: 'UNPAID' },
+      {
+        $set: { status: 'CANCELLED' },
+        $push: {
+          status_history: {
+            from_status: 'PENDING',
+            to_status: 'CANCELLED',
+            note: 'AUTO_EXPIRED: Hệ thống tự động hủy do quá hạn thanh toán, đã hoàn kho'
+          }
+        }
+      },
+      { returnDocument: 'after' }
+    );
+
+    // claimed === null: instance khác đã hủy trước, hoặc khách vừa thanh toán
+    // → bỏ qua, KHÔNG hoàn kho để tránh cộng trùng.
+    if (!claimed) continue;
+
+    // Chỉ bên "thắng" khóa mới hoàn lại tồn kho — đảm bảo hoàn đúng 1 lần.
     const items = await OrderItem.find({ order_id: order._id });
     for (const item of items) {
       if (item.variant_id) {
@@ -41,18 +66,10 @@ export async function cleanupExpiredOrders() {
         });
       }
     }
-    order.status = 'CANCELLED';
-    // Ghi history với note nhận diện được là hủy-do-hết-hạn (callback thanh toán
-    // về muộn sẽ dựa vào dấu vết này để phục hồi đơn nếu tiền đã thu).
-    order.status_history.push({
-      from_status: 'PENDING',
-      to_status: 'CANCELLED',
-      note: 'AUTO_EXPIRED: Hệ thống tự động hủy do quá hạn thanh toán, đã hoàn kho'
-    });
-    await order.save();
+    cancelledCount++;
     console.log(`[Cleaner] Đã tự động hủy đơn hàng #${order._id.toString().slice(-6).toUpperCase()} và trả lại kho.`);
   }
-  return expiredOrders.length;
+  return cancelledCount;
 }
 
 /**

@@ -1,4 +1,5 @@
 import express from 'express';
+import authRoutes from './auth.routes.js';
 import productRoutes from './product.routes.js';
 import userRoutes from './user.routes.js';
 import orderRoutes from './order.routes.js';
@@ -15,6 +16,7 @@ router.get('/health', (req, res) => {
   res.status(200).json({ status: 'API is healthy' });
 });
 
+router.use('/auth', authRoutes);
 router.use('/products', productRoutes);
 router.use('/lenses', lensRoutes);
 router.use('/users', userRoutes);

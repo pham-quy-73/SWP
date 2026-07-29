@@ -57,10 +57,10 @@ describe('POST /api/users (admin tạo tài khoản)', () => {
   it('tạo thành công -> 201', async () => {
     const admin = await createAdmin();
     const res = await request(app).post('/api/users').set(authHeader(admin)).send({
-      first_name: 'A', last_name: 'B', username: 'created1', email: 'created1@test.com', password: 'secret123', role: 'SALE'
+      first_name: 'A', last_name: 'B', username: 'created1', email: 'created1@test.com', password: 'secret123', role: 'MANAGER'
     });
     expect(res.status).toBe(201);
-    expect(res.body.result.role).toBe('SALE');
+    expect(res.body.result.role).toBe('MANAGER');
   });
 
   it('thiếu field -> 400', async () => {
@@ -112,7 +112,7 @@ describe('PUT /api/users/:id/role', () => {
 
   it('user không tồn tại -> 404', async () => {
     const admin = await createAdmin();
-    const res = await request(app).put('/api/users/64b7f0000000000000000000/role').set(authHeader(admin)).send({ role: 'SALE' });
+    const res = await request(app).put('/api/users/64b7f0000000000000000000/role').set(authHeader(admin)).send({ role: 'MANAGER' });
     expect(res.status).toBe(404);
   });
 });

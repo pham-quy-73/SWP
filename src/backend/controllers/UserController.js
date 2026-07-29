@@ -84,7 +84,7 @@ class UserController {
       }
 
       // Chỉ nhận role từ body, không nhận từ query (G3 — tránh lỗ hổng CSRF qua URL)
-      const allowedRoles = ['CUSTOMER', 'SALE', 'MANAGER', 'ADMIN'];
+      const allowedRoles = ['CUSTOMER', 'MANAGER', 'ADMIN'];
       if (!allowedRoles.includes(role.toUpperCase())) {
         return res.status(400).json({ error_code: 'VALIDATION_ERROR', message: 'Vai trò không hợp lệ' });
       }
@@ -210,7 +210,7 @@ class UserController {
         });
       }
 
-      const allowedRoles = ['CUSTOMER', 'SALE', 'MANAGER', 'SHIPPER', 'ADMIN'];
+      const allowedRoles = ['CUSTOMER', 'MANAGER', 'ADMIN'];
       const assignedRole = allowedRoles.includes(role?.toUpperCase()) ? role.toUpperCase() : 'MANAGER';
 
       // 4. Tạo tài khoản mới

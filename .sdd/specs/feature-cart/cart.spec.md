@@ -7,25 +7,11 @@
 **Related Specs:** `feature-checkout`, `feature-products` (bản 2026-07-19), `feature-auth`
 **Cấu trúc:** Tuân theo `docs/spec.md` — 8 thành phần cốt lõi + EARS Notation.
 
-> **Ghi chú phiên bản:** . Thay đổi lớn nhất ở bản
-> 2026-07-19: bổ sung luồng **Quick-Add từ trang danh sách** và sửa trích dẫn
-> LESSON-002 → cơ chế đúng là `PricingService` server-side; đã triển khai fix
-> OQ-2, 4, 5, 6, 7 và đóng OQ-1, 3 (xem Phụ lục C) — hành vi **sau** fix đánh
-> dấu **[ĐÃ VÁ]**.
-> **Cập nhật 2026-07-21:** đối chiếu lại phát hiện **[REALITY-2026-07-21]**
-> form NHẬP đơn kính ĐÃ TỒN TẠI phía trang chi tiết (`PrescriptionModal.jsx`
->
-> - `usePrescriptionStore.js`), hiện qua khi khách chọn tròng — đóng OQ-6
->   (khối hiển thị nay có dữ liệu thật để render). Đường **quick-add vẫn gửi
->   `prescription: null`**. Các mục mô tả sai "chưa có form nhập" đã được sửa.
-
----
-
 ## 1. Context & Goal (Bối cảnh & Mục tiêu)
 
 Giỏ hàng là bước đệm giữa Browse (xem sản phẩm) và Checkout (thanh toán) trong hệ thống Optics Management. Khách hàng tích lũy các biến thể gọng kính (`ProductVariant`) — kèm hoặc không kèm tròng (model `Lens` riêng, API `/api/lenses`) — trước khi chuyển sang `/checkout`.
 
-**Pain point:** Nếu lưu giỏ tạm lên MongoDB, backend phải xử lý merge cart guest ↔ cart user, gánh tải DB cho dữ liệu chỉ có giá trị tạm thời và không nhạy cảm. Giỏ hàng client-only loại bỏ toàn bộ chi phí đó (**ADR-006**, `docs/architecture.md`).
+**Pain point:** Nếu lưu giỏ tạm lên MongoDB, backend phải xử lý merge cart guest ↔ cart user, gánh tải DB cho dữ liệu chỉ có giá trị tạm thời và không nhạy cảm. Giỏ hàng client-only loại bỏ toàn bộ chi phí đó.
 
 **Mục tiêu:**
 
@@ -60,7 +46,7 @@ Giỏ hàng là bước đệm giữa Browse (xem sản phẩm) và Checkout (th
 ### 3.1 Ubiquitous (Luôn luôn đúng)
 
 - **U-1:** THE Cart store SHALL persist state vào `localStorage` dưới key `vision-cart-storage` với `version: 1` (Zustand `persist`, lưu `items`, `isOpen`, `updatedAt`).
-- **U-2:** THE hệ thống SHALL NOT expose bất kỳ HTTP endpoint nào dưới `/cart`; cart không bao giờ rời khỏi trình duyệt (đã xác minh: `models/Cart.js` không được import ở bất kỳ route/controller nào).
+- **U-2:** THE hệ thống SHALL NOT expose bất kỳ HTTP endpoint nào dưới `/cart`; cart không bao giờ rời khỏi trình duyệt (model `models/Cart.js` mồ côi đã bị xóa 2026-07-28 — backend không còn bất kỳ dấu vết Cart nào).
 - **U-3:** **[ĐÃ VÁ — OQ-2]** THE unique key của một dòng giỏ SHALL là `${productId}-${variantId || 'default'}-${lensId}-${JSON.stringify(prescription)}` (hàm `buildItemId`) — 2 variants của cùng product là 2 dòng riêng. Giỏ cũ (v0) được `migrate` tính lại id từ dữ liệu item, KHÔNG bị xóa.
 - **U-4:** THE mọi mutation (`addToCart`/`removeFromCart`/`updateQuantity`/`clearCart`) SHALL cập nhật `updatedAt = Date.now()` để phục vụ TTL (O-2).
 
@@ -136,7 +122,7 @@ Giỏ hàng là bước đệm giữa Browse (xem sản phẩm) và Checkout (th
 
 **Không có thay đổi schema DB.**
 
-- Collection `carts` (`src/backend/models/Cart.js`: `user_id`, `product_id`, `variant_id`, `lens_id`, `quantity`) TỒN TẠI nhưng **không được import/sử dụng** ở bất kỳ route/controller nào (đã re-verify 2026-07-19). Giữ lại chỉ vì lịch sử (ADR-006). Không migrate, không seed, không index.
+- Model `src/backend/models/Cart.js` (mồ côi, không được import ở bất kỳ route/controller nào) **đã bị xóa 2026-07-28** — backend không còn model/endpoint Cart. Nếu tương lai cần server cart (đồng bộ đa thiết bị, abandoned-cart), phải thiết kế lại từ đầu: persist theo từng mutation + merge khi login, không chỉ lưu lúc checkout.
 - Không thêm collection mới; không đổi `Product`, `ProductVariant`, `Order`, `OrderItem`.
 
 ### 5.1 Client-only state — Zustand Store `useCartStore`

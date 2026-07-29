@@ -17,11 +17,11 @@ uploads/       Ảnh sản phẩm & feedback (mount vào volume optic_uploads)
 
 - **Kiến trúc phân tầng**: `routes/` → `controllers/` → `services/` + `models/`. `app.js` gắn middleware/route (import trực tiếp được cho Supertest, không mở cổng/không chạm DB thật); `server.js` mới thực sự connect DB + listen + khởi động job.
 - **Routing**: mọi route gộp dưới `/api` (xem `routes/index.js`). Có thêm alias legacy (`/orders`, `/products`, …) trong `app.js` cho tương thích ngược & test. `/api/status` và `/api/health` là health check.
-- **Model chính**: User, Product, ProductVariant, Lens, Cart, Order, OrderItem, Address, Feedback, Payment (qua Order), Refund, Verification. Trường DB dùng `snake_case`; timestamps bật sẵn; xóa mềm bằng `deleted_at`.
+- **Model chính**: User, Product, ProductVariant, Lens, Order, OrderItem, Address, Feedback, Payment (qua Order), Refund, Verification. Giỏ hàng là client-only (Zustand + localStorage) — KHÔNG có model/endpoint Cart ở backend. Trường DB dùng `snake_case`; timestamps bật sẵn; xóa mềm bằng `deleted_at`.
 - **Auth**: JWT Bearer + Google OAuth (`google-auth-library`). Middleware trong `middlewares/authMiddleware.js`:
   - `authenticate` — bắt buộc token, gán `req.user`.
   - `optionalAuthenticate` — auth "mềm" cho route công khai (khách vãng lai vẫn qua).
-  - `requireRole([...])` — phân quyền. Role: `CUSTOMER | SALE | MANAGER | SHIPPER | ADMIN`.
+  - `requireRole([...])` — phân quyền. Role: `CUSTOMER | MANAGER | ADMIN` (role `SALE`, `SHIPPER` đã loại bỏ).
   - Lỗi trả về dạng `{ error_code, message }`.
 - **Định giá — nguồn giá duy nhất**: `services/PricingService.js` (`priceOrderItem`) tính giá theo DB, KHÔNG tin giá client. Dùng chung cho báo giá lúc checkout và tạo đơn thật để hai luồng không lệch. Ném `PricingError(status, body)`.
 - **Thanh toán**: VNPay sandbox. Callback backend `/api/payment/vnpay-callback`. Cấu hình qua `VNP_*` trong `.env`.

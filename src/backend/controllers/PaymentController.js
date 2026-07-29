@@ -296,14 +296,22 @@ class PaymentController {
         return res.status(500).json({ error_code: 'CONFIG_ERROR', message: 'Cổng thanh toán chưa được cấu hình.' });
       }
 
-      const date = new Date();
-      // Format YYYYMMDDHHmmss
-      const createDate = date.getFullYear().toString() +
-        (date.getMonth() + 1).toString().padStart(2, '0') +
-        date.getDate().toString().padStart(2, '0') +
-        date.getHours().toString().padStart(2, '0') +
-        date.getMinutes().toString().padStart(2, '0') +
-        date.getSeconds().toString().padStart(2, '0');
+      // Format YYYYMMDDHHmmss theo múi giờ Việt Nam (GMT+7) để tránh lệch giờ khi deploy trên server múi giờ UTC
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      const parts = Object.fromEntries(
+        formatter.formatToParts(now).map(p => [p.type, p.value])
+      );
+      const createDate = `${parts.year}${parts.month}${parts.day}${parts.hour}${parts.minute}${parts.second}`;
 
       const ipAddr = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
 
