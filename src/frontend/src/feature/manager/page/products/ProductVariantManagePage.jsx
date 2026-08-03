@@ -29,6 +29,8 @@ export default function ProductVariantManagePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [openActionId, setOpenActionId] = useState(null);
+  // Tọa độ menu thao tác — dùng position:fixed để không bị clip bởi overflow-x-auto của bảng
+  const [actionMenuPos, setActionMenuPos] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState(null);
@@ -96,11 +98,15 @@ export default function ProductVariantManagePage() {
     fetchVariants();
   }, [productId]);
 
-  // Đóng menu thả xuống khi click ra ngoài
+  // Đóng menu thả xuống khi click ra ngoài hoặc cuộn (menu fixed sẽ lệch vị trí nếu cuộn)
   useEffect(() => {
     const handleClickGlobal = () => setOpenActionId(null);
     window.addEventListener('click', handleClickGlobal);
-    return () => window.removeEventListener('click', handleClickGlobal);
+    window.addEventListener('scroll', handleClickGlobal, true);
+    return () => {
+      window.removeEventListener('click', handleClickGlobal);
+      window.removeEventListener('scroll', handleClickGlobal, true);
+    };
   }, []);
 
   const handleCopyId = (id) => {
@@ -446,9 +452,21 @@ export default function ProductVariantManagePage() {
                         <td className="px-6 py-6 align-middle text-center">
                           <div className="flex items-center justify-center relative" onClick={(e) => e.stopPropagation()}>
                             <button
-                              onClick={() =>
-                                setOpenActionId(openActionId === (variant.id || variant._id) ? null : (variant.id || variant._id))
-                              }
+                              onClick={(e) => {
+                                const vid = variant.id || variant._id;
+                                if (openActionId === vid) {
+                                  setOpenActionId(null);
+                                  return;
+                                }
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const openUp = window.innerHeight - rect.bottom < 200;
+                                setActionMenuPos({
+                                  top: openUp ? undefined : rect.bottom + 8,
+                                  bottom: openUp ? window.innerHeight - rect.top + 8 : undefined,
+                                  right: Math.max(8, window.innerWidth - rect.right),
+                                });
+                                setOpenActionId(vid);
+                              }}
                               className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${openActionId === (variant.id || variant._id)
                                 ? 'bg-zinc-900 text-white shadow-lg'
                                 : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'
@@ -459,11 +477,8 @@ export default function ProductVariantManagePage() {
 
                             {openActionId === (variant.id || variant._id) && (
                               <div
-                                className={`absolute right-0 w-48 bg-white border border-zinc-100 rounded-2xl shadow-xl shadow-zinc-200/50 z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${
-                                  index >= filteredVariants.length - 2 && index > 1
-                                    ? 'bottom-full mb-2 origin-bottom-right'
-                                    : 'top-full mt-2 origin-top-right'
-                                  }`}
+                                style={actionMenuPos}
+                                className="fixed w-48 bg-white border border-zinc-100 rounded-2xl shadow-xl shadow-zinc-200/50 z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200"
                               >
                                 <div className="px-5 py-2 border-b border-zinc-50 mb-1">
                                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">

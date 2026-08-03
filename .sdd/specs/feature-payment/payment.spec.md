@@ -17,12 +17,6 @@
 
 Cửa hàng Optics áp dụng chính sách **thanh toán trước 100%** cho tất cả đơn hàng. Hệ thống tích hợp **VNPay** — cổng thanh toán trực tuyến phổ biến tại Việt Nam — để xử lý thanh toán qua thẻ ngân hàng, ví điện tử. Ngoài ra, hệ thống cung cấp **Mock Checkout** để phát triển và kiểm thử mà không cần VNPay sandbox thực.
 
-**Pain point hiện tại:**
-- Khách thanh toán xong nhưng đóng trình duyệt trước khi redirect về → cần IPN (server-to-server) làm nguồn xác nhận chính
-- Đơn bị cleanup job tự hủy trong lúc khách đang thanh toán trên VNPay → cần cơ chế phục hồi đơn khi thanh toán về muộn
-- Rủi ro thanh toán trùng (duplicate payment) khi cả ReturnURL và IPN cùng về → cần idempotent settlement
-- Giá hiển thị trên checkout khác giá thực khi tạo đơn → cần nguồn giá duy nhất (PricingService)
-
 ### 1.2 Goals
 
 1. **Tích hợp VNPay chuẩn**: Hỗ trợ VNPay API v2.1.0 với HMAC-SHA512 signature verification
@@ -35,18 +29,19 @@ Cửa hàng Optics áp dụng chính sách **thanh toán trước 100%** cho t�
 
 ## 2. Actors & Roles (Tác nhân & Vai trò)
 
-| Actor | Vai trò | Phân quyền với Payment |
-| :--- | :--- | :--- |
-| **CUSTOMER** | Khách hàng | Tính toán yêu cầu thanh toán, khởi tạo link VNPay, mock-checkout (chỉ đơn của mình) |
-| **MANAGER/ADMIN** | Quản lý | Được phép gọi checkout/mock-checkout cho bất kỳ đơn nào (không bị chặn IDOR) |
-| **VNPay Gateway** | Bên thứ 3 | Gửi ReturnURL callback (redirect browser) và IPN (server-to-server) sau khi khách thanh toán |
-| **System (PricingService)** | Hệ thống | Tính giá từ DB cho payment requirement — nguồn giá duy nhất |
+| Actor                       | Vai trò    | Phân quyền với Payment                                                                       |
+| :-------------------------- | :--------- | :------------------------------------------------------------------------------------------- |
+| **CUSTOMER**                | Khách hàng | Tính toán yêu cầu thanh toán, khởi tạo link VNPay, mock-checkout (chỉ đơn của mình)          |
+| **MANAGER/ADMIN**           | Quản lý    | Được phép gọi checkout/mock-checkout cho bất kỳ đơn nào (không bị chặn IDOR)                 |
+| **VNPay Gateway**           | Bên thứ 3  | Gửi ReturnURL callback (redirect browser) và IPN (server-to-server) sau khi khách thanh toán |
+| **System (PricingService)** | Hệ thống   | Tính giá từ DB cho payment requirement — nguồn giá duy nhất                                  |
 
 ---
 
 ## 3. Functional Requirements (Yêu cầu chức năng — EARS)
 
 > **Nguồn hành vi:**
+>
 > - Backend: `src/backend/controllers/PaymentController.js`
 > - Service: `src/backend/services/PricingService.js`
 > - Routes: `src/backend/routes/payment.routes.js`
@@ -66,6 +61,7 @@ Cửa hàng Optics áp dụng chính sách **thanh toán trước 100%** cho t�
 #### 3.2.1 Tính toán Yêu cầu Thanh toán (Payment Requirement)
 
 - **E-1:** WHEN Customer submits `POST /api/payment/orders/requirement` with `{ items: [{ productVariantId, lensId?, quantity }] }`, THE system SHALL iterate over each item, price it via PricingService, and return:
+
   ```json
   {
     "code": 0,
@@ -74,15 +70,17 @@ Cửa hàng Optics áp dụng chính sách **thanh toán trước 100%** cho t�
       "requiredAmount": 1500000,
       "requiredPaymentTotal": 1500000,
       "remainingPaymentTotal": 0,
-      "itemRequirements": [{
-        "productVariantId": "...",
-        "lensId": "...",
-        "unitPrice": 500000,
-        "lensPrice": 250000,
-        "itemTotal": 750000,
-        "paymentPercentage": 1.0,
-        "requiredPayment": 750000
-      }]
+      "itemRequirements": [
+        {
+          "productVariantId": "...",
+          "lensId": "...",
+          "unitPrice": 500000,
+          "lensPrice": 250000,
+          "itemTotal": 750000,
+          "paymentPercentage": 1.0,
+          "requiredPayment": 750000
+        }
+      ]
     }
   }
   ```
@@ -156,7 +154,7 @@ Cửa hàng Optics áp dụng chính sách **thanh toán trước 100%** cho t�
 
 - **E-22:** WHEN `POST /api/payment/mock-checkout` is called in `production` environment, THE system SHALL return HTTP 403 `FORBIDDEN`.
 
-- **E-23:** WHEN `simulateStatus === 'SUCCESS'`, THE system SHALL: determine next status (AWAITING_VERIFICATION or CONFIRMED based on prescription), set `payment_status = 'PAID'`, `transaction_id = 'MOCK_TXN_' + Date.now()`, return redirect URL to success page.
+- **E-23:** WHEN `simulateStatus === 'SUCCESS'`, THE system SHALL: determine next status (AWAITING*VERIFICATION or CONFIRMED based on prescription), set `payment_status = 'PAID'`, `transaction_id = 'MOCK_TXN*' + Date.now()`, return redirect URL to success page.
 
 - **E-24:** WHEN `simulateStatus !== 'SUCCESS'` (failure), THE system SHALL: restore inventory for all items, set status to `CANCELLED`, `payment_status = 'UNPAID'`, return redirect URL to failure page.
 
@@ -198,42 +196,42 @@ Cửa hàng Optics áp dụng chính sách **thanh toán trước 100%** cho t�
 
 Payment data is stored directly on the `Order` document (no separate Payment collection):
 
-| Field on `Order` | Type | Purpose |
-| :--- | :--- | :--- |
-| `payment_status` | String (`UNPAID` / `PAID`) | Trạng thái thanh toán |
-| `transaction_id` | String | Mã giao dịch VNPay (`vnp_TransactionNo`) hoặc `MOCK_TXN_...` |
-| `paid_at` | Date | Thời điểm thanh toán thành công |
-| `payment_initiated_at` | Date | Thời điểm tạo link VNPay (gia hạn cleanup 30 phút) |
+| Field on `Order`       | Type                       | Purpose                                                      |
+| :--------------------- | :------------------------- | :----------------------------------------------------------- |
+| `payment_status`       | String (`UNPAID` / `PAID`) | Trạng thái thanh toán                                        |
+| `transaction_id`       | String                     | Mã giao dịch VNPay (`vnp_TransactionNo`) hoặc `MOCK_TXN_...` |
+| `paid_at`              | Date                       | Thời điểm thanh toán thành công                              |
+| `payment_initiated_at` | Date                       | Thời điểm tạo link VNPay (gia hạn cleanup 30 phút)           |
 
 **Không có collection riêng cho Payment** — thiết kế này giảm JOIN khi query đơn hàng + trạng thái thanh toán.
 
 ### VNPay Parameters Mapping
 
-| VNPay Param | DB Field | Conversion |
-| :--- | :--- | :--- |
-| `vnp_TxnRef` | `order._id` | Direct ObjectId string |
-| `vnp_Amount` | `order.total_amount` | `× 100` (VNPay = cents) |
-| `vnp_TransactionNo` | `order.transaction_id` | Direct string |
-| `vnp_ResponseCode` | — | `'00'` = success, else failure |
+| VNPay Param         | DB Field               | Conversion                     |
+| :------------------ | :--------------------- | :----------------------------- |
+| `vnp_TxnRef`        | `order._id`            | Direct ObjectId string         |
+| `vnp_Amount`        | `order.total_amount`   | `× 100` (VNPay = cents)        |
+| `vnp_TransactionNo` | `order.transaction_id` | Direct string                  |
+| `vnp_ResponseCode`  | —                      | `'00'` = success, else failure |
 
 ---
 
 ## 6. Error Handling (Xử lý lỗi)
 
-| Error Code | HTTP Status | Trigger | Hành vi hệ thống |
-| :--- | :---: | :--- | :--- |
-| `VALIDATION_ERROR` | 400 | Items rỗng, quantity invalid, thiếu orderId | Trả lỗi |
-| `ORDER_NOT_FOUND` | 404 | Order ID không tồn tại | Trả lỗi |
-| `FORBIDDEN` | 403 | IDOR: Customer thanh toán đơn người khác; mock-checkout trên production | Trả lỗi |
-| `INVALID_STATUS` | 400 | Thanh toán đơn không phải PENDING, hoặc đơn đã thanh toán | Trả lỗi kèm message ngữ cảnh |
-| `CONFIG_ERROR` | 500 | VNPay env vars chưa cấu hình | Trả lỗi (server-side) |
-| `VARIANT_NOT_FOUND` | 400 | PricingService không tìm thấy variant | Trả lỗi từ PricingError |
-| `INVALID_LENS` | 400 | Tròng kính không hợp lệ / INACTIVE | Trả lỗi từ PricingError |
-| VNPay RspCode `97` | 200 | Chữ ký VNPay không hợp lệ | Trả `{ RspCode: '97' }` |
-| VNPay RspCode `01` | 200 | Đơn hàng không tồn tại | Trả `{ RspCode: '01' }` |
-| VNPay RspCode `04` | 200 | Số tiền không khớp | Trả `{ RspCode: '04' }` |
-| VNPay RspCode `02` | 200 | Đơn đã xử lý rồi | Trả `{ RspCode: '02' }` |
-| VNPay RspCode `99` | 200 | Lỗi hệ thống không xác định | Trả `{ RspCode: '99' }` — VNPay sẽ retry |
+| Error Code          | HTTP Status | Trigger                                                                 | Hành vi hệ thống                         |
+| :------------------ | :---------: | :---------------------------------------------------------------------- | :--------------------------------------- |
+| `VALIDATION_ERROR`  |     400     | Items rỗng, quantity invalid, thiếu orderId                             | Trả lỗi                                  |
+| `ORDER_NOT_FOUND`   |     404     | Order ID không tồn tại                                                  | Trả lỗi                                  |
+| `FORBIDDEN`         |     403     | IDOR: Customer thanh toán đơn người khác; mock-checkout trên production | Trả lỗi                                  |
+| `INVALID_STATUS`    |     400     | Thanh toán đơn không phải PENDING, hoặc đơn đã thanh toán               | Trả lỗi kèm message ngữ cảnh             |
+| `CONFIG_ERROR`      |     500     | VNPay env vars chưa cấu hình                                            | Trả lỗi (server-side)                    |
+| `VARIANT_NOT_FOUND` |     400     | PricingService không tìm thấy variant                                   | Trả lỗi từ PricingError                  |
+| `INVALID_LENS`      |     400     | Tròng kính không hợp lệ / INACTIVE                                      | Trả lỗi từ PricingError                  |
+| VNPay RspCode `97`  |     200     | Chữ ký VNPay không hợp lệ                                               | Trả `{ RspCode: '97' }`                  |
+| VNPay RspCode `01`  |     200     | Đơn hàng không tồn tại                                                  | Trả `{ RspCode: '01' }`                  |
+| VNPay RspCode `04`  |     200     | Số tiền không khớp                                                      | Trả `{ RspCode: '04' }`                  |
+| VNPay RspCode `02`  |     200     | Đơn đã xử lý rồi                                                        | Trả `{ RspCode: '02' }`                  |
+| VNPay RspCode `99`  |     200     | Lỗi hệ thống không xác định                                             | Trả `{ RspCode: '99' }` — VNPay sẽ retry |
 
 ---
 

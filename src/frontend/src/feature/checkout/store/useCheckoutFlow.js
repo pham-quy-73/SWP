@@ -8,7 +8,7 @@ import { paymentApi } from '../api/checkout-api';
 export const useCheckoutFlow = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { step, setStep, nextStep, prevStep, shippingData, paymentMethod, bankInfo } =
+  const { step, setStep, nextStep, prevStep, shippingData, paymentMethod, bankInfo, pendingOrder, setPendingOrder } =
     useCheckoutStore();
   const { items } = useCartStore();
 
@@ -138,16 +138,44 @@ export const useCheckoutFlow = () => {
         formData.append('prescriptionImage', '');
       }
 
-      // --- BƯỚC 2: TẠO ĐƠN HÀNG (SỬ DỤNG API ĐÃ TÁCH) ---
+      // --- BƯỚC 2: TÁI SỬ DỤNG ĐƠN PENDING (khách vừa hủy trên trang VNPay) ---
+      // Nếu đã có đơn PENDING với nội dung y hệt (cùng sản phẩm, địa chỉ...),
+      // lấy lại link thanh toán cho CHÍNH đơn đó thay vì tạo đơn mới — tránh
+      // sinh đơn trùng lặp trong DB mỗi lần khách bấm thanh toán lại.
+      const isMock = paymentMethod === 'MOCK_SUCCESS' || paymentMethod === 'MOCK_FAILURE';
+      const orderSignature = JSON.stringify(orderInfo);
+
+      if (!isMock && pendingOrder?.orderId && pendingOrder.signature === orderSignature) {
+        try {
+          toast.loading('Đang kết nối lại cổng thanh toán VNPay...', { id: toastId });
+          const retryResponse = await paymentApi.checkoutVnpay(pendingOrder.orderId);
+          const retryUrl = retryResponse?.result || retryResponse;
+          if (retryUrl && typeof retryUrl === 'string') {
+            window.location.href = retryUrl;
+            return;
+          }
+        } catch {
+          // Đơn cũ không còn PENDING (đã bị cleanup job hủy / đã thanh toán)
+          // -> bỏ qua và tạo đơn mới như bình thường.
+          setPendingOrder(null);
+          toast.loading('Đang khởi tạo đơn hàng...', { id: toastId });
+        }
+      }
+
+      // --- BƯỚC 2B: TẠO ĐƠN HÀNG (SỬ DỤNG API ĐÃ TÁCH) ---
       // Nếu là thanh toán giả lập, chuyển đổi phương thức thành 'VNPAY' lên server để khớp CSDL.
-      const apiPaymentMethod = (paymentMethod === 'MOCK_SUCCESS' || paymentMethod === 'MOCK_FAILURE')
-        ? 'VNPAY'
-        : paymentMethod;
+      const apiPaymentMethod = isMock ? 'VNPAY' : paymentMethod;
 
       const orderResponseData = await paymentApi.createOrder(formData, apiPaymentMethod);
       const actualOrderId = orderResponseData?.result?.orderId || orderResponseData?.orderId;
 
       if (!actualOrderId) throw new Error('Không lấy được mã đơn hàng.');
+
+      // Ghi nhớ đơn vừa tạo (chỉ cho luồng VNPay thật): nếu khách hủy ở trang
+      // VNPay rồi quay lại thanh toán, sẽ dùng lại đơn này thay vì tạo mới.
+      if (!isMock) {
+        setPendingOrder({ orderId: actualOrderId, signature: orderSignature });
+      }
 
       // --- BƯỚC 3: XỬ LÝ THANH TOÁN (SỬ DỤNG API ĐÃ TÁCH) ---
       if (paymentMethod === 'MOCK_SUCCESS' || paymentMethod === 'MOCK_FAILURE') {

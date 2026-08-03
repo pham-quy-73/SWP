@@ -57,7 +57,7 @@ Trang sản phẩm là bộ mặt của cửa hàng Optics Management: khách h�
 ### 3.1 Ubiquitous (Luôn luôn đúng)
 
 - **U-1:** THE hệ thống SHALL sort danh sách sản phẩm ở phía server: mặc định `createdAt` giảm dần (mới nhất trước); WHERE `sortBy` thuộc whitelist (`price-asc` | `price-desc`), SHALL sort theo `price` gốc tương ứng (OQ-5).
-- **U-2:** THE hệ thống SHALL phân trang bằng `page`/`limit`. **[REALITY]** Query param `page` là **1-based** (mặc định `1`, `limit=10`); nhưng field `page` trong response là **0-based** (`page - 1`) và `size` = số item thực trả về của trang hiện tại (không phải `limit`).
+- **U-2:** THE hệ thống SHALL phân trang bằng `page`/`limit`. **[REALITY]** Query param `page` là **1-based** (mặc định `1`, `limit=10`); nhưng field `page` trong response là **0-based** (`page - 1`) và `size` = số item thực trả về của trang hiện tại (không phải `limit`). Trang quản lý sản phẩm (`ProductManagePage.jsx`) của Manager được phân trang ở Client với giới hạn 10 sản phẩm mỗi trang (`limit=10` hay `size=10`).
 - **U-3:** THE hệ thống SHALL phục vụ ảnh upload dưới static route `/uploads` (`express.static`), FE tự nối `VITE_API_URL` + đường dẫn tương đối khi hiển thị.
 - **U-4:** THE hệ thống SHALL lưu tồn kho (`quantity`) duy nhất trên `ProductVariant`; `Product` KHÔNG có trường tồn kho.
 
@@ -114,7 +114,7 @@ Trang sản phẩm là bộ mặt của cửa hàng Optics Management: khách h�
 ### 4.1 Performance
 
 - `GET /api/products`: 2 query Mongo (`countDocuments` + `find.skip.limit`) — chấp nhận với catalog nhỏ (< vài nghìn SP). Chưa có index cho `search` regex (full scan) — chấp nhận ở quy mô hiện tại.
-- Trang khách tải `limit=9`/trang; popup chọn tròng của `ProductForm` fetch 1 lần từ `GET /api/lenses` (mặc định chỉ `ACTIVE`). **[LENS-SPLIT]**
+- Trang khách tải `limit=9`/trang; trang quản lý sản phẩm (`ProductManagePage.jsx`) phân trang ở Client với giới hạn 10 sản phẩm mỗi trang (`limit=10`); popup chọn tròng của `ProductForm` fetch 1 lần từ `GET /api/lenses` (mặc định chỉ `ACTIVE`). **[LENS-SPLIT]**
 - Mục tiêu phản hồi API đọc `< 300ms` (P95, local/sandbox).
 
 ### 4.2 Security

@@ -21,27 +21,16 @@ Nghiệp vụ chính: bán gọng kính (Product + ProductVariant), tròng kính
 
 ## 2. TECH STACK (STRICT — do not deviate)
 
-| Layer           | Technology                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| Runtime         | Node.js 20 LTS                                                                                  |
-| Backend         | Express.js 5.x (`^5.2.1`), **ESM** (`"type": "module"`)                                         |
-| Database        | MongoDB / Mongoose 9.x (`^9.7.3`)                                                               |
-| Frontend        | React 18 + Vite 5 (**JavaScript**, không TypeScript)                                            |
-| Styling         | Tailwind CSS 3.4 (`^3.4.17`)                                                                    |
-| Auth            | JWT + bcryptjs / Google OAuth2 (`google-auth-library`)                                          |
-| Payment         | VNPay (sandbox) — **duy nhất**, không COD                                                       |
-| State Client    | Zustand + persist (LocalStorage)                                                                |
-| Server State    | @tanstack/react-query                                                                           |
-| Form            | react-hook-form + Zod                                                                           |
-| Animation       | framer-motion                                                                                   |
-| Notification    | sonner (toast)                                                                                  |
-| Icons           | lucide-react                                                                                    |
-| File Upload     | multer (`^2.1.1`)                                                                               |
-| Validation (BE) | Joi (`^18.2.3`)                                                                                 |
-| Email           | Nodemailer (`^9.0.1`)                                                                           |
-| Excel Import    | xlsx (`^0.18.5`)                                                                                |
-| Testing         | Vitest + Supertest + mongodb-memory-server                                                      |
-| Deploy          | Docker Compose + Nginx (frontend :8080 → nginx :80, proxy `/api` + `/uploads` về backend :3000) |
+| Layer        | Technology                                              |
+| ------------ | ------------------------------------------------------- |
+| Runtime      | Node.js 20 LTS                                          |
+| Backend      | Express.js 5.x (`^5.2.1`), **ESM** (`"type": "module"`) |
+| Database     | MongoDB / Mongoose 9.x (`^9.7.3`)                       |
+| Frontend     | React 18 + Vite 5 (**JavaScript**, không TypeScript)    |
+| Styling      | Tailwind CSS 3.4 (`^3.4.17`)                            |
+| Auth         | JWT + bcryptjs / Google OAuth2 (`google-auth-library`)  |
+| Payment      | VNPay (sandbox) — **duy nhất**, không COD               |
+| State Client | Zustand + persist (LocalStorage)                        |
 
 Không thêm thư viện mới (ORM khác, Redux, TypeScript, session-based auth…) nếu chưa được duyệt.
 

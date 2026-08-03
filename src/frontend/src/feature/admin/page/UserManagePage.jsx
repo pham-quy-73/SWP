@@ -17,6 +17,8 @@ export default function UserManagePage() {
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, CUSTOMER, MANAGER, ADMIN
   const [page, setPage] = useState(1);
   const [openActionId, setOpenActionId] = useState(null);
+  // Tọa độ menu thao tác — dùng position:fixed để không bị clip bởi overflow-x-auto của bảng
+  const [actionMenuPos, setActionMenuPos] = useState(null);
 
   // States cho tính năng Đổi mật khẩu
   const [resetModal, setResetModal] = useState({ isOpen: false, userId: null, userName: '' });
@@ -35,8 +37,13 @@ export default function UserManagePage() {
 
   useEffect(() => {
     const handleClickGlobal = () => setOpenActionId(null);
+    // Menu dùng position:fixed nên phải đóng khi cuộn (kể cả cuộn ngang của bảng) để không lệch vị trí
     window.addEventListener('click', handleClickGlobal);
-    return () => window.removeEventListener('click', handleClickGlobal);
+    window.addEventListener('scroll', handleClickGlobal, true);
+    return () => {
+      window.removeEventListener('click', handleClickGlobal);
+      window.removeEventListener('scroll', handleClickGlobal, true);
+    };
   }, []);
 
   useEffect(() => {
@@ -231,14 +238,30 @@ export default function UserManagePage() {
                           {!isAdmin ? (
                             <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
                               <button
-                                onClick={() => setOpenActionId(openActionId === user._id ? null : user._id)}
+                                onClick={(e) => {
+                                  if (openActionId === user._id) {
+                                    setOpenActionId(null);
+                                    return;
+                                  }
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const openUp = window.innerHeight - rect.bottom < 240;
+                                  setActionMenuPos({
+                                    top: openUp ? undefined : rect.bottom + 8,
+                                    bottom: openUp ? window.innerHeight - rect.top + 8 : undefined,
+                                    right: Math.max(8, window.innerWidth - rect.right),
+                                  });
+                                  setOpenActionId(user._id);
+                                }}
                                 className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${openActionId === user._id ? 'bg-zinc-900 text-white' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'}`}
                               >
                                 <MoreHorizontal className="w-5 h-5" />
                               </button>
 
                               {openActionId === user._id && (
-                                <div className={`absolute right-0 w-48 bg-white border border-zinc-100 rounded-2xl shadow-xl z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${index >= users.length - 2 && index > 1 ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right'}`}>
+                                <div
+                                  style={actionMenuPos}
+                                  className="fixed w-48 bg-white border border-zinc-100 rounded-2xl shadow-xl z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200"
+                                >
                                   <div className="px-4 py-2 border-b border-zinc-50 mb-1">
                                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Bảo mật</p>
                                   </div>

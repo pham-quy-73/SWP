@@ -21,18 +21,24 @@ const ProductManagePage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [page, setPage] = useState(1);
-  const size = 20;
+  const size = 10;
 
   const [openActionId, setOpenActionId] = useState(null);
+  // Tọa độ menu thao tác — dùng position:fixed để không bị clip bởi overflow-x-auto của bảng
+  const [actionMenuPos, setActionMenuPos] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [modalType, setModalType] = useState('FRAME');
 
-  // Đóng menu thao tác khi click ra ngoài
+  // Đóng menu thao tác khi click ra ngoài hoặc cuộn (menu fixed sẽ lệch vị trí nếu cuộn)
   useEffect(() => {
     const handleClickGlobal = () => setOpenActionId(null);
     window.addEventListener('click', handleClickGlobal);
-    return () => window.removeEventListener('click', handleClickGlobal);
+    window.addEventListener('scroll', handleClickGlobal, true);
+    return () => {
+      window.removeEventListener('click', handleClickGlobal);
+      window.removeEventListener('scroll', handleClickGlobal, true);
+    };
   }, []);
 
   // Delay tìm kiếm 500ms
@@ -391,14 +397,30 @@ const ProductManagePage = () => {
                         <td className="px-6 py-6 align-middle text-center">
                           <div className="flex items-center justify-center relative" onClick={(e) => e.stopPropagation()}>
                             <button
-                              onClick={() => setOpenActionId(openActionId === itemId ? null : itemId)}
+                              onClick={(e) => {
+                                if (openActionId === itemId) {
+                                  setOpenActionId(null);
+                                  return;
+                                }
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const openUp = window.innerHeight - rect.bottom < 240;
+                                setActionMenuPos({
+                                  top: openUp ? undefined : rect.bottom + 8,
+                                  bottom: openUp ? window.innerHeight - rect.top + 8 : undefined,
+                                  right: Math.max(8, window.innerWidth - rect.right),
+                                });
+                                setOpenActionId(itemId);
+                              }}
                               className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${openActionId === itemId ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100'}`}
                             >
                               <MoreHorizontal className="w-5 h-5" />
                             </button>
 
                             {openActionId === itemId && (
-                              <div className={`absolute right-0 w-52 bg-white border border-zinc-100 rounded-2xl shadow-xl z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200 ${index >= displayedItems.length - 2 && index > 1 ? 'bottom-full mb-2 origin-bottom-right' : 'top-full mt-2 origin-top-right'}`}>
+                              <div
+                                style={actionMenuPos}
+                                className="fixed w-52 bg-white border border-zinc-100 rounded-2xl shadow-xl z-50 py-2 text-left animate-in fade-in zoom-in-95 duration-200"
+                              >
                                 <div className="px-5 py-2 border-b border-zinc-50 mb-1">
                                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Thao tác</p>
                                 </div>
@@ -448,6 +470,31 @@ const ProductManagePage = () => {
             </table>
           )}
         </div>
+
+        {/* PAGINATION */}
+        {activeTab === 'GLASSES' && !isLoading && data && data.totalPages > 1 && (
+          <div className="bg-white px-4 md:px-8 py-4 md:py-6 border-t border-zinc-100 flex items-center justify-between gap-4">
+            <span className="text-zinc-500 text-sm font-medium">
+              Trang <span className="font-bold text-zinc-900">{page}</span> / {data.totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="px-4 py-2 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 transition-all"
+              >
+                Trước
+              </button>
+              <button
+                onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
+                disabled={page >= data.totalPages}
+                className="px-4 py-2 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 transition-all"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <ProductModal
