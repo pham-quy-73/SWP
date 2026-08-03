@@ -212,7 +212,15 @@ Một số endpoint (Product variants, Lenses) dùng biến thể `{ "success": 
   ```json
   {
     "code": 0,
-    "result": [ { "_id": "...", "username": "...", "email": "...", "role": "MANAGER", "deleted_at": null } ],
+    "result": [
+      {
+        "_id": "...",
+        "username": "...",
+        "email": "...",
+        "role": "MANAGER",
+        "deleted_at": null
+      }
+    ],
     "pagination": { "page": 1, "limit": 20, "total": 1, "totalPages": 1 }
   }
   ```
@@ -529,7 +537,7 @@ Tất cả endpoint đều yêu cầu đăng nhập; chỉ chủ sở hữu mớ
           "quantity": 1,
           "prescription": {
             "od": { "sph": -2.25, "cyl": -0.5, "axis": 90, "add": 1.0 },
-            "os": { "sph": -2.00, "cyl": 0, "axis": 0, "add": 1.0 },
+            "os": { "sph": -2.0, "cyl": 0, "axis": 0, "add": 1.0 },
             "pd": 63
           }
         }

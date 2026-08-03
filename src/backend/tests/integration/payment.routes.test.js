@@ -174,15 +174,30 @@ describe('GET /payment/vnpay-callback', () => {
     expect(dbOrder.status).toBe('PENDING');
   });
 
-  it('ResponseCode != 00 -> CANCELLED + redirect failure', async () => {
+  it('ResponseCode != 00 (lỗi thật, vd 51) -> CANCELLED + redirect failure', async () => {
     const res = await request(app)
       .get('/payment/vnpay-callback')
-      .query(buildCallback({ vnp_ResponseCode: '24' }));
+      .query(buildCallback({ vnp_ResponseCode: '51' }));
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('/checkout/failure');
     const Order = (await import('../../models/Order.js')).default;
     const dbOrder = await Order.findById(order._id);
     expect(dbOrder.status).toBe('CANCELLED');
+  });
+
+  it('ResponseCode 24 (khách hủy) -> đơn GIỮ PENDING + redirect failure kèm reason', async () => {
+    const res = await request(app)
+      .get('/payment/vnpay-callback')
+      .query(buildCallback({ vnp_ResponseCode: '24' }));
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain('/checkout/failure');
+    expect(res.headers.location).toContain('reason=user_cancelled');
+    expect(res.headers.location).toContain(`orderId=${order._id.toString()}`);
+    const Order = (await import('../../models/Order.js')).default;
+    const dbOrder = await Order.findById(order._id);
+    // Đơn không bị hủy — khách có thể thanh toán lại trên cùng đơn
+    expect(dbOrder.status).toBe('PENDING');
+    expect(dbOrder.payment_status).not.toBe('PAID');
   });
 
   it('order không PENDING (đã CONFIRMED) -> redirect success, idempotent', async () => {

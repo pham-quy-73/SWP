@@ -1,5 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import MainLayout from './components/layout/MainLayout';
 import AuthLayout from './components/layout/AuthLayout';
 import HomePage from './pages/HomePage';
@@ -20,22 +21,28 @@ import { Toaster } from 'sonner';
 import { CartDrawer } from './feature/product/components/CartDrawer';
 import PrivateRoute from './components/layout/PrivateRoute';
 
-// Import manager routes
-import ManagerLayout from './feature/manager/layout/ManagerLayout';
-import ManagerDashboardPage from './feature/manager/page/dashboard/ManagerDashboardPage';
-import ProductManagePage from './feature/manager/page/products/ProductManagePage';
-import ProductVariantManagePage from './feature/manager/page/products/ProductVariantManagePage';
-import ManagerOrderPage from './feature/manager/page/orders/ManagerOrderPage';
+// Manager/Admin routes tải lười (lazy) — khách hàng không phải tải phần quản trị
+const ManagerLayout = lazy(() => import('./feature/manager/layout/ManagerLayout'));
+const ManagerDashboardPage = lazy(() => import('./feature/manager/page/dashboard/ManagerDashboardPage'));
+const ProductManagePage = lazy(() => import('./feature/manager/page/products/ProductManagePage'));
+const ProductVariantManagePage = lazy(() => import('./feature/manager/page/products/ProductVariantManagePage'));
+const ManagerOrderPage = lazy(() => import('./feature/manager/page/orders/ManagerOrderPage'));
+const AdminLayout = lazy(() => import('./feature/admin/layout/AdminLayout'));
+const UserManagePage = lazy(() => import('./feature/admin/page/UserManagePage'));
 
-// Import admin routes
-import AdminLayout from './feature/admin/layout/AdminLayout';
-import UserManagePage from './feature/admin/page/UserManagePage';
+// Fallback khi đang tải chunk quản trị
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+    <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+  </div>
+);
 
 export default function App() {
   return (
     <>
       <Toaster richColors closeButton position="top-right" />
       <CartDrawer />
+      <Suspense fallback={<PageLoader />}>
       <Routes>
 
         {/* Trang thường */}
@@ -94,6 +101,7 @@ export default function App() {
         />
 
       </Routes>
+      </Suspense>
     </>
   );
 }

@@ -17,11 +17,6 @@
 
 Hệ thống đánh giá sản phẩm cho phép khách hàng chia sẻ trải nghiệm sau khi mua gọng kính / tròng kính. Đánh giá xuất hiện trên trang chi tiết sản phẩm (public) và giúp khách hàng tiềm năng ra quyết định mua hàng. Mỗi đánh giá gắn liền với cả đơn hàng (`order_id`) lẫn sản phẩm (`product_id`) để đảm bảo khách chỉ đánh giá sản phẩm mà họ thực sự đã mua.
 
-**Pain point hiện tại:**
-- Khách hàng gửi đánh giá trùng lặp (cùng user + order + product) → cần auto-upsert thay vì báo lỗi
-- Cần hỗ trợ upload ảnh minh chứng kèm đánh giá (tối đa 5 ảnh)
-- Đánh giá hiển thị công khai nhưng chỉ chủ sở hữu mới được sửa/xóa
-
 ### 1.2 Goals
 
 1. **Đánh giá theo đơn hàng**: Mỗi khách chỉ đánh giá sản phẩm từ đơn hàng họ sở hữu
@@ -33,17 +28,18 @@ Hệ thống đánh giá sản phẩm cho phép khách hàng chia sẻ trải ng
 
 ## 2. Actors & Roles (Tác nhân & Vai trò)
 
-| Actor | Vai trò | Phân quyền với Feedback |
-| :--- | :--- | :--- |
-| **CUSTOMER** | Khách hàng | Tạo/sửa/xóa đánh giá của mình, xem đánh giá của mình, xem đánh giá theo đơn hàng |
-| **GUEST (Public)** | Khách vãng lai | Xem đánh giá theo sản phẩm (trang chi tiết sản phẩm) |
-| **System** | Hệ thống | Validate ownership (order thuộc user), auto-upsert khi trùng |
+| Actor              | Vai trò        | Phân quyền với Feedback                                                          |
+| :----------------- | :------------- | :------------------------------------------------------------------------------- |
+| **CUSTOMER**       | Khách hàng     | Tạo/sửa/xóa đánh giá của mình, xem đánh giá của mình, xem đánh giá theo đơn hàng |
+| **GUEST (Public)** | Khách vãng lai | Xem đánh giá theo sản phẩm (trang chi tiết sản phẩm)                             |
+| **System**         | Hệ thống       | Validate ownership (order thuộc user), auto-upsert khi trùng                     |
 
 ---
 
 ## 3. Functional Requirements (Yêu cầu chức năng — EARS)
 
 > **Nguồn hành vi:**
+>
 > - Backend: `src/backend/controllers/FeedbackController.js`, `src/backend/models/Feedback.js`
 > - Routes: `src/backend/routes/feedback.routes.js`
 
@@ -125,29 +121,30 @@ Hệ thống đánh giá sản phẩm cho phép khách hàng chia sẻ trải ng
 
 ### Collection: `feedbacks`
 
-| Field | Type | Required | Default | Constraints / Notes |
-| :--- | :--- | :---: | :--- | :--- |
-| `user_id` | ObjectId (ref: User) | ✅ | — | Người đánh giá |
-| `product_id` | ObjectId (ref: Product) | ✅ | — | Sản phẩm được đánh giá |
-| `order_id` | ObjectId (ref: Order) | ✅ | — | Đơn hàng chứa sản phẩm |
-| `rating` | Number | ✅ | — | `min: 1, max: 5` |
-| `comment` | String | — | `''` | Nội dung đánh giá |
-| `images` | [String] | — | `[]` | Danh sách URL ảnh minh chứng |
-| `createdAt` | Date (auto) | — | `Date.now` | Timestamps plugin |
-| `updatedAt` | Date (auto) | — | `Date.now` | Timestamps plugin |
+| Field        | Type                    | Required | Default    | Constraints / Notes          |
+| :----------- | :---------------------- | :------: | :--------- | :--------------------------- |
+| `user_id`    | ObjectId (ref: User)    |    ✅    | —          | Người đánh giá               |
+| `product_id` | ObjectId (ref: Product) |    ✅    | —          | Sản phẩm được đánh giá       |
+| `order_id`   | ObjectId (ref: Order)   |    ✅    | —          | Đơn hàng chứa sản phẩm       |
+| `rating`     | Number                  |    ✅    | —          | `min: 1, max: 5`             |
+| `comment`    | String                  |    —     | `''`       | Nội dung đánh giá            |
+| `images`     | [String]                |    —     | `[]`       | Danh sách URL ảnh minh chứng |
+| `createdAt`  | Date (auto)             |    —     | `Date.now` | Timestamps plugin            |
+| `updatedAt`  | Date (auto)             |    —     | `Date.now` | Timestamps plugin            |
 
 **Indexes:**
+
 - `{ user_id: 1, order_id: 1, product_id: 1 }` — compound index cho upsert lookup
 
 ---
 
 ## 6. Error Handling (Xử lý lỗi)
 
-| Error Code | HTTP Status | Trigger | Hành vi hệ thống |
-| :--- | :---: | :--- | :--- |
-| `VALIDATION_ERROR` | 400 | Thiếu `order_id`, `product_id`, hoặc `rating` | Trả lỗi |
-| `ORDER_NOT_FOUND` | 404 | Đơn hàng không tồn tại hoặc không thuộc user | Trả lỗi (chống enumeration) |
-| `NOT_FOUND` | 404 | Feedback không tồn tại hoặc không thuộc user | Trả lỗi |
+| Error Code         | HTTP Status | Trigger                                       | Hành vi hệ thống            |
+| :----------------- | :---------: | :-------------------------------------------- | :-------------------------- |
+| `VALIDATION_ERROR` |     400     | Thiếu `order_id`, `product_id`, hoặc `rating` | Trả lỗi                     |
+| `ORDER_NOT_FOUND`  |     404     | Đơn hàng không tồn tại hoặc không thuộc user  | Trả lỗi (chống enumeration) |
+| `NOT_FOUND`        |     404     | Feedback không tồn tại hoặc không thuộc user  | Trả lỗi                     |
 
 ---
 

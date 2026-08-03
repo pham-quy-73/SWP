@@ -102,7 +102,7 @@ const recoverAutoExpiredOrder = async (order, txnNo) => {
  * [DÙNG CHUNG IPN + ReturnURL] Chốt kết quả thanh toán VNPay cho một đơn.
  * Idempotent: gọi lặp (IPN retry, user refresh ReturnURL) không đổi trạng thái thêm.
  *
- * @returns {{ outcome: 'SUCCESS'|'FAILED'|'RECOVERED'|'RECOVERED_NO_STOCK'|'ALREADY_PAID'|'ALREADY_FINALIZED'|'AMOUNT_MISMATCH' }}
+ * @returns {{ outcome: 'SUCCESS'|'FAILED'|'USER_CANCELLED'|'RECOVERED'|'RECOVERED_NO_STOCK'|'ALREADY_PAID'|'ALREADY_FINALIZED'|'AMOUNT_MISMATCH' }}
  */
 const settleVnpayResult = async (order, vnp_Params) => {
   const responseCode = vnp_Params['vnp_ResponseCode'];
@@ -157,6 +157,15 @@ const settleVnpayResult = async (order, vnp_Params) => {
     });
     await order.save();
     return { outcome: 'SUCCESS' };
+  }
+
+  // Mã 24 = khách bấm "Quay lại"/hủy trên trang VNPay — CHƯA hề thanh toán,
+  // không phải giao dịch thất bại thật. Giữ nguyên đơn PENDING (không hủy,
+  // không hoàn kho) để khách thanh toán lại trên CÙNG đơn — tránh việc mỗi lần
+  // thử lại tạo thêm một đơn CANCELLED trùng lặp trong DB. Nếu khách bỏ hẳn,
+  // orderCleanupJob sẽ tự hủy đơn quá hạn và hoàn kho như thiết kế sẵn.
+  if (responseCode === '24') {
+    return { outcome: 'USER_CANCELLED' };
   }
 
   // Giao dịch không thành công -> hủy đơn VÀ hoàn trả tồn kho
@@ -394,6 +403,11 @@ class PaymentController {
       if (['SUCCESS', 'RECOVERED', 'ALREADY_PAID'].includes(outcome)) {
         return res.redirect(`${clientUrl}/checkout/success?orderId=${orderId}&email=${userEmail}`);
       }
+      // Khách tự hủy trên trang VNPay: đơn vẫn PENDING, cho phép thanh toán lại
+      // trên cùng đơn — báo cho FE biết qua reason để hiển thị đúng thông điệp.
+      if (outcome === 'USER_CANCELLED') {
+        return res.redirect(`${clientUrl}/checkout/failure?reason=user_cancelled&orderId=${orderId}`);
+      }
       return res.redirect(`${clientUrl}/checkout/failure`);
     } catch (error) {
       next(error);
@@ -439,6 +453,10 @@ class PaymentController {
         case 'ALREADY_PAID':
         case 'ALREADY_FINALIZED':
           return res.status(200).json({ RspCode: '02', Message: 'Order already confirmed' });
+        case 'USER_CANCELLED':
+          // Khách hủy trên trang VNPay: xác nhận đã nhận thông báo; đơn cố ý
+          // giữ PENDING để khách thanh toán lại (cleanup job lo phần quá hạn).
+          return res.status(200).json({ RspCode: '00', Message: 'Confirm success' });
         default:
           // SUCCESS / FAILED / RECOVERED / RECOVERED_NO_STOCK: đã ghi nhận kết quả
           return res.status(200).json({ RspCode: '00', Message: 'Confirm success' });

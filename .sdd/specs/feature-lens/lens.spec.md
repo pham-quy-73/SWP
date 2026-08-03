@@ -3,7 +3,7 @@
 **Status:** Approved  
 **Author:** AI Agent  
 **Reviewer:** Tech Lead  
-**Date:** 2026-07-12 
+**Date:** 2026-07-12
 **Priority:** Medium  
 **Risk Level:** Medium (Ảnh hưởng tính giá đơn hàng khi tròng bị INACTIVE, dữ liệu y tế liên quan)  
 **Related Specs:** `feature-products`, `feature-orders`, `feature-payment`  
@@ -17,11 +17,6 @@
 
 Cửa hàng Optics bán gọng kính kết hợp với tròng kính. Khách hàng có thể chọn mua gọng kính riêng lẻ (frame-only) hoặc kết hợp gọng + tròng (frame + lens) khi đặt hàng. Tròng kính là sản phẩm phụ trợ được quản lý riêng biệt, có giá riêng, và được gắn vào OrderItem khi khách chọn cắt kính theo toa thuốc.
 
-**Pain point hiện tại:**
-- Thiếu giao diện quản lý danh mục tròng kính cho Manager/Admin
-- Cần soft-delete (chuyển INACTIVE) thay vì xóa vĩnh viễn để bảo toàn dữ liệu đơn hàng cũ
-- Cần hỗ trợ giá khuyến mãi (`discountPrice`) cho từng loại tròng
-
 ### 1.2 Goals
 
 1. **CRUD tròng kính**: Manager/Admin quản lý danh mục tròng kính (tên, chất liệu, giá, mô tả)
@@ -33,18 +28,19 @@ Cửa hàng Optics bán gọng kính kết hợp với tròng kính. Khách hàn
 
 ## 2. Actors & Roles (Tác nhân & Vai trò)
 
-| Actor | Vai trò | Phân quyền với Lens Management |
-| :--- | :--- | :--- |
-| **GUEST / CUSTOMER** | Khách hàng | Xem danh sách tròng kính ACTIVE (chọn khi đặt hàng), xem chi tiết |
-| **MANAGER** | Quản lý | Tạo, sửa, xóa (soft-delete) tròng kính |
-| **ADMIN** | Quản trị | Tất cả quyền của MANAGER |
-| **System (PricingService)** | Hệ thống | Lấy giá tròng từ DB khi tính giá đơn hàng — ưu tiên `discountPrice` > 0, ngược lại dùng `price` |
+| Actor                       | Vai trò    | Phân quyền với Lens Management                                                                  |
+| :-------------------------- | :--------- | :---------------------------------------------------------------------------------------------- |
+| **GUEST / CUSTOMER**        | Khách hàng | Xem danh sách tròng kính ACTIVE (chọn khi đặt hàng), xem chi tiết                               |
+| **MANAGER**                 | Quản lý    | Tạo, sửa, xóa (soft-delete) tròng kính                                                          |
+| **ADMIN**                   | Quản trị   | Tất cả quyền của MANAGER                                                                        |
+| **System (PricingService)** | Hệ thống   | Lấy giá tròng từ DB khi tính giá đơn hàng — ưu tiên `discountPrice` > 0, ngược lại dùng `price` |
 
 ---
 
 ## 3. Functional Requirements (Yêu cầu chức năng — EARS)
 
 > **Nguồn hành vi:**
+>
 > - Backend: `src/backend/controllers/LensController.js`, `src/backend/models/Lens.js`
 > - Routes: `src/backend/routes/lens.routes.js`
 
@@ -137,27 +133,27 @@ Cửa hàng Optics bán gọng kính kết hợp với tròng kính. Khách hàn
 
 ### Collection: `lenses`
 
-| Field | Type | Required | Default | Constraints / Notes |
-| :--- | :--- | :---: | :--- | :--- |
-| `name` | String | ✅ | — | Trim, 1-200 ký tự |
-| `material` | String | ✅ | — | Trim, 1-200 ký tự (chất liệu: polycarbonate, CR-39, v.v.) |
-| `price` | Number | ✅ | — | `min: 0`. Giá gốc |
-| `discountPrice` | Number | — | — | `min: 0`. Giá khuyến mãi (PricingService ưu tiên khi > 0) |
-| `description` | String | — | `''` | Trim, max 2000 ký tự |
-| `status` | String (Enum) | — | `'ACTIVE'` | `ACTIVE`, `INACTIVE` |
-| `createdAt` | Date (auto) | — | `Date.now` | Timestamps plugin |
-| `updatedAt` | Date (auto) | — | `Date.now` | Timestamps plugin |
+| Field           | Type          | Required | Default    | Constraints / Notes                                       |
+| :-------------- | :------------ | :------: | :--------- | :-------------------------------------------------------- |
+| `name`          | String        |    ✅    | —          | Trim, 1-200 ký tự                                         |
+| `material`      | String        |    ✅    | —          | Trim, 1-200 ký tự (chất liệu: polycarbonate, CR-39, v.v.) |
+| `price`         | Number        |    ✅    | —          | `min: 0`. Giá gốc                                         |
+| `discountPrice` | Number        |    —     | —          | `min: 0`. Giá khuyến mãi (PricingService ưu tiên khi > 0) |
+| `description`   | String        |    —     | `''`       | Trim, max 2000 ký tự                                      |
+| `status`        | String (Enum) |    —     | `'ACTIVE'` | `ACTIVE`, `INACTIVE`                                      |
+| `createdAt`     | Date (auto)   |    —     | `Date.now` | Timestamps plugin                                         |
+| `updatedAt`     | Date (auto)   |    —     | `Date.now` | Timestamps plugin                                         |
 
 ---
 
 ## 6. Error Handling (Xử lý lỗi)
 
-| Error | HTTP Status | Trigger | Hành vi hệ thống |
-| :--- | :---: | :--- | :--- |
-| Validation (tên/chất liệu/giá) | 400 | Thiếu trường bắt buộc, vượt giới hạn ký tự, giá âm | Trả `{ success: false, message: '...' }` |
-| Empty update | 400 | PUT không có trường hợp lệ nào | Trả thông báo cụ thể |
-| Not found | 404 | ID không tồn tại | Trả `{ success: false, message: 'Không tìm thấy tròng kính' }` |
-| INVALID_LENS (PricingService) | 400 | Đặt hàng tròng INACTIVE | Trả lỗi từ PricingError trong luồng Order/Payment |
+| Error                          | HTTP Status | Trigger                                            | Hành vi hệ thống                                               |
+| :----------------------------- | :---------: | :------------------------------------------------- | :------------------------------------------------------------- |
+| Validation (tên/chất liệu/giá) |     400     | Thiếu trường bắt buộc, vượt giới hạn ký tự, giá âm | Trả `{ success: false, message: '...' }`                       |
+| Empty update                   |     400     | PUT không có trường hợp lệ nào                     | Trả thông báo cụ thể                                           |
+| Not found                      |     404     | ID không tồn tại                                   | Trả `{ success: false, message: 'Không tìm thấy tròng kính' }` |
+| INVALID_LENS (PricingService)  |     400     | Đặt hàng tròng INACTIVE                            | Trả lỗi từ PricingError trong luồng Order/Payment              |
 
 ---
 

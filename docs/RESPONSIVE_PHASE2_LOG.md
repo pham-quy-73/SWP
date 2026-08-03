@@ -137,8 +137,53 @@ vite build → ✓ built in 7.38s (2374 modules, không lỗi)
 5. **Heading scale**: `text-2xl sm:text-3xl md:text-4xl` thay vì cỡ cố định.
 6. **Hover-only content** (HomePage category): phải hiện mặc định trên mobile vì không có hover.
 
-## 📌 Còn lại / đề xuất Phase 3 (chưa làm)
+---
 
-- **Dropdown action menu trong table** (`UserManagePage`, `ProductManagePage`): menu `absolute` bên trong `overflow-x-auto` có thể bị clip trên mobile — cần portal hóa nếu muốn triệt để.
-- **Card-view thay table trên mobile** cho Manager/Admin (hiện dùng cuộn ngang — dùng được nhưng UX card sẽ tốt hơn).
-- Code-split để giảm bundle 854 kB (cảnh báo build, không liên quan responsive).
+# 📱 Phase 3 — Dropdown clip fix + Code-split
+
+> Ngày thực hiện: 2026-08-02 · Tiếp nối Phase 2.
+
+## ✅ Kết quả build Phase 3
+
+```
+vite build → ✓ built in 4.56s, KHÔNG còn cảnh báo chunk > 500 kB
+Bundle chính: 854 kB → 271 kB (index) — giảm ~68%
+```
+
+| Chunk | Kích thước | Ghi chú |
+|---|---|---|
+| `index` (storefront) | 271.86 kB (gzip 67.9) | khách hàng chỉ tải phần này |
+| `react-vendor` | 164.68 kB (gzip 53.8) | react + react-dom + router, cache lâu dài |
+| `motion` | 129.58 kB (gzip 42.8) | framer-motion |
+| `form` | 89.06 kB (gzip 26.7) | react-hook-form + zod |
+| `query` | 46.24 kB (gzip 18.0) | axios + zustand |
+| Manager/Admin pages | 5–49 kB mỗi trang | **lazy-load** — chỉ tải khi vào `/manager`, `/admin` |
+
+## 1. Fix dropdown action menu bị clip trong table
+
+**Vấn đề:** menu thao tác (⋯) dùng `position: absolute` bên trong container `overflow-x-auto` → bị cắt (clip) theo cả 2 trục khi bảng cuộn ngang trên mobile, đặc biệt khi bảng ít dòng.
+
+**Giải pháp:** chuyển menu sang `position: fixed`, tọa độ tính từ `getBoundingClientRect()` của nút bấm (không cần portal):
+- Tự động lật lên trên (`bottom`) khi gần đáy viewport.
+- `right` kẹp tối thiểu 8px để không tràn mép phải màn hình.
+- Đóng menu khi **cuộn** (window + capture cả cuộn ngang của bảng) để menu fixed không bị "trôi" sai vị trí.
+
+Áp dụng cho 3 file:
+- `feature/admin/page/UserManagePage.jsx`
+- `feature/manager/page/products/ProductManagePage.jsx`
+- `feature/manager/page/products/ProductVariantManagePage.jsx`
+
+## 2. Code-split
+
+### `src/App.jsx`
+- 7 component Manager/Admin (`ManagerLayout`, `ManagerDashboardPage`, `ProductManagePage`, `ProductVariantManagePage`, `ManagerOrderPage`, `AdminLayout`, `UserManagePage`) chuyển sang `React.lazy()` + `<Suspense fallback={<PageLoader />}>`.
+- Khách hàng (đa số người dùng, chủ yếu mobile) không còn phải tải ~150 kB code quản trị.
+- Bỏ import `AnimatePresence` không dùng.
+
+### `vite.config.js`
+- Thêm `build.rollupOptions.output.manualChunks` tách vendor: `react-vendor`, `motion`, `form`, `query`.
+- ✅ `@tanstack/react-query` có trong `package.json` nhưng không được cài & không được dùng ở bất kỳ file nào → **đã gỡ khỏi `package.json` + cập nhật lockfile** (2026-08-02), build xác nhận pass.
+
+## 📌 Còn lại / đề xuất tiếp theo (chưa làm)
+
+- **Card-view thay table trên mobile** cho Manager/Admin (hiện dùng cuộn ngang với `min-w` — dùng được nhưng UX card sẽ tốt hơn).

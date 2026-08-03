@@ -46,11 +46,10 @@
 
 ### 4. Các actor chính & Chức năng
 
-| Actor        | Chức năng chính                                                                                                                                                                                                                                                                                                                                           |
 | :----------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Customer** | Đăng ký/Đăng nhập (tài khoản thường hoặc Google OAuth2), xem/lọc sản phẩm theo brand/category, quản lý giỏ hàng client-side (Zustand), chọn tròng kính + nhập đơn thuốc, quản lý sổ địa chỉ, tạo đơn hàng, thanh toán qua VNPay, xem lịch sử đơn, tiếp tục thanh toán đơn `PENDING` chưa hoàn tất, hủy đơn `PENDING`/`AWAITING_VERIFICATION`/`CONFIRMED`. |
-| **Manager**  | Quản lý danh mục sản phẩm & tròng kính, tạo/cập nhật/xóa biến thể (màu, kích thước, giá, SKU, tồn kho), cập nhật trạng thái đơn hàng, xem Dashboard, quản lý danh sách đơn đã thanh toán bị hủy và xác nhận hoàn tiền.                                                                                                                                    |
-| **Admin**    | Toàn quyền của Manager + quản lý người dùng (cấp phát tài khoản, đổi vai trò, khóa/mở khóa qua `deleted_at`, cấp lại mật khẩu, xóa vĩnh viễn), xóa đơn hàng khỏi database.                                                                                                                                                                                |
+| **Manager** | Quản lý danh mục sản phẩm & tròng kính, tạo/cập nhật/xóa biến thể (màu, kích thước, giá, SKU, tồn kho), cập nhật trạng thái đơn hàng, xem Dashboard, quản lý danh sách đơn đã thanh toán bị hủy và xác nhận hoàn tiền. |
+| **Admin** | Toàn quyền của Manager + quản lý người dùng (cấp phát tài khoản, đổi vai trò, khóa/mở khóa qua `deleted_at`, cấp lại mật khẩu, xóa vĩnh viễn), xóa đơn hàng khỏi database. |
 
 ---
 

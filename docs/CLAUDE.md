@@ -14,19 +14,16 @@ Tài liệu này là "bộ nhớ dài hạn" của dự án dành cho nhà phát
 - **Lý do:** Stateless API để dễ mở rộng và hỗ trợ đăng nhập qua mạng xã hội.
 - **Triển khai:** JWT access token gửi qua header `Authorization: Bearer <token>`.
   Google OAuth dùng `google-auth-library` xác thực ID token phía backend.
-- **Hệ quả:** Không đề xuất chuyển sang session/cookie-based auth.
 
 #### ADR-002: MongoDB + Mongoose ODM
 
 - **Lý do:** Mongoose cung cấp schema validation, middleware hooks, ép kiểu tự động
   giúp hạn chế lỗi dữ liệu.
-- **Hệ quả:** Không đề xuất Prisma hay driver thuần.
 
 #### ADR-003: Nhúng dữ liệu Payment vào Order
 
 - **Lý do:** Mỗi hóa đơn chỉ kích hoạt thanh toán trực tuyến (VNPay) một lần duy nhất.
   Nhúng đối tượng thanh toán giúp tối ưu tốc độ kết xuất dữ liệu hóa đơn.
-- **Hệ quả:** Không tạo collection Payment riêng; truy vấn payment đi qua Order.
 
 #### ADR-004: PricingService là nguồn giá duy nhất
 
@@ -34,12 +31,6 @@ Tài liệu này là "bộ nhớ dài hạn" của dự án dành cho nhà phát
   phải dùng chung một luồng tính để không lệch nhau.
 
 #### ADR-005: Frontend React 18 + Vite, state tách đôi
-
-- **Server state:** TanStack Query. **Client state:** Zustand.
-- **Form:** React Hook Form + Zod. **HTTP:** axios qua `src/lib/httpClient.js`.
-- **Hệ quả:** Không đề xuất Redux; hook mới không gọi axios trực tiếp.
-
-#### ADR-006: Thanh toán VNPay Sandbox
 
 - **Triển khai:** Callback backend `/api/payment/vnpay-callback`, cấu hình qua biến `VNP_*`.
 - **Job nền:** `jobs/orderCleanupJob.js` dọn đơn quá hạn thanh toán (15 phút).
@@ -86,13 +77,6 @@ Luôn dùng `.env` (đã nằm trong `.gitignore`). Không commit giá trị th�
 `app.js` chỉ gắn middleware/route (import trực tiếp được cho Supertest, không mở cổng,
 không chạm DB thật); `server.js` mới connect DB + listen + khởi động job. Giữ nguyên
 ranh giới này khi thêm tính năng.
-
-### Current Sprint (cập nhật 2026-07-26)
-
-- Hoàn thiện spec các feature: admin-users, cart, checkout (`.sdd/specs/`).
-- Hoàn thiện Order & Payment flow (VNPay sandbox).
-- Duy trì ngưỡng coverage: lines 90 / branches 85 / functions 90 / statements 90.
-- Validation ảnh sản phẩm (multer) — đã có commit `add:validation image`.
 
 ---
 
@@ -173,5 +157,3 @@ docker compose up --build   # backend :3000 + frontend :8080
 Review và dọn dẹp phần này định kỳ hàng tuần — xóa entry lỗi thời. -->
 
 # Learned: Backend dùng Joi cho validation, multer cho upload ảnh, xlsx cho xuất Excel. (2026-07-26)
-
-# Learned: Payment không có model riêng — nhúng trong Order (xem ADR-003); Refund là model riêng. (2026-07-26)
